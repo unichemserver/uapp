@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">unichem.co.id</domain>
+        <domain includeSubdomains="true">unifood.id</domain>
+    </domain-config>
+</network-security-config>
