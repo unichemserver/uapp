@@ -2,23 +2,34 @@ import 'dart:convert';
 
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:uapp/app/routes.dart';
-import 'package:uapp/core/database/local_database.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
-import 'package:uapp/core/sync/sync_api_service.dart';
-import 'package:uapp/core/sync/sync_manager.dart';
 import 'package:uapp/core/utils/instance.dart';
 import 'package:uapp/modules/auth/auth_api.dart';
 
 class AuthController extends GetxController {
   final box = Hive.box(HiveKeys.appBox);
+  bool showInstanceError = false;
   bool _isPasswordVisible = false;
+  bool _isAgree = false;
   String? _selectedInstance;
   String? _loadingMessage;
 
   bool get isPasswordVisible => _isPasswordVisible;
   String? get selectedInstance => _selectedInstance;
   String? get loadingMessage => _loadingMessage;
+  bool get isAgree => _isAgree;
+
+  void toggleInstanceSelected(bool value) {
+    showInstanceError = value;
+    update();
+  }
+
+  void toggleAgree(bool value) {
+    _isAgree = value;
+    update();
+  }
 
   void setSelectedInstance(String? value) {
     box.put(HiveKeys.baseURL, instances[value]);
@@ -57,5 +68,18 @@ class AuthController extends GetxController {
         );
       }
     });
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    _requestPermission();
+  }
+
+  _requestPermission() async {
+    Permission location = Permission.location;
+    Permission notification = Permission.notification;
+    if (!await location.isGranted) await location.request();
+    if (!await notification.isGranted) await notification.request();
   }
 }

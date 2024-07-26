@@ -14,12 +14,14 @@ class SyncPage extends StatelessWidget {
       init: HomeController(),
       initState: (_) {},
       builder: (ctx) {
+        bool showFunctionality = ctx.listMarketingActivity
+            .where((element) => element.waktuCo == null)
+            .isNotEmpty;
         return Scaffold(
           appBar: AppBar(
             title: const Text('Sinkronisasi'),
             actions: [
               IconButton(
-                // if there is no status sync equal to 0, then the button is disabled
                 onPressed: () async {
                   bool isInet = await Utils.isInternetAvailable();
                   if (!isInet) {
@@ -29,9 +31,9 @@ class SyncPage extends StatelessWidget {
                     );
                     return;
                   }
-                  if (ctx.listMarketingActivity
+                  if ((ctx.listMarketingActivity
                       .where((element) => element.statusSync == 0)
-                      .isEmpty) {
+                      .isEmpty) || showFunctionality || ctx.listMarketingActivity.isEmpty) {
                     Get.snackbar(
                       'Info',
                       'Tidak ada data yang perlu disinkronisasi',
@@ -58,34 +60,40 @@ class SyncPage extends StatelessWidget {
             onRefresh: () async {
               ctx.getListMarketingActivity();
             },
-            child: ListView.builder(
-              itemCount: ctx.listMarketingActivity.length,
-              itemBuilder: (context, index) {
-                if (ctx.listMarketingActivity.isEmpty) {
-                  return const Center(
-                    child: Text('Data tidak ditemukan'),
-                  );
-                }
-                var item = ctx.listMarketingActivity[index];
-                print(item.toJson());
-                return ListTile(
-                  leading: Text(getJenis(item.jenis ?? '')),
-                  title: Text(item.custId ?? ''),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(formatDateTime(item.waktuCi!)),
-                      Text(formatDateTime(item.waktuCo!)),
-                    ],
-                  ),
-                  trailing: Icon(
-                    item.statusSync! == 1 ? Icons.check : Icons.close,
-                    color: item.statusSync == 1 ? Colors.green : Colors.red,
-                  ),
-                  onTap: () {},
-                );
-              },
-            ),
+            child: ctx.listMarketingActivity.isEmpty
+                ? const Center(
+                    child: Text('Tidak ada data kunjungan'),
+                  )
+                : showFunctionality
+                    ? const Center(
+                        child:
+                            Text('Terdapat data kunjungan yang belum selesai'),
+                      )
+                    : ListView.builder(
+                        itemCount: ctx.listMarketingActivity.length,
+                        itemBuilder: (context, index) {
+                          var item = ctx.listMarketingActivity[index];
+                          print(item.toJson());
+                          return ListTile(
+                            leading: Text(getJenis(item.jenis ?? '')),
+                            title: Text(item.custId ?? ''),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(formatDateTime(item.waktuCi!)),
+                                Text(formatDateTime(item.waktuCo!)),
+                              ],
+                            ),
+                            trailing: Icon(
+                              item.statusSync! == 1 ? Icons.check : Icons.close,
+                              color: item.statusSync == 1
+                                  ? Colors.green
+                                  : Colors.red,
+                            ),
+                            onTap: () {},
+                          );
+                        },
+                      ),
           ),
         );
       },

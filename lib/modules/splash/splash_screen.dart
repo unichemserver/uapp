@@ -4,25 +4,42 @@ import 'package:uapp/app/fonts.dart';
 import 'package:uapp/app/strings.dart';
 import 'package:uapp/modules/splash/splash_controller.dart';
 
-class SplashScren extends StatelessWidget {
-  const SplashScren({super.key});
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
     return GetBuilder<SplashController>(
       init: SplashController(),
-      initState: (_) {},
-      builder: (_) {
+      builder: (controller) {
         return Scaffold(
           body: Center(
-            child: Text(
-              Strings.appTitle,
-              style: Theme.of(context).textTheme.headlineLarge!.copyWith(
-                    color: Theme.of(context).primaryColor,
-                    fontFamily: Fonts.rubik,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
+            child: AnimatedBuilder(
+              animation: controller.scaleAnimation,
+              builder: (context, child) {
+                return ScaleTransition(
+                  scale: controller.scaleAnimation,
+                  child: AnimatedBuilder(
+                    animation: controller.fadeAnimation,
+                    builder: (context, child) {
+                      return FadeTransition(
+                        opacity: controller.fadeAnimation,
+                        child: Text(
+                          Strings.appTitle,
+                          style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                            color: Theme.of(context).primaryColor,
+                            fontFamily: Fonts.rubik,
+                            fontWeight: FontWeight.bold,
+                            fontSize: width / 4,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    },
                   ),
+                );
+              },
             ),
           ),
         );

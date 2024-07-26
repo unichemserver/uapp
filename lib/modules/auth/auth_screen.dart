@@ -1,12 +1,16 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:uapp/app/fonts.dart';
 import 'package:uapp/app/strings.dart';
+import 'package:uapp/core/utils/assets.dart';
 import 'package:uapp/core/utils/instance.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
 import 'package:uapp/core/widget/loading_dialog.dart';
 import 'package:uapp/core/widget/speech_to_textfield.dart';
 import 'package:uapp/modules/auth/auth_controller.dart';
+import 'package:uapp/core/widget/webview_widget.dart';
 
 class AuthScreen extends StatelessWidget {
   AuthScreen({super.key});
@@ -22,121 +26,204 @@ class AuthScreen extends StatelessWidget {
       initState: (_) {},
       builder: (ctx) {
         return Scaffold(
-          resizeToAvoidBottomInset: false,
-          body: Padding(
-            padding: const EdgeInsets.all(
-              16.0,
-            ),
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    Strings.appTitle,
-                    style: Theme.of(context).textTheme.headlineMedium!.copyWith(
-                          color: Theme.of(context).primaryColor,
-                          fontFamily: Fonts.rubik,
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(
-                    height: 50,
-                  ),
-                  SpeechToTextField(
-                    controller: unameController,
-                    hintText: 'Masukkan nama pengguna',
-                    prefixIcon: const Icon(Icons.person),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Nama pengguna tidak boleh kosong';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  AppTextField(
-                    obscureText: !ctx.isPasswordVisible,
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Kata sandi tidak boleh kosong';
-                      }
-                      return null;
-                    },
-                    controller: passController,
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        ctx.isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(
+                16.0,
+              ),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  children: [
+                    Container(
+                      height: 200,
+                      margin: const EdgeInsets.only(
+                        top: 50,
+                        bottom: 10,
                       ),
-                      onPressed: ctx.togglePasswordVisibility,
+                      child: LottieBuilder.asset(Assets.loginAnimation),
                     ),
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  DropdownButtonFormField<String>(
-                    value: ctx.selectedInstance,
-                    onChanged: ctx.setSelectedInstance,
-                    items: instances.keys
-                        .map(
-                          (e) => DropdownMenuItem(
-                            value: e,
-                            child: Text(e),
-                          ),
-                        )
-                        .toList(),
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                      ),
-                      labelText: 'Instance',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(10),
-                        ),
-                      ),
-                      prefixIcon: Icon(Icons.home_work),
+                    Text(
+                      Strings.appTitle,
+                      style:
+                          Theme.of(context).textTheme.headlineMedium!.copyWith(
+                                color: Theme.of(context).primaryColor,
+                                fontFamily: Fonts.rubik,
+                                fontWeight: FontWeight.bold,
+                              ),
                     ),
-                  ),
-                  const SizedBox(
-                    height: 40,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (formKey.currentState!.validate()) {
-                        if (ctx.selectedInstance != null) {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (context) {
-                              return LoadingDialog(
-                                message: ctx.loadingMessage!,
-                              );
-                            },
-                          );
-                          ctx.login(
-                            unameController.text,
-                            passController.text,
-                          );
-                        } else {
-                          Get.snackbar(
-                            'Error',
-                            'Pilih instance terlebih dahulu',
-                          );
+                    const SizedBox(
+                      height: 50,
+                    ),
+                    SpeechToTextField(
+                      controller: unameController,
+                      hintText: 'Masukkan nomor NIK',
+                      prefixIcon: const Icon(Icons.person),
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Nomor NIK tidak boleh kosong';
                         }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 48),
+                        return null;
+                      },
                     ),
-                    child: const Text(Strings.login),
-                  ),
-                ],
+                    const SizedBox(
+                      height: 16,
+                    ),
+                    AppTextField(
+                      obscureText: !ctx.isPasswordVisible,
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Kata sandi tidak boleh kosong';
+                        }
+                        return null;
+                      },
+                      controller: passController,
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          ctx.isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: ctx.togglePasswordVisibility,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 16,
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      alignment: WrapAlignment.end,
+                      runAlignment: WrapAlignment.end,
+                      children: instances.keys
+                          .map(
+                            (instance) => ChoiceChip(
+                              label: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                child: Text(instance),
+                              ),
+                              selected: ctx.selectedInstance == instance,
+                              onSelected: (selected) {
+                                ctx.toggleInstanceSelected(false);
+                                if (selected) {
+                                  ctx.setSelectedInstance(instance);
+                                }
+                              },
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    if (ctx.showInstanceError)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 8,
+                        ),
+                        child: Text(
+                          'Pilih instance terlebih dahulu',
+                          style:
+                              Theme.of(context).textTheme.labelMedium!.copyWith(
+                                    color: Colors.red,
+                                  ),
+                        ),
+                      ),
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    Divider(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Checkbox(
+                          value: ctx.isAgree,
+                          onChanged: (value) {
+                            ctx.toggleAgree(value!);
+                          },
+                        ),
+                        // Dengan menggunakan aplikasi ini, Anda secara otomatis menyetujui Kebijakan Privasi dan Syarat Penggunaan yang berlaku.
+                        Expanded(
+                          child: RichText(
+                            text: TextSpan(
+                              text:
+                                  'Dengan menggunakan aplikasi ini, Anda secara otomatis menyetujui ',
+                              style: Theme.of(context).textTheme.labelMedium,
+                              children: [
+                                TextSpan(
+                                  text: 'Kebijakan Privasi',
+                                  style: TextStyle(
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () {
+                                      Get.to(() => const AuthWebviewWidget(
+                                            url:
+                                                'https://unichem.co.id/uapp/privacy_policy.html',
+                                            title: 'Kebijakan Privasi U-APP',
+                                          ));
+                                    },
+                                ),
+                                const TextSpan(
+                                  text: ' dan ',
+                                ),
+                                TextSpan(
+                                  text: 'Syarat Penggunaan',
+                                  style: TextStyle(
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () {
+                                      Get.to(() => const AuthWebviewWidget(
+                                            url:
+                                                'https://unichem.co.id/uapp/term_of_use.html',
+                                            title: 'Syarat Penggunaan U-APP',
+                                          ));
+                                    },
+                                ),
+                                const TextSpan(
+                                  text: ' yang berlaku.',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    ElevatedButton(
+                      onPressed: ctx.isAgree
+                          ? () {
+                              if (formKey.currentState!.validate()) {
+                                if (ctx.selectedInstance != null) {
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (context) {
+                                      return LoadingDialog(
+                                        message: ctx.loadingMessage!,
+                                      );
+                                    },
+                                  );
+                                  ctx.login(
+                                    unameController.text,
+                                    passController.text,
+                                  );
+                                } else {
+                                  ctx.toggleInstanceSelected(true);
+                                }
+                              }
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                      child: const Text(Strings.login),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

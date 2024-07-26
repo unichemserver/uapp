@@ -1,14 +1,71 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:uapp/core/hive/hive_keys.dart';
+import 'package:uapp/models/user.dart';
 
 class Utils {
   static String formatCurrency(String value) {
     return 'Rp${value.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
+  }
+
+  static bool isMarketing() {
+    final box = Hive.box(HiveKeys.appBox);
+    final user = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
+    final bagian = user.department;
+    return bagian == 'MKT';
+  }
+
+  static Uint8List? fotoKaryawan() {
+    final box = Hive.box(HiveKeys.appBox);
+    var foto = box.get(HiveKeys.fotoKaryawan);
+    return foto;
+  }
+
+  static String getBaseUrl() {
+    final box = Hive.box(HiveKeys.appBox);
+    return box.get(HiveKeys.baseURL);
+  }
+
+  static String getEDSUrl() {
+    String baseUrl = getBaseUrl();
+    baseUrl = baseUrl.replaceAll('/api/index.php', '');
+    return '$baseUrl/EDS';
+  }
+
+  static String getSybaseUrl() {
+    String instance = getBaseUrl();
+    bool isUnichem = instance.contains('unichem');
+    String domain = isUnichem ? 'unichem.co.id' : 'unifood.id';
+    String baseUrl = 'https://sybase.$domain/sybase/';
+    return baseUrl;
+  }
+
+  static void saveFotoKaryawan(Uint8List foto) {
+    final box = Hive.box(HiveKeys.appBox);
+    box.put(HiveKeys.fotoKaryawan, foto);
+  }
+
+  static User getUserData() {
+    final box = Hive.box(HiveKeys.appBox);
+    return User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
+  }
+
+  static String getFormattedLogFileName(bool isToday) {
+    final now = DateTime.now();
+    if (!isToday) {
+      now.subtract(const Duration(days: 1));
+    }
+    final dateFormatted = DateFormat('ddMMyyyy').format(now);
+    return 'MOBILEPOS_$dateFormatted.txt';
   }
 
   static void showDialogNotAllowed(BuildContext context) {
@@ -58,5 +115,56 @@ class Utils {
       return false;
     }
     return true;
+  }
+
+  static String getNik() {
+    final box = Hive.box(HiveKeys.appBox);
+    final user = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
+    return user.id;
+  }
+
+  static void _showSnackBar(BuildContext context, String title, String message, Color backgroundColor) {
+    if (Get.isSnackbarOpen) {
+      Get.back();
+    }
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: backgroundColor,
+      colorText: Colors.white,
+    );
+  }
+
+  static void showSuccessSnackBar(BuildContext context, String message) {
+    _showSnackBar(context, 'Berhasil', message, Colors.green);
+  }
+
+  static void showSnackbar(BuildContext context, String message) {
+    _showSnackBar(context, 'Info', message, Colors.blue);
+  }
+
+  static void showErrorSnackBar(BuildContext context, String message) {
+    _showSnackBar(context, 'Gagal', message, Colors.red);
+  }
+
+  static String? generateBase64Image(ByteData byteData) {
+    try {
+      String starterFormat = 'data:image/png;base64,';
+      List<int> pngBytes = byteData.buffer.asUint8List();
+      String base64Image = base64Encode(pngBytes);
+      return starterFormat + base64Image;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static ByteData generateByteData(String base64Image) {
+    try {
+      String base64ImageWithoutStarter = base64Image.split(',').last;
+      List<int> pngBytes = base64Decode(base64ImageWithoutStarter);
+      return ByteData.view(Uint8List.fromList(pngBytes).buffer);
+    } catch (e) {
+      return ByteData(0);
+    }
   }
 }

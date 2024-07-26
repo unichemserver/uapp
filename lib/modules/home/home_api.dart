@@ -87,7 +87,7 @@ class HomeApi {
     }
   }
 
-  Future<void> uploadReport(
+  Future<String?> uploadReport(
       String idMa,
       Map<String, dynamic> dataActivity,
       List<Map<String, dynamic>> stockItems,
@@ -133,8 +133,10 @@ class HomeApi {
         print(to);
         await uploadToReport(idMa, to, baseUrl);
       }
+      return 'success';
     } catch (e) {
       debugPrint(e.toString());
+      return null;
     }
   }
 

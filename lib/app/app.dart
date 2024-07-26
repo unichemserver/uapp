@@ -15,12 +15,13 @@ class UApp extends StatelessWidget {
           seedColor: Colors.blueAccent,
           secondary: Colors.lightBlue,
           primary: Colors.blueAccent,
-          background: Colors.white,
+          surface: Colors.white,
         ),
         useMaterial3: true,
       ),
       initialRoute: Routes.INITIAL,
       getPages: Routes.pages,
+      defaultTransition: Transition.cupertinoDialog,
       debugShowCheckedModeBanner: false,
     );
   }

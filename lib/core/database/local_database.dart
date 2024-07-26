@@ -4,6 +4,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uapp/models/canvasing.dart';
 import 'package:uapp/models/collection.dart';
 import 'package:uapp/models/competitor.dart';
+import 'package:uapp/models/contact.dart';
 import 'package:uapp/models/customer.dart';
 import 'package:uapp/models/item.dart';
 import 'package:uapp/models/marketing_activity.dart';
@@ -105,7 +106,6 @@ class DatabaseHelper {
           CREATE TABLE IF NOT EXISTS user (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             PersonalID TEXT,
-            username TEXT NOT NULL,
             namalengkap TEXT NOT NULL,
             namapanggilan TEXT NOT NULL,
             jeniskelamin,
@@ -211,28 +211,44 @@ class DatabaseHelper {
           image_path TEXT
         )
         ''');
+
+        // await db.execute('''
+        // CREATE TABLE IF NOT EXISTS price_list (
+        //   id INTEGER PRIMARY KEY,
+        //   itemid TEXT,
+        //   unit_price TEXT,
+        //   min_qty INTEGER,
+        //   unitid TEXT,
+        //   version INTEGER,
+        //   description TEXT
+        // )
+        // ''');
       },
     );
   }
 
-  Future<String> getCustomerName(int idMa,String custId, String jenis) async {
+  Future<String> getCustomerName(int idMa, String custId, String jenis) async {
     Database db = await database;
 
     if (jenis == 'canvasing') {
-      List<Map<String, dynamic>> result = await db.query('canvasing', where: 'CustID = ?', whereArgs: [custId]);
+      List<Map<String, dynamic>> result =
+          await db.query('canvasing', where: 'CustID = ?', whereArgs: [custId]);
       return result[0]['nama_owner'];
     } else if (jenis == 'noo') {
-      List<Map<String, dynamic>> result = await db.query('noo', where: 'id = ?', whereArgs: [custId]);
+      List<Map<String, dynamic>> result =
+          await db.query('noo', where: 'id = ?', whereArgs: [custId]);
       return result[0]['nama_owner'];
     } else {
-      List<Map<String, dynamic>> result = await db.query('customer', where: 'CustID = ?', whereArgs: [custId]);
+      List<Map<String, dynamic>> result =
+          await db.query('customer', where: 'CustID = ?', whereArgs: [custId]);
       return result[0]['PersonalName'];
     }
   }
 
   Future<List<String>> getFinishFotoCi() async {
     Database db = await database;
-    List<Map<String, dynamic>> result = await db.query('marketing_activity', where: 'foto_ci IS NOT NULL');
+    List<Map<String, dynamic>> result =
+        await db.query('marketing_activity', where: 'foto_ci IS NOT NULL');
     List<String> finishFotoCi = [];
     for (Map<String, dynamic> map in result) {
       finishFotoCi.add(map['foto_ci']);
@@ -256,9 +272,15 @@ class DatabaseHelper {
     return await db.insert('marketing_activity', data);
   }
 
+  Future<void> deleteMarketingActivity(int id) async {
+    Database db = await database;
+    await db.delete('marketing_activity', where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<void> updateCustomerCanvasing(Map<String, dynamic> data) async {
     Database db = await database;
-    await db.update('canvasing', data, where: 'CustID = ?', whereArgs: [data['CustID']]);
+    await db.update('canvasing', data,
+        where: 'CustID = ?', whereArgs: [data['CustID']]);
   }
 
   Future<String> addCustomerCanvasing(Map<String, dynamic> data) async {
@@ -267,13 +289,20 @@ class DatabaseHelper {
     String month = DateTime.now().month.toString().padLeft(2, '0');
     String year = DateTime.now().year.toString().substring(2);
     String idStr = id.toString().padLeft(4, '0');
-    await db.update('canvasing', {'CustID': '$month$year$idStr'}, where: 'id = ?', whereArgs: [id]);
+    await db.update('canvasing', {'CustID': '$month$year$idStr'},
+        where: 'id = ?', whereArgs: [id]);
     return '$month$year$idStr';
+  }
+
+  deleteCustomerCanvasing(String custID) async {
+    Database db = await database;
+    await db.delete('canvasing', where: 'CustID = ?', whereArgs: [custID]);
   }
 
   Future<Canvasing> getCanvasing(String custID) async {
     Database db = await database;
-    List<Map<String, dynamic>> result = await db.query('canvasing', where: 'CustID = ?', whereArgs: [custID]);
+    List<Map<String, dynamic>> result =
+        await db.query('canvasing', where: 'CustID = ?', whereArgs: [custID]);
     return Canvasing.fromJson(result[0]);
   }
 
@@ -282,9 +311,49 @@ class DatabaseHelper {
     return await db.insert('noo', noo);
   }
 
+  Future<List<Contact>> getAllContact() async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query('user');
+    List<Contact> contactList = [];
+    for (Map<String, dynamic> map in result) {
+      contactList.add(Contact.fromJson(map));
+    }
+    return contactList;
+  }
+
+  Future<List<Contact>> getContact(String selfId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'user',
+      where: 'PersonalID != ?',
+      whereArgs: [selfId],
+    );
+    List<Contact> contactList = [];
+    for (Map<String, dynamic> map in result) {
+      contactList.add(Contact.fromJson(map));
+    }
+    return contactList;
+  }
+
+  Future<List<Contact>> searchContact(String query, String selfId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'user',
+      where:
+          '(namalengkap LIKE ? OR PersonalID LIKE ? OR kode_bagian LIKE ? OR namapanggilan LIKE ?) AND PersonalID != ?',
+      whereArgs: ['%$query%', '%$query%', '%$query%', '%$query%', selfId],
+    );
+    List<Contact> contactList = [];
+    for (Map<String, dynamic> map in result) {
+      contactList.add(Contact.fromJson(map));
+    }
+    return contactList;
+  }
+
   Future<List<Noo>> getUnsyncedNoo() async {
     Database db = await database;
-    List<Map<String, dynamic>> result = await db.query('noo', where: 'status_sync = 0');
+    List<Map<String, dynamic>> result =
+        await db.query('noo', where: 'status_sync = 0');
     List<Noo> nooList = [];
     for (Map<String, dynamic> map in result) {
       nooList.add(Noo.fromJson(map));
@@ -294,23 +363,27 @@ class DatabaseHelper {
 
   Future<void> updateNooStatus(int id) async {
     Database db = await database;
-    await db.update('noo', {'status_sync': 1}, where: 'id = ?', whereArgs: [id]);
+    await db.update('noo', {'status_sync': 1},
+        where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> updateCanvasingStatus(int id) async {
     Database db = await database;
-    await db.update('canvasing', {'status_sync': 1}, where: 'id = ?', whereArgs: [id]);
+    await db.update('canvasing', {'status_sync': 1},
+        where: 'id = ?', whereArgs: [id]);
   }
 
   Future<Noo> getNooById(int id) async {
     Database db = await database;
-    List<Map<String, dynamic>> result = await db.query('noo', where: 'id = ?', whereArgs: [id]);
+    List<Map<String, dynamic>> result =
+        await db.query('noo', where: 'id = ?', whereArgs: [id]);
     return Noo.fromJson(result[0]);
   }
 
   Future<Canvasing> getCanvasingById(String id) async {
     Database db = await database;
-    List<Map<String, dynamic>> result = await db.query('canvasing', where: 'CustID = ?', whereArgs: [id]);
+    List<Map<String, dynamic>> result =
+        await db.query('canvasing', where: 'CustID = ?', whereArgs: [id]);
     return Canvasing.fromJson(result[0]);
   }
 
@@ -494,7 +567,22 @@ class DatabaseHelper {
     );
   }
 
+  Future<void> deleteDataById(String table, int id) async {
+    Database db = await database;
+    await db.delete(
+      table,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   // End CRUD Data to Database
+
+  Future<void> deleteCanvasing(Map<String, dynamic> item) async {
+    Database db = await database;
+    await db.delete('canvasing', where: 'CustID = ?', whereArgs: [item['CustID']]);
+    await db.delete('marketing_activity', where: 'cust_id = ?', whereArgs: [item['CustID']]);
+  }
 
   Future<int> insertCollection(Map<String, Object?> collection) async {
     Database db = await database;
@@ -589,6 +677,29 @@ class DatabaseHelper {
     return toList;
   }
 
+  Future<void> updateTakingOrder(
+    int idMA,
+    String itemId,
+    String namaItem,
+    int qty,
+    String unit,
+    int harga,
+  ) async {
+    Database db = await database;
+    await db.update(
+      'takingorder',
+      {
+        'itemid': itemId,
+        'description': namaItem,
+        'quantity': qty,
+        'unit': unit,
+        'price': harga,
+      },
+      where: 'id_marketing_activity = ? AND itemid = ?',
+      whereArgs: [idMA, itemId],
+    );
+  }
+
   Future<int> insertTakingOrder(
     int idMA,
     String itemID,
@@ -629,12 +740,12 @@ class DatabaseHelper {
     );
   }
 
-  Future<int> deleteTakingOrder(int idMA, String imagePath) async {
+  Future<int> deleteTakingOrder(int idMA, String itemid) async {
     Database db = await database;
     return await db.delete(
-      'imagepath',
-      where: 'id_marketing_activity = ? AND image = ? AND type = ?',
-      whereArgs: [idMA, imagePath, 'takingorder'],
+      'takingorder',
+      where: 'id_marketing_activity = ? AND itemid = ?',
+      whereArgs: [idMA, itemid],
     );
   }
 
@@ -745,6 +856,21 @@ class DatabaseHelper {
     return marketingActivityList;
   }
 
+  Future<List<Map<String, dynamic>>> getCanvasingList() async {
+    Database db = await database;
+    // make query to get marketing_activity data with jenis = canvasing
+    // then join with canvasing table to get the data
+    // exclude the id column from canvasing table
+
+    var query = '''
+  SELECT marketing_activity.*, canvasing.CustID, canvasing.nama_outlet, canvasing.nama_owner, canvasing.no_hp, canvasing.latitude, canvasing.longitude, canvasing.alamat, canvasing.image_path
+  FROM marketing_activity
+  JOIN canvasing ON marketing_activity.cust_id = canvasing.CustID
+  WHERE marketing_activity.jenis = 'canvasing'
+''';
+    return await db.rawQuery(query);
+  }
+
   Future<Map<String, dynamic>> getMarketingActivity(int idMA) async {
     Database db = await database;
     List<Map<String, dynamic>> result = await db.query(
@@ -833,5 +959,10 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [competitor['id']],
     );
+  }
+
+  Future<void> truncateTable(String table) async {
+    Database db = await database;
+    await db.execute('DELETE FROM $table');
   }
 }

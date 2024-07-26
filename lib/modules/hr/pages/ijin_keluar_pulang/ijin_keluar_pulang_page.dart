@@ -1,10 +1,17 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
+import 'package:uapp/core/widget/loading_dialog.dart';
 import 'package:uapp/models/user.dart';
+import 'package:uapp/modules/hr/hr_method_api.dart';
+import 'package:uapp/modules/hr/model/sik.dart';
 import 'package:uapp/modules/hr/opt_emp_data_widget.dart';
+import 'package:uapp/modules/hr/pages/ijin_keluar_pulang/api_param.dart';
+import 'package:uapp/modules/hr/pages/ijin_keluar_pulang/api.dart' as api;
+import 'package:uapp/modules/hr/pages/ijin_keluar_pulang/history_page.dart';
 
 class IjinKeluarPulangPage extends StatefulWidget {
   const IjinKeluarPulangPage({super.key});
@@ -27,7 +34,10 @@ class _IjinKeluarPulangPageState extends State<IjinKeluarPulangPage> {
   final TextEditingController returnTimeController = TextEditingController();
 
   bool isExpanded = false;
+  bool isEditing = false;
   String selectedReason = '';
+  int maxLines = 1;
+  String? nomorSik;
 
   void getEmployeeData() {
     var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
@@ -36,6 +46,17 @@ class _IjinKeluarPulangPageState extends State<IjinKeluarPulangPage> {
     departmentController.text = userData.department;
     divisionController.text = userData.bagian;
     positionController.text = userData.jabatan;
+  }
+
+  void clearForm() {
+    destinationController.clear();
+    reasonController.clear();
+    exitTimeController.clear();
+    returnTimeController.clear();
+    setState(() {
+      selectedReason = '';
+      maxLines = 1;
+    });
   }
 
   @override
@@ -59,6 +80,25 @@ class _IjinKeluarPulangPageState extends State<IjinKeluarPulangPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Surat Ijin Keluar/Pulang'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              var item = await Get.to(() => HistoryPage(isMulti: false,));
+              if (item != null) {
+                var data = item as Sik;
+                nomorSik = data.nomorSik;
+                isEditing = true;
+                destinationController.text = data.tujuan;
+                selectedReason = data.kepentingan;
+                reasonController.text = data.alasan;
+                exitTimeController.text = data.jamKeluar.substring(0, 5);
+                returnTimeController.text = data.jamMasuk.substring(0, 5);
+                setState(() {});
+              }
+            },
+            icon: const Icon(Icons.history),
+          ),
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -110,6 +150,13 @@ class _IjinKeluarPulangPageState extends State<IjinKeluarPulangPage> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: destinationController,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Tujuan tidak boleh kosong';
+                      }
+                      return null;
+                    },
                     decoration: InputDecoration(
                       labelText: 'Tujuan',
                       prefixIcon: const Icon(Icons.location_on),
@@ -163,9 +210,24 @@ class _IjinKeluarPulangPageState extends State<IjinKeluarPulangPage> {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Alasan tidak boleh kosong';
+                      }
+                      return null;
+                    },
                     controller: reasonController,
                     onTap: () {},
-                    maxLines: 3,
+                    maxLines: maxLines,
+                    minLines: 1,
+                    onChanged: (text) {
+                      if (text.length % 50 == 0) {
+                        setState(() {
+                          maxLines++;
+                        });
+                      }
+                    },
                     decoration: InputDecoration(
                       labelText: 'Alasan',
                       prefixIcon: const Icon(Icons.info),
@@ -179,9 +241,17 @@ class _IjinKeluarPulangPageState extends State<IjinKeluarPulangPage> {
                   ),
                   const SizedBox(height: 16),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         child: TextFormField(
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Jam keluar kosong';
+                            }
+                            return null;
+                          },
                           controller: exitTimeController,
                           readOnly: true,
                           onTap: () {
@@ -210,6 +280,13 @@ class _IjinKeluarPulangPageState extends State<IjinKeluarPulangPage> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: TextFormField(
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Jam kembali kosong';
+                            }
+                            return null;
+                          },
                           controller: returnTimeController,
                           readOnly: true,
                           onTap: () {
@@ -242,16 +319,85 @@ class _IjinKeluarPulangPageState extends State<IjinKeluarPulangPage> {
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    // Process data.
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: const Text('Simpan'),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          if (selectedReason.isEmpty) {
+                            Get.snackbar(
+                              'Peringatan',
+                              'Kepentingan harus dipilih',
+                            );
+                          } else {
+                            var user = User.fromJson(
+                                jsonDecode(box.get(HiveKeys.userData)));
+                            var nik = user.id;
+                            var data = ApiParams(
+                              nik: nik,
+                              method: isEditing
+                                  ? HrMethodApi.editSuratIjinKeluarPulang
+                                  : HrMethodApi.suratIjinKeluarPulang,
+                              tujuan: destinationController.text,
+                              kepentingan: selectedReason,
+                              alasan: reasonController.text,
+                              jamKeluar: exitTimeController.text,
+                              jamMasuk: returnTimeController.text,
+                            );
+                            if (isEditing) {
+                              data.nomorSik = nomorSik;
+                            }
+                            Get.dialog(
+                              LoadingDialog(
+                                message: isEditing
+                                    ? 'Memperbarui ijin...'
+                                    : 'Mengajukan ijin...',
+                              ),
+                              barrierDismissible: false,
+                            );
+                            api.addSuratIjinKeluar(data.toJson()).then((message) {
+                              Get.back();
+                              if (message == null) {
+                                Get.snackbar(
+                                  'Berhasil',
+                                  isEditing
+                                      ? 'Surat ijin keluar/pulang berhasil diubah'
+                                      : 'Surat ijin keluar/pulang berhasil ditambahkan',
+                                );
+                                clearForm();
+                                Get.to(() => HistoryPage(isMulti: false,));
+                              } else {
+                                Get.snackbar(
+                                  'Gagal',
+                                  message,
+                                );
+                              }
+                            });
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      child: Text(
+                        isEditing ? 'Perbarui' : 'Ajukan',
+                      ),
+                    ),
+                  ),
+                  // button to reset if editing
+                  isEditing
+                      ? IconButton(
+                          onPressed: () {
+                            clearForm();
+                            setState(() {
+                              isEditing = false;
+                            });
+                          },
+                          icon: const Icon(Icons.lock_reset),
+                        )
+                      : const SizedBox(),
+                ],
               ),
             ),
           ],

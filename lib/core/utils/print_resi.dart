@@ -1,9 +1,6 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:flutter/services.dart';
 import 'package:uapp/core/utils/date_utils.dart';
-import 'package:uapp/core/utils/log.dart';
+import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/models/resi.dart';
 
 class PrintResi {
@@ -15,60 +12,94 @@ class PrintResi {
     return _instance;
   }
 
+  static const platform = MethodChannel('com.uci.uapp/printer');
+  static const maxLength = 9;
+  static const valueLength = 10;
+  static const quantityLength = 3;
+  static const unitLength = 7;
+  static const maxLineLength = 32;
+
+  Future<void> printText(Resi resi) async {
+    try {
+      final String text = getFormattedStringToPrint(resi);
+      final String result = await platform.invokeMethod('printText', {'text': text});
+      print(result);
+    } on PlatformException catch (e) {
+      print("Failed to print text: '${e.message}'.");
+    }
+  }
+
+  String formatLabel(String label) {
+    return label.padRight(maxLength);
+  }
+
+  String formatValue(String value) {
+    return value.padLeft(valueLength);
+  }
+
+  String formatQuantity(int quantity) {
+    return quantity.toString().padLeft(quantityLength);
+  }
+
+  String formatUnit(String unit) {
+    return unit.padRight(unitLength);
+  }
+
+  String formatLabelValue(String label, String value) {
+    int spacesCount = maxLineLength - label.length - value.length;
+    return '$label${' ' * spacesCount}$value';
+  }
+
+  String getFormattedStringToPrint(Resi resi) {
+    String receipt = '';
+    var subtotal = resi.toItems.map((e) => e.price).reduce((value, element) => value + element);
+    var subtotalFormatted = rp(subtotal.toString());
+
+    receipt += spacetwo;
+    receipt += '${formatLabel('Tanggal')} : ${DateUtils.getFormattedDateOnly(DateTime.now())}\n';
+    receipt += '${formatLabel('Nomor')} : ${resi.nomor}\n';
+    receipt += '${formatLabel('Pelanggan')} : ${resi.namaPelanngan}\n';
+    receipt += spaceone;
+    for (var item in resi.toItems) {
+      receipt += '${item.description}\n';
+      String quantity = formatQuantity(item.quantity);
+      String unit = rp(formatUnit(item.unit));
+      String price = rp(item.price.toString());
+      receipt += '${formatLabelValue('$quantity X $unit', price)}\n';
+    }
+    receipt += spaceone;
+    receipt += '${formatLabelValue('SUB TOTAL', subtotalFormatted)}\n';
+    receipt += '${formatLabelValue('DISKON', '0')}\n';
+    receipt += '${formatLabelValue('PPN (0%)', '0')}\n';
+    receipt += spaceone;
+    receipt += '${formatLabelValue('TOTAL', subtotalFormatted)}\n';
+    receipt += spacetwo;
+    receipt += '${DateUtils.getCurrentDateTime()}-${resi.namaSales}\n';
+    receipt += '\n';
+    receipt += '${centerText("Barang yang sudah dibeli", totalWidth)}\n';
+    receipt += '${centerText("tidak bisa ditukar", totalWidth)}\n';
+    receipt += '${centerText("atau dikembalikan", totalWidth)}\n';
+    receipt += '\n';
+    receipt += '${centerText(".:TERIMA KASIH:.", totalWidth)}\n';
+    receipt += '\n';
+    receipt += '\n';
+    receipt += '\n';
+
+    return receipt;
+  }
+
   final int totalWidth = 32;
   final spacetwo = '================================\n';
   final spaceone = '--------------------------------\n';
   final bluetoothAddress = '00:11:22:33:44:55';
-  BluetoothConnection? connection;
 
   String centerText(String text, int width) {
     int padding = (width - text.length) ~/ 2;
     return text.padLeft(padding + text.length).padRight(width);
   }
 
-  Future<void> _initializeConnection() async {
-    if (connection == null || !(connection!.isConnected)) {
-      connection = await BluetoothConnection.toAddress(bluetoothAddress);
-    }
-  }
-
-  Future<void> print(Resi resi) async {
-    await _initializeConnection();
-
-    try {
-      if (connection != null) {
-        connection!.output.add(Uint8List.fromList(utf8.encode(spacetwo)));
-        connection!.output.add(Uint8List.fromList(utf8.encode('Tanggal\t  : ${DateUtils.getFormattedDateOnly(DateTime.now())}\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('Nomor\t  : ${resi.nomor}\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('Pelanggan: ${resi.namaPelanngan}\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode(spaceone)));
-        for (var item in resi.toItems) {
-          connection!.output.add(Uint8List.fromList(utf8.encode('${item.description}\n')));
-          connection!.output.add(Uint8List.fromList(utf8.encode('\t ${item.quantity} X ${item.unit}\t${item.price}\n')));
-        }
-        connection!.output.add(Uint8List.fromList(utf8.encode(spaceone)));
-        connection!.output.add(Uint8List.fromList(utf8.encode('SUB TOTAL\t\t${resi.toItems.map((e) => e.price).reduce((value, element) => value + element)}\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('DISKON 2\t\t0\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('PPN (0%)\t\t0\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode(spaceone)));
-        connection!.output.add(Uint8List.fromList(utf8.encode('TOTAL QTY\t${resi.toItems.length}\tTOTAL\t\t${resi.toItems.map((e) => e.price).reduce((value, element) => value + element)}\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('BAYAR\t\t${resi.toItems.map((e) => e.price).reduce((value, element) => value + element)}\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('KEMBALIAN\t\t0\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode(spacetwo)));
-        connection!.output.add(Uint8List.fromList(utf8.encode('${DateUtils.getCurrentDateTime()}-${resi.namaSales}\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('${centerText("Barang yang sudah dibeli", totalWidth)}\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('${centerText("tidak bisa ditukar", totalWidth)}\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('${centerText("atau dikembalikan", totalWidth)}\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('${centerText(".:terima kasih:.", totalWidth)}\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('\n')));
-        connection!.output.add(Uint8List.fromList(utf8.encode('\n')));
-      }
-    } catch (exception) {
-      Log.d('Cannot print receipt, exception occurred');
-    }
+  String rp(String value) {
+    return Utils.formatCurrency(value);
   }
 
 }

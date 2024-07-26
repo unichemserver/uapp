@@ -2,11 +2,21 @@ import 'dart:convert';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
+import 'package:uapp/core/widget/loading_dialog.dart';
+import 'package:uapp/models/alat_berat.dart';
+import 'package:uapp/models/barang.dart';
+import 'package:uapp/models/gudang.dart';
 import 'package:uapp/models/user.dart';
+import 'package:uapp/modules/hr/hr_method_api.dart';
+import 'package:uapp/modules/hr/model/rc.dart';
 import 'package:uapp/modules/hr/opt_emp_data_widget.dart';
 import 'package:uapp/core/utils/date_utils.dart' as du;
+import 'package:uapp/modules/hr/pages/rencana_lembur/api.dart' as api;
+import 'package:uapp/modules/hr/pages/rencana_lembur/api_param.dart';
+import 'package:uapp/modules/hr/pages/rencana_lembur/history_page.dart';
 
 class RencanaLemburPage extends StatefulWidget {
   const RencanaLemburPage({super.key});
@@ -27,73 +37,66 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
   final TextEditingController startTimeController = TextEditingController();
   final TextEditingController endTimeController = TextEditingController();
   final TextEditingController taskController = TextEditingController();
+  final TextEditingController workerController = TextEditingController();
 
-  final List<String> _listBarang = [
-    'Garam',
-    'Lada',
-    'Kunyit',
-    'Ketumbar',
-    'Barite',
-    'KCL',
-    'Saraline',
-    'Multi Barang',
-  ];
-  final List<String> _listGudang = [
-    "KANTOR",
-    "G01",
-    "GABR",
-    "G03-08",
-    "G04",
-    "G09",
-    "G10",
-    "G06-08",
-    "G08-08",
-    "G11-08",
-    "G11",
-    "G15",
-    "G15-08",
-    "G18",
-    "G18-08",
-    "G23",
-    "G23-08",
-    "G12",
-    "G14",
-    "G16",
-    "GDLD",
-    "GDKYT",
-    "GDKTB",
-    "G19",
-    "G21",
-  ];
-  final List<String> _listAlatBerat = [
-    'Mobil Operasional',
-    'Forklif',
-    'Whell Loader',
-    'Excavator',
-    'Tractor Head',
-    'Top Loader',
-    'Tronton',
-    'Sepeda Motor Operasional',
-  ];
-  List<String> selectedAlatBerat = [];
+  final List<Barang> _listBarang = [];
+  final List<Gudang> _listGudang = [];
+  final List<AlatBerat> _listAlatBerat = [];
+  List<AlatBerat> selectedAlatBerat = [];
 
   bool isExpanded = false;
+  bool isEditing = false;
   int selectedBarang = -1;
   int selectedGudang = -1;
+  String? nomorRc;
+
+  void getDataUtils() async {
+    final data = await api.getDataUtils();
+    if (data.isNotEmpty) {
+      final listBarang = data['barang'] as List;
+      final listGudang = data['gudang'] as List;
+      final listAlatBerat = data['alat_berat'] as List;
+
+      _listBarang.addAll(listBarang.map((e) => Barang.fromJson(e)));
+      _listGudang.addAll(listGudang.map((e) => Gudang.fromJson(e)));
+      _listAlatBerat.addAll(listAlatBerat.map((e) => AlatBerat.fromJson(e)));
+      setState(() {});
+      if (Get.isDialogOpen!) {
+        Get.back();
+      }
+    }
+  }
 
   void getEmployeeData() {
     var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
     nameController.text = userData.nama;
     nikController.text = userData.id;
-    departmentController.text = userData.department;
-    divisionController.text = userData.bagian;
-    positionController.text = userData.jabatan;
+    departmentController.text = userData.namaDepartment;
+    divisionController.text = userData.namaBagian;
+    positionController.text = userData.namaJabatan;
+  }
+
+  void clearForm() {
+    dateController.clear();
+    startTimeController.clear();
+    endTimeController.clear();
+    taskController.clear();
+    workerController.clear();
+    selectedBarang = -1;
+    selectedGudang = -1;
+    selectedAlatBerat.clear();
   }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.dialog(const LoadingDialog(
+        message: 'Mengambil data...',
+      ));
+    });
     getEmployeeData();
+    getDataUtils();
   }
 
   @override
@@ -103,6 +106,11 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
     departmentController.dispose();
     divisionController.dispose();
     positionController.dispose();
+    dateController.dispose();
+    startTimeController.dispose();
+    endTimeController.dispose();
+    taskController.dispose();
+    workerController.dispose();
     super.dispose();
   }
 
@@ -111,6 +119,37 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Form Rencana Lembur'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () async {
+              var item = await Get.to(() => const HistoryPage());
+              if (item != null) {
+                isEditing = true;
+                var data = item as Rc;
+                nomorRc = data.nomorRc;
+                dateController.text = data.tgl;
+                startTimeController.text = data.jamAwal.substring(0, 5);
+                endTimeController.text = data.jamAkhir.substring(0, 5);
+                taskController.text = data.tugasKerja;
+                workerController.text = data.tenagaKerja;
+                selectedBarang = _listBarang
+                    .indexWhere((element) => element.id == data.barang);
+                selectedGudang = _listGudang
+                    .indexWhere((element) => element.id == data.gudang);
+                selectedAlatBerat.clear();
+                if (data.bantuanAlat != null && data.bantuanAlat!.isNotEmpty) {
+                  data.bantuanAlat?.split(',').forEach((element) {
+                    selectedAlatBerat.add(
+                      _listAlatBerat.firstWhere((e) => e.id == element),
+                    );
+                  });
+                }
+                setState(() {});
+              }
+            },
+          ),
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -167,22 +206,50 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
                     'Barang:',
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 2,
-                    children: List.generate(
-                      _listBarang.length,
-                      (index) {
-                        return ChoiceChip(
-                          label: Text(_listBarang[index]),
-                          selected: selectedBarang == index,
-                          onSelected: (value) {
-                            setState(() {
-                              selectedBarang = value ? index : -1;
-                            });
-                          },
-                        );
-                      },
+                  DropdownSearch<Barang>(
+                    dropdownDecoratorProps: DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        hintText: 'Pilih Barang',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        prefixIcon: const Icon(Icons.shopping_cart),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
+                      ),
+                    ),
+                    items: _listBarang,
+                    itemAsString: (item) => item.namaBarang,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedBarang = _listBarang.indexOf(value!);
+                      });
+                    },
+                    selectedItem: selectedBarang != -1
+                        ? _listBarang[selectedBarang]
+                        : null,
+                    popupProps: PopupProps.modalBottomSheet(
+                      showSearchBox: true,
+                      searchFieldProps: TextFieldProps(
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -190,10 +257,11 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
                     'Gudang:',
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
-                  DropdownSearch<String>(
+                  DropdownSearch<Gudang>(
                     dropdownDecoratorProps: DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
                         hintText: 'Pilih Gudang',
+                        prefixIcon: const Icon(Icons.home),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -203,6 +271,7 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
                       ),
                     ),
                     items: _listGudang,
+                    itemAsString: (item) => item.namaGudang,
                     onChanged: (value) {
                       setState(() {
                         selectedGudang = _listGudang.indexOf(value!);
@@ -243,6 +312,13 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
                   TextFormField(
                     controller: dateController,
                     readOnly: true,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Tanggal harus diisi';
+                      }
+                      return null;
+                    },
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     onTap: () {
                       showDatePicker(
                         context: context,
@@ -252,7 +328,7 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
                       ).then((value) {
                         if (value != null) {
                           dateController.text =
-                              du.DateUtils.getFormattedDate(value);
+                              du.DateUtils.getYMDFormat(value);
                         }
                       });
                     },
@@ -269,11 +345,19 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
                   ),
                   const SizedBox(height: 12),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         child: TextFormField(
                           controller: startTimeController,
                           readOnly: true,
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return 'Jam mulai harus diisi';
+                            }
+                            return null;
+                          },
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                           onTap: () {
                             showTimePicker(
                               context: context,
@@ -302,6 +386,13 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
                         child: TextFormField(
                           controller: endTimeController,
                           readOnly: true,
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return 'Jam selesai harus diisi';
+                            }
+                            return null;
+                          },
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                           onTap: () {
                             showTimePicker(
                               context: context,
@@ -336,11 +427,19 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
                     controller: taskController,
                     maxLines: null,
                     keyboardType: TextInputType.multiline,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Tugas kerja harus diisi';
+                      }
+                      return null;
+                    },
                     decoration: InputDecoration(
                       hintText: 'Tugas kerja yang akan dilakukan',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
+                      prefixIcon: const Icon(Icons.work),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 8,
@@ -354,7 +453,15 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
+                    controller: workerController,
                     keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Jumlah tenaga kerja harus diisi';
+                      }
+                      return null;
+                    },
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     decoration: InputDecoration(
                       hintText: 'Jumlah tenaga kerja yang dibutuhkan',
                       prefixIcon: const Icon(Icons.people),
@@ -380,7 +487,7 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
                       _listAlatBerat.length,
                       (index) {
                         return ChoiceChip(
-                          label: Text(_listAlatBerat[index]),
+                          label: Text(_listAlatBerat[index].namaJenisAlatBerat),
                           selected:
                               selectedAlatBerat.contains(_listAlatBerat[index]),
                           onSelected: (value) {
@@ -403,18 +510,70 @@ class _RencanaLemburPageState extends State<RencanaLemburPage> {
               padding: const EdgeInsets.all(8.0),
               child: ElevatedButton(
                 onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Data berhasil disimpan'),
-                      ),
+                  bool isValid = _formKey.currentState!.validate();
+                  if (isValid) {
+                    var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
+                    var gudang = selectedGudang == -1
+                        ? ''
+                        : _listGudang[selectedGudang].id;
+                    var barang = selectedBarang == -1
+                        ? ''
+                        : _listBarang[selectedBarang].id;
+                    var method = isEditing
+                        ? HrMethodApi.editRencanaLembur
+                        : HrMethodApi.formRencanaLembur;
+                    List<String> sortedIds = selectedAlatBerat
+                        .map((e) => e.id)
+                        .toList()
+                      ..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
+                    var data = ApiParams(
+                      nik: userData.id,
+                      gudang: gudang,
+                      barang: barang,
+                      method: method,
+                      tanggal: dateController.text,
+                      jamAwal: startTimeController.text,
+                      jamAkhir: endTimeController.text,
+                      tugasKerja: taskController.text,
+                      tenagaKerja: workerController.text,
+                      bantuanAlatBerat: sortedIds.join(','),
                     );
+                    Get.dialog(const LoadingDialog(
+                      message: 'Menyimpan data...',
+                    ));
+                    if (isEditing) {
+                      data.nomorRc = nomorRc;
+                    }
+                    print(data.toJson());
+                    api.addRencanaLembur(data).then((value) {
+                      if (value == null) {
+                        Get.back();
+                        Get.snackbar(
+                          'Berhasil',
+                          'Data berhasil disimpan',
+                        );
+                        setState(() {
+                          isEditing = false;
+                          nomorRc = null;
+                        });
+                        clearForm();
+                        Get.to(() => const HistoryPage());
+                      } else {
+                        Get.back();
+                        Get.snackbar(
+                          'Gagal',
+                          value,
+                        );
+                      }
+                    });
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
                 ),
-                child: const Text('Simpan'),
+                child: Text(
+                  isEditing ? 'Simpan Perubahan' : 'Simpan',
+                ),
               ),
             ),
           ],

@@ -7,10 +7,18 @@ class HiveKeys {
   static const String isCheckIn = 'isCheckIn';
   static const String jenisCall = 'jenisCall';
   static const String isFirstTime = 'isFirstTime';
+  static const String fotoKaryawan = 'fotoKaryawan';
+  static const String profile = 'profile';
 
   static const String selectedCustID = 'selectedCustID';
   static const String selectedRuteID = 'selectedRuteID';
   static const String idMa = 'idMa';
   static const String isSync = 'isSync';
-  static const String isFirstTimeCanvasing = 'isFirstTimeCanvasing';
+  // static const String isFirstTimeCanvasing = 'isFirstTimeCanvasing';
+  static const String isSyncing = 'isSyncing';
+
+  static const String isCanvasing = 'isCanvasing';
+  static const String isNoo = 'isNoo';
+  static const String isCustActive = 'isCustActive';
+  static const String isOnRoute = 'isOnRoute';
 }

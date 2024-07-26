@@ -14,6 +14,9 @@ class User {
   final String token;
   final String foto;
   String passwdStatus;
+  final String namaJabatan;
+  final String namaDepartment;
+  final String namaBagian;
 
   User({
     required this.id,
@@ -31,6 +34,9 @@ class User {
     required this.token,
     required this.foto,
     required this.passwdStatus,
+    required this.namaJabatan,
+    required this.namaDepartment,
+    required this.namaBagian,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -50,6 +56,9 @@ class User {
       token: json['token'],
       foto: json['foto'] ?? '',
       passwdStatus: json['password_status'] ?? '0',
+      namaJabatan: json['nama_jabatan'],
+      namaDepartment: json['nama_department'],
+      namaBagian: json['nama_bagian'],
     );
   }
 
@@ -70,6 +79,9 @@ class User {
       'token': token,
       'foto': foto,
       'password_status': passwdStatus,
+      'nama_jabatan': namaJabatan,
+      'nama_department': namaDepartment,
+      'nama_bagian': namaBagian,
     };
   }
 }

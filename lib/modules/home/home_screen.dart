@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:uapp/app/routes.dart';
-import 'package:uapp/core/utils/assets.dart';
+import 'package:uapp/core/utils/notification.dart';
+import 'package:uapp/core/widget/profile_image.dart';
 import 'package:uapp/modules/home/home_controller.dart';
-import 'package:uapp/modules/home/pages/sync_page.dart';
 import 'package:uapp/modules/home/widget/home_drawer.dart';
 import 'package:uapp/modules/home/widget/list_sub_menu.dart';
 import 'package:uapp/modules/home/widget/main_services.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  HomeScreen({super.key});
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +26,7 @@ class HomeScreen extends StatelessWidget {
             }
           },
           child: Scaffold(
+            key: _scaffoldKey,
             backgroundColor: Colors.white,
             appBar: AppBar(
               title: Text(ctx.titleAppbar()),
@@ -37,18 +39,8 @@ class HomeScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(4.0),
                       child: ClipOval(
-                        child: FadeInImage.assetNetwork(
-                          placeholder: Assets.logoAsset,
-                          image: ctx.foto,
-                          fit: BoxFit.cover,
-                          width: 48.0,
-                          height: 48.0,
-                          imageErrorBuilder: (context, error, stackTrace) {
-                            return const CircleAvatar(
-                              backgroundImage: AssetImage(Assets.logoAsset),
-                              backgroundColor: Colors.white,
-                            );
-                          },
+                        child: ProfileImage(
+                          imgUrl: ctx.foto,
                         ),
                       ),
                     ),
@@ -56,15 +48,13 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
               actions: [
-                ctx.showMarketingMenu()
-                    ? IconButton(
-                        onPressed: () {
-                          ctx.getListMarketingActivity();
-                          Get.toNamed(Routes.SYNC);
-                        },
-                        icon: const Icon(Icons.sync),
-                      )
-                    : const SizedBox(),
+                // notification button
+                // IconButton(
+                //   icon: const Icon(Icons.notifications),
+                //   onPressed: () {
+                //     showNotification('Notification', 'This is a notification');
+                //   },
+                // ),
               ],
             ),
             drawer: SafeArea(
@@ -72,6 +62,10 @@ class HomeScreen extends StatelessWidget {
                 child: HomeDrawer(
                   name: ctx.nama,
                   menus: ctx.menus,
+                  jabatan: ctx.userData!.namaJabatan,
+                  foto: ctx.foto,
+                  department: ctx.userData!.namaDepartment,
+                  scaffoldKey: _scaffoldKey,
                 ),
               ),
             ),

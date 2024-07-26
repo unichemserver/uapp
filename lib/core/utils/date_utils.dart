@@ -1,8 +1,44 @@
 import 'package:intl/intl.dart';
 
 class DateUtils {
+  static String formatDateString(String dateString) {
+    DateTime dateTime = DateTime.parse(dateString);
+
+    String day = DateFormat('dd').format(dateTime);
+    String monthYear = DateFormat(
+      'MMMM, yyyy',
+      'id_ID',
+    ).format(dateTime);
+    String time = DateFormat('HH:mm:ss').format(dateTime);
+
+    return '$day\n$monthYear\n$time'; // 01\nJanuary, 2022\n12:00:00
+  }
+
+  static formatDate(String date) {
+    return DateFormat('dd MMMM yyyy', 'id_ID').format(DateTime.parse(date));
+  }
+
+  static formatTime(String date) {
+    return DateFormat('HH:mm:ss').format(DateTime.parse(date));
+  }
+
+  static bool isDateAfter(String dateString, String compareTo) {
+    DateTime date = DateTime.parse(dateString);
+    DateTime compareDate = DateTime.parse(compareTo);
+
+    return date.isAfter(compareDate);
+  }
+
+  static String getFormattedDateFromYMD(String date) {
+    return DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
+  }
+
   static String getCurrentDate() {
     return DateFormat('yyyy-MM-dd').format(DateTime.now());
+  }
+
+  static String getYMDFormat(DateTime date) {
+    return DateFormat('yyyy-MM-dd').format(date);
   }
 
   // function to return date in format dd/MM/yyyy HH:mm:ss

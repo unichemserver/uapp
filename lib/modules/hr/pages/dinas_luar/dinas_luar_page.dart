@@ -1,11 +1,17 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
+import 'package:uapp/core/widget/loading_dialog.dart';
 import 'package:uapp/models/user.dart';
+import 'package:uapp/modules/hr/hr_method_api.dart';
 import 'package:uapp/modules/hr/opt_emp_data_widget.dart';
 import 'package:uapp/core/utils/date_utils.dart' as du;
+import 'package:uapp/modules/hr/pages/dinas_luar/api.dart' as api;
+import 'package:uapp/modules/hr/pages/dinas_luar/api_param.dart';
+import 'package:uapp/modules/hr/pages/dinas_luar/history_page.dart';
 
 class DinasLuarPage extends StatefulWidget {
   const DinasLuarPage({super.key});
@@ -30,14 +36,23 @@ class _DinasLuarPageState extends State<DinasLuarPage> {
       TextEditingController();
 
   bool isExpanded = false;
+  bool isEditing = false;
+  String? nomorTdl;
 
   void getEmployeeData() {
     var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
     nameController.text = userData.nama;
     nikController.text = userData.id;
-    departmentController.text = userData.department;
-    divisionController.text = userData.bagian;
-    positionController.text = userData.jabatan;
+    departmentController.text = userData.namaDepartment;
+    divisionController.text = userData.namaBagian;
+    positionController.text = userData.namaJabatan;
+  }
+
+  void clearText() {
+    destinationController.clear();
+    purposeController.clear();
+    departureDateTimeController.clear();
+    arrivalDateTimeController.clear();
   }
 
   @override
@@ -61,6 +76,25 @@ class _DinasLuarPageState extends State<DinasLuarPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tugas Dinas Luar'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              var item = await Get.to(() => const HistoryPage());
+              if (item != null) {
+                destinationController.text = item.tujuanDinas;
+                purposeController.text = item.keperluan;
+                departureDateTimeController.text =
+                    '${item.tglBerangkat} - ${item.jamBerangkat}';
+                arrivalDateTimeController.text =
+                    '${item.tglKembali} - ${item.jamKembali}';
+                isEditing = true;
+                nomorTdl = item.nomorTdl;
+                setState(() {});
+              }
+            },
+            icon: const Icon(Icons.history),
+          ),
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -196,7 +230,7 @@ class _DinasLuarPageState extends State<DinasLuarPage> {
                             initialTime: TimeOfDay.now(),
                           ).then((time) {
                             departureDateTimeController.text =
-                                '${du.DateUtils.getDayDate(date)} - ${time!.format(context)}';
+                                '${du.DateUtils.getYMDFormat(date)} - ${time!.format(context)}';
                           });
                         }
                       });
@@ -241,7 +275,7 @@ class _DinasLuarPageState extends State<DinasLuarPage> {
                             initialTime: TimeOfDay.now(),
                           ).then((time) {
                             arrivalDateTimeController.text =
-                                '${du.DateUtils.getDayDate(date)} - ${time!.format(context)}';
+                                '${du.DateUtils.getYMDFormat(date)} - ${time!.format(context)}';
                           });
                         }
                       });
@@ -255,13 +289,63 @@ class _DinasLuarPageState extends State<DinasLuarPage> {
               child: ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    // Process data.
+                    var tglBerangkat =
+                        departureDateTimeController.text.split(' - ')[0];
+                    var jamBerangkat =
+                        departureDateTimeController.text.split(' - ')[1];
+                    var tglKembali =
+                        arrivalDateTimeController.text.split(' - ')[0];
+                    var jamKembali =
+                        arrivalDateTimeController.text.split(' - ')[1];
+                    var userData =
+                        User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
+                    var data = ApiParams(
+                      method: isEditing
+                          ? HrMethodApi.editTugasDinasLuar
+                          : HrMethodApi.tugasDinasLuar,
+                      nik: userData.id,
+                      tujuanDinas: destinationController.text,
+                      keperluan: purposeController.text,
+                      tglBerangkat: tglBerangkat,
+                      jamBerangkat: jamBerangkat,
+                      tglKembali: tglKembali,
+                      jamKembali: jamKembali,
+                    );
+                    if (isEditing) {
+                      data.nomorTdl = nomorTdl;
+                    }
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return const LoadingDialog(
+                          message: 'Menyimpan data...',
+                        );
+                      },
+                    );
+                    api.addDinasLuar(data).then((value) {
+                      Navigator.pop(context);
+                      if (value == null) {
+                        Get.snackbar(
+                          'Berhasil',
+                          'Data berhasil disimpan',
+                        );
+                        clearText();
+                        Get.to(() => const HistoryPage());
+                      } else {
+                        Get.snackbar(
+                          'Gagal',
+                          value,
+                        );
+                      }
+                    });
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                 ),
-                child: const Text('Simpan'),
+                child: Text(
+                  isEditing ? 'Simpan Perubahan' : 'Simpan',
+                ),
               ),
             ),
           ],

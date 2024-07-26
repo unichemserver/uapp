@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -9,14 +9,11 @@ import 'package:uapp/core/database/local_database.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/sync/sync_api_service.dart';
 import 'package:uapp/core/sync/sync_manager.dart';
-import 'package:uapp/core/utils/date_utils.dart';
+import 'package:uapp/core/utils/alarm_manager.dart';
 import 'package:uapp/core/utils/jenis_call.dart';
-import 'package:uapp/core/utils/print_resi.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/models/marketing_activity.dart';
 import 'package:uapp/models/menu.dart';
-import 'package:uapp/models/resi.dart';
-import 'package:uapp/models/to.dart';
 import 'package:uapp/models/user.dart';
 import 'package:uapp/modules/home/home_api.dart';
 
@@ -37,8 +34,10 @@ class HomeController extends GetxController {
   MenuData? transactionService;
   MenuData? reportService;
   String nama = '';
+  User? userData;
   bool showPassword = false;
   bool showConfirmPassword = false;
+  Timer? timer;
 
   void togglePasswordVisibility() {
     showPassword = !showPassword;
@@ -82,9 +81,9 @@ class HomeController extends GetxController {
     }
   }
 
-  void getListMarketingActivity() async {
+  getListMarketingActivity() async {
+    if (!Utils.isMarketing()) return;
     final data = await db.getMarketingActivityList();
-    print('Data Marketing Activity: $data');
     listMarketingActivity.clear();
     listMarketingActivity.addAll(data);
     update();
@@ -92,10 +91,10 @@ class HomeController extends GetxController {
 
   void getFotoNamaUrl() {
     String baseUrl = box.get(HiveKeys.baseURL);
-    var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
+    userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
     baseUrl = baseUrl.replaceAll('api/index.php', '');
-    nama = userData.namaPanggilan!;
-    foto = userData.foto;
+    nama = userData!.namaPanggilan!;
+    foto = userData!.foto;
     foto = '${baseUrl}EDS/upload/dokumenkaryawan/Foto_Karyawan/$foto';
     update();
   }
@@ -103,13 +102,13 @@ class HomeController extends GetxController {
   void firstSync() async {
     bool isSync = box.get(HiveKeys.isSync, defaultValue: false);
     if (!isSync) {
-      final sync = SyncManager(SyncApiService(), db);
-      await performSyncOperation(sync);
+      await performSyncOperation();
       box.put(HiveKeys.isSync, true);
     }
   }
 
-  Future<void> performSyncOperation(SyncManager sync) async {
+  Future<void> performSyncOperation() async {
+    final sync = SyncManager(SyncApiService(), db);
     showPersistentSnackbar('Sedang melakukan sinkronisasi data...');
     try {
       await sync.syncAll(onStatus: (status) {});
@@ -144,12 +143,32 @@ class HomeController extends GetxController {
     getAvailableMenus();
     getFotoNamaUrl();
     checkPasswordStatus();
+    getListMarketingActivity();
+    scheduleUploadDataPeriodicly();
+  }
+
+  void scheduleUploadDataPeriodicly() {
+    var user = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
+    if (user.department == 'MKT') {
+      print('Schedule Upload Data');
+      scheduleUploadDataPeriodic();
+    }
+  }
+
+  @override
+  void onClose() {
+    timer?.cancel();
+    super.onClose();
   }
 
   checkPasswordStatus() async {
     final user = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
     final passwdStatus = user.passwdStatus;
+    final baseUrl = box.get(HiveKeys.baseURL);
     Future.delayed(const Duration(seconds: 1), () {
+      if (baseUrl.contains('unifood')) {
+        return;
+      }
       if (passwdStatus == '0') {
         Get.toNamed(Routes.CHANGE_PASSWORD);
       }
@@ -210,8 +229,7 @@ class HomeController extends GetxController {
     final box = Hive.box(HiveKeys.appBox);
     final userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
     final salesrepid = userData.salesrepid;
-    final jabatan = userData.jabatan;
-    if (salesrepid.isEmpty || salesrepid == '0' || jabatan == 'STI') {
+    if (salesrepid.isEmpty || salesrepid == '0') {
       return false;
     }
     return true;
@@ -302,35 +320,6 @@ class HomeController extends GetxController {
     setDataCheckIn();
     Get.back();
     Get.snackbar('Success', 'Checkout Success');
-    printResi(idMarketingActivity);
-  }
-
-  printResi(int idMarketingActivity) async {
-    var dataActivity = await db.getMarketingActivity(idMarketingActivity);
-    var jenisCall = dataActivity['jenis'];
-    var custId = dataActivity['cust_id'];
-    var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
-    String namaCustomer = await db.getCustomerName(
-      idMarketingActivity,
-      custId,
-      jenisCall,
-    );
-    List<To> toItems = await db.getTakingOrder(idMarketingActivity);
-    var printData = Resi(
-      nomor: getNomorResi(idMarketingActivity),
-      namaPelanngan: namaCustomer,
-      namaSales: userData.namaPanggilan ?? 'sales',
-      toItems: toItems,
-    );
-    PrintResi().print(printData);
-  }
-
-  String getNomorResi(int idMa) {
-    var date = DateUtils.getCurrentDate(); // 'yyyy-MM-dd' is the output format
-    var year = date.substring(2, 4);
-    var month = date.substring(5, 7);
-    var nomor = idMa.toString().padLeft(0, '0');
-    return 'FP.$year$month$nomor';
   }
 
   void setDataCheckIn() {

@@ -14,12 +14,14 @@ class SpeechToTextField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final String? initialValue;
   final void Function(String)? onChanged;
+  final bool readOnly;
 
   const SpeechToTextField({
     super.key,
     required this.controller,
-    this.hintText = 'Masukkan teks atau gunakan suara',
+    this.hintText = 'Masukkan teks',
     this.localeId = 'id_ID',
+    this.readOnly = false,
     this.prefixIcon,
     this.validator,
     this.keyboardType,
@@ -42,7 +44,7 @@ class _SpeechToTextFieldState extends State<SpeechToTextField> {
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
-    _initializeSpeech();
+    // _initializeSpeech();
   }
 
   Future<void> _initializeSpeech() async {
@@ -124,6 +126,7 @@ class _SpeechToTextFieldState extends State<SpeechToTextField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      readOnly: widget.readOnly,
       initialValue: widget.initialValue,
       inputFormatters: widget.inputFormatters,
       keyboardType: widget.keyboardType,

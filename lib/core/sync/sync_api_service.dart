@@ -19,6 +19,15 @@ class SyncApiService {
     return response;
   }
 
+  Future<List<dynamic>> fetchPriceList() async {
+    final Box box = Hive.box(HiveKeys.appBox);
+    final userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
+    final nik = userData.id;
+    const String method = 'price_list';
+    final response = await requestApi(method, nik: nik);
+    return response;
+  }
+
   Future<List<dynamic>> fetchItem() async {
     const String method = 'item';
     final response = await requestApi(method);
@@ -55,7 +64,7 @@ class SyncApiService {
     return response;
   }
 
-  Future<dynamic> requestApi(String method, {String? salesrepid}) async {
+  Future<dynamic> requestApi(String method, {String? salesrepid, String? nik}) async {
     try {
       final Box box = Hive.box(HiveKeys.appBox);
       final baseUrl = box.get(HiveKeys.baseURL, defaultValue: '');
@@ -66,13 +75,16 @@ class SyncApiService {
       if (salesrepid != null) {
         bodyRequest['salesrepid'] = salesrepid;
       }
+      if (nik != null) {
+        bodyRequest['nik'] = nik;
+      }
       print('Request: $bodyRequest');
       final response = await http.post(
         Uri.parse(baseUrl!),
         body: bodyRequest,
       );
       print('Response: ${response.body}');
-
+      print('Response Code: ${response.statusCode}');
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {

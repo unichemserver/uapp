@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uapp/core/utils/menu_utils.dart';
 import 'package:uapp/models/menu.dart';
 import 'package:uapp/modules/webview/webview_screen.dart';
 
@@ -64,11 +65,16 @@ class ListSubMenu extends StatelessWidget {
           size: 16,
         ),
         onTap: () {
+          if (routeToPage(masterServices!.submenu[index].urlMenu, context)) {
+            print('route to page');
+            return;
+          }
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => WebViewScreen(
                 url: masterServices!.submenu[index].urlMenu,
+                title: masterServices!.submenu[index].namaMenu,
               ),
             ),
           );
@@ -89,11 +95,15 @@ class ListSubMenu extends StatelessWidget {
           size: 16,
         ),
         onTap: () {
+          if (routeToPage(transactionService!.submenu[index].urlMenu, context)) {
+            return;
+          }
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => WebViewScreen(
                 url: transactionService!.submenu[index].urlMenu,
+                title: transactionService!.submenu[index].namaMenu,
               ),
             ),
           );
@@ -114,11 +124,15 @@ class ListSubMenu extends StatelessWidget {
           size: 16,
         ),
         onTap: () {
+          if (routeToPage(reportService!.submenu[index].urlMenu, context)) {
+            return;
+          }
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => WebViewScreen(
                 url: reportService!.submenu[index].urlMenu,
+                title: reportService!.submenu[index].namaMenu,
               ),
             ),
           );
@@ -157,11 +171,15 @@ class ListSubMenu extends StatelessWidget {
           ? masterServices!.submenu[index].subsubmenu
               .map((e) => ListTile(
                     onTap: () {
+                      if (routeToPage(e.urlMenu, context)) {
+                        return;
+                      }
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => WebViewScreen(
                             url: e.urlMenu,
+                            title: e.namaMenu,
                           ),
                         ),
                       );
@@ -178,11 +196,15 @@ class ListSubMenu extends StatelessWidget {
               ? transactionService!.submenu[index].subsubmenu
                   .map((e) => ListTile(
                         onTap: () {
+                          if (routeToPage(e.urlMenu, context)) {
+                            return;
+                          }
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => WebViewScreen(
                                 url: e.urlMenu,
+                                title: e.namaMenu,
                               ),
                             ),
                           );
@@ -198,11 +220,15 @@ class ListSubMenu extends StatelessWidget {
               : reportService!.submenu[index].subsubmenu
                   .map((e) => ListTile(
                         onTap: () {
+                          if (routeToPage(e.urlMenu, context)) {
+                            return;
+                          }
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => WebViewScreen(
                                 url: e.urlMenu,
+                                title: e.namaMenu,
                               ),
                             ),
                           );

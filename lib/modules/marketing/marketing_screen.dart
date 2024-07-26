@@ -76,7 +76,6 @@ class MarketingScreen extends StatelessWidget {
                         ),
                         unselectedItemColor: Colors.grey,
                         items: const [
-                          // interpret the icon and label for select rute
                           BottomNavigationBarItem(
                             icon: Icon(Icons.map),
                             label: 'Rute',

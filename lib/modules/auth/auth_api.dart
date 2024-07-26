@@ -19,6 +19,8 @@ class AuthApi {
         Uri.parse(url),
         body: bodyRequest,
       );
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
       if (response.statusCode == 200) {
         final bodyResponse = json.decode(response.body);
         return User.fromJson(bodyResponse['user']);
@@ -26,6 +28,7 @@ class AuthApi {
         return null;
       }
     } catch (e) {
+      print(e);
       return null;
     }
   }

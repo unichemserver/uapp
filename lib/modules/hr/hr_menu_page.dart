@@ -12,8 +12,19 @@ class _HrMenuPageState extends State<HrMenuPage> {
   FocusNode searchFocus = FocusNode();
   var hrMenuList = config.hrMenuList;
 
+  Color getRandColor(int index) {
+    if (index % 3 == 0) {
+      return Colors.blue;
+    } else if (index % 3 == 1) {
+      return Colors.green;
+    } else {
+      return Colors.orange;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         title: const Text('HR Menu'),
@@ -42,12 +53,16 @@ class _HrMenuPageState extends State<HrMenuPage> {
                   children: [
                     Icon(
                       hrMenuList[index].icon,
-                      size: 50,
+                      size: width * 0.2,
+                      color: getRandColor(index),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: width * 0.02),
                     Text(
                       hrMenuList[index].title,
                       textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: width * 0.03,
+                      ),
                     ),
                   ],
                 ),

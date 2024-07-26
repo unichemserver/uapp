@@ -3,10 +3,11 @@ import 'package:uapp/modules/hr/model/hr_model.dart';
 import 'package:uapp/modules/hr/pages/datang_terlambat/datang_terlambar_page.dart';
 import 'package:uapp/modules/hr/pages/dinas_luar/dinas_luar_page.dart';
 import 'package:uapp/modules/hr/pages/ijin_keluar_pulang/ijin_keluar_pulang_page.dart';
+import 'package:uapp/modules/hr/pages/ijin_keluar_pulang_multi/ijin_keluar_multi_page.dart';
 import 'package:uapp/modules/hr/pages/keluar_mobil/keluar_mobil_page.dart';
+import 'package:uapp/modules/hr/pages/order_reparasi/order_reparasi_page.dart';
 import 'package:uapp/modules/hr/pages/permintaan_naker/permintaan_naker_page.dart';
-import 'package:uapp/modules/hr/pages/permintaan_naker_borongan/permintaan_naker_borongan_page.dart';
-import 'package:uapp/modules/hr/pages/perubahan_status_naker/perubahan_status_naker_page.dart';
+import 'package:uapp/modules/hr/pages/permintaan_naker/permintaan_naker_borongan_page.dart';
 import 'package:uapp/modules/hr/pages/realisasi_lembur/realisasi_lembur_page.dart';
 import 'package:uapp/modules/hr/pages/realisasi_permintaan_naker/realisasai_permintaan_naker_page.dart';
 import 'package:uapp/modules/hr/pages/realisasi_permintaan_naker_borongan/realisasi_permintaan_naker_borongan_page.dart';
@@ -40,6 +41,11 @@ List<HRMenu> hrMenuList = [
     page: const IjinKeluarPulangPage(),
   ),
   HRMenu(
+    title: 'Surat Ijin Keluar/Pulang Multi',
+    icon: Icons.logout_sharp,
+    page: IjinKeluarMultiPage(),
+  ),
+  HRMenu(
     title: "Surat Keluar Mobil",
     icon: Icons.departure_board,
     page: const KeluarMobilPage(),
@@ -70,8 +76,8 @@ List<HRMenu> hrMenuList = [
     page: const RealisasiPermintaanNakerBoronganPage(),
   ),
   HRMenu(
-    title: "Form Perubahan Status Tenaga Kerja",
-    icon: Icons.person,
-    page: const PerubahanStatusNakerPage(),
+    title: "Order Reparasi",
+    icon: Icons.build,
+    page: const OrderReparasiPage(),
   ),
 ];

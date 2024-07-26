@@ -5,6 +5,13 @@ class PerubahanStatusNakerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Perubahan Status Tenaga Kerja'),
+      ),
+      body: const Center(
+        child: Text('Perubahan Status Naker Page'),
+      ),
+    );
   }
 }
