@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:uapp/core/widget/speech_to_textfield.dart';
+import 'package:uapp/core/widget/app_textfield.dart';
 
 class DepartmentInformation extends StatelessWidget {
-  DepartmentInformation({super.key, required this.title});
+  const DepartmentInformation({
+    super.key,
+    required this.title,
+    required this.namaCtrl,
+    required this.noTelpCtrl,
+    required this.emailCtrl,
+  });
 
   final String title;
-  final controller = TextEditingController();
+  final TextEditingController namaCtrl;
+  final TextEditingController noTelpCtrl;
+  final TextEditingController emailCtrl;
 
   @override
   Widget build(BuildContext context) {
@@ -19,19 +27,19 @@ class DepartmentInformation extends StatelessWidget {
           'Nama/ Jabatan',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(controller: controller),
+        AppTextField(controller: namaCtrl),
         const SizedBox(height: 16),
         Text(
           'No. Telp./ Handphone',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(controller: controller),
+        AppTextField(controller: noTelpCtrl),
         const SizedBox(height: 16),
         Text(
           'Website/ Email',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(controller: controller),
+        AppTextField(controller: emailCtrl),
       ],
     );
   }

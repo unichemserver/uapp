@@ -40,7 +40,9 @@ class ProfileScreen extends StatelessWidget {
                   Get.dialog(
                     AlertDialog(
                       title: const Text('Keluar'),
-                      content: const Text('Apakah anda yakin ingin keluar?'),
+                      content: const Text(
+                        'Apakah anda yakin ingin keluar dari aplikasi U-APP?',
+                      ),
                       actions: [
                         TextButton(
                           onPressed: () {
@@ -177,23 +179,27 @@ class ProfileScreen extends StatelessWidget {
           children: profile == null
               ? [const CircularProgressIndicator()]
               : [
-                  _buildProfileItem('Nama Panggilan', profile.namaPanggilan),
                   _buildProfileItem(
-                      'Tanggal Masuk Kerja', profile.tanggalMasukKerja),
-                  _buildProfileItem('Status Kerja', profile.statusPekerja),
+                      'Nama Panggilan', profile.namaPanggilan ?? ''),
                   _buildProfileItem(
-                      'Tanggal Pengangkatan', profile.tanggalPengangkatan),
+                      'Tanggal Masuk Kerja', profile.tanggalMasukKerja ?? ''),
+                  _buildProfileItem(
+                      'Status Kerja', profile.statusPekerja ?? ''),
+                  _buildProfileItem('Tanggal Pengangkatan',
+                      profile.tanggalPengangkatan ?? ''),
                   _buildProfileItem('Tanggal Habis Kontrak Kerja',
-                      profile.tanggalHabisKontrakKerja),
-                  _buildProfileItem('Jenis Kelamin', profile.jenisKelamin),
+                      profile.tanggalHabisKontrakKerja ?? ''),
+                  _buildProfileItem(
+                      'Jenis Kelamin', profile.jenisKelamin ?? ''),
                   _buildProfileItem('Tempat Tanggal Lahir',
                       '${profile.tempatLahir}, ${profile.tanggalLahir}'),
-                  _buildProfileItem('Suku Bangsa', profile.sukuBangsa),
-                  _buildProfileItem('Agama', profile.agama),
-                  _buildProfileItem('Golongan Darah', profile.golonganDarah),
+                  _buildProfileItem('Suku Bangsa', profile.sukuBangsa ?? ''),
+                  _buildProfileItem('Agama', profile.agama ?? ''),
                   _buildProfileItem(
-                      'Status Perkawinan', profile.statusPerkawinan),
-                  _buildProfileItem('Tipe', profile.tipe),
+                      'Golongan Darah', profile.golonganDarah ?? ''),
+                  _buildProfileItem(
+                      'Status Perkawinan', profile.statusPerkawinan ?? ''),
+                  _buildProfileItem('Tipe', profile.tipe ?? ''),
                 ],
         ),
         ExpansionTile(
@@ -202,21 +208,22 @@ class ProfileScreen extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           children: profile == null
-              ? [CircularProgressIndicator()]
+              ? [const CircularProgressIndicator()]
               : [
-                  _buildProfileItem('No KTP', profile.noKtp),
-                  _buildProfileItem('Berlaku Sampai', profile.berlakuSampai),
-                  _buildProfileItem('No KK', profile.noKk),
-                  _buildProfileItem('No NPWP', profile.npwp),
+                  _buildProfileItem('No KTP', profile.noKtp ?? ''),
                   _buildProfileItem(
-                      'Tanggal Terdaftar NPWP', profile.tanggalTerdaftarNpwp),
-                  _buildProfileItem('No Jamsostek', profile.noJamsostek),
+                      'Berlaku Sampai', profile.berlakuSampai ?? ''),
+                  _buildProfileItem('No KK', profile.noKk ?? ''),
+                  _buildProfileItem('No NPWP', profile.npwp ?? ''),
+                  _buildProfileItem('Tanggal Terdaftar NPWP',
+                      profile.tanggalTerdaftarNpwp ?? ''),
+                  _buildProfileItem('No Jamsostek', profile.noJamsostek ?? ''),
                   _buildProfileItem('Tanggal Terdaftar Jamsostek',
-                      profile.tanggalTerdaftarJamsostek),
+                      profile.tanggalTerdaftarJamsostek ?? ''),
                   _buildProfileItem(
-                      'No BPJS Kesehatan', profile.noBpjsKesehatan),
+                      'No BPJS Kesehatan', profile.noBpjsKesehatan ?? ''),
                   _buildProfileItem('Tanggal Terdaftar BPJS Kesehatan',
-                      profile.tanggalTerdaftarBpjsKesehatan),
+                      profile.tanggalTerdaftarBpjsKesehatan ?? ''),
                 ],
         ),
         ExpansionTile(
@@ -225,31 +232,31 @@ class ProfileScreen extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           children: profile == null
-              ? [CircularProgressIndicator()]
+              ? [const CircularProgressIndicator()]
               : [
                   _buildProfileItem(
                     'Kontrak Kerja',
-                    profile.kontrakKerja,
+                    profile.kontrakKerja ?? '',
                     isImage: true,
                   ),
                   _buildProfileItem(
                     'KK',
-                    profile.kk,
+                    profile.kk ?? '',
                     isImage: true,
                   ),
                   _buildProfileItem(
                     'NPWP',
-                    profile.npwp,
+                    profile.npwp ?? '',
                     isImage: true,
                   ),
                   _buildProfileItem(
                     'Ijazah',
-                    profile.ijazah,
+                    profile.ijazah ?? '',
                     isImage: true,
                   ),
                   _buildProfileItem(
                     'Foto Karyawan',
-                    profile.fotoKaryawan,
+                    profile.fotoKaryawan ?? '',
                     isImage: true,
                   ),
                 ],
@@ -259,9 +266,12 @@ class ProfileScreen extends StatelessWidget {
   }
 
   String _getImageUrl(String? url, String type) {
-    // if type contain whitespace, replace it with underscore
     type = type.replaceAll(' ', '_');
-    return 'https://unichem.co.id/EDS//upload/dokumenkaryawan/$type/$url';
+    if (Utils.getBaseUrl().contains('unichem')) {
+      return 'https://unichem.co.id/EDS//upload/dokumenkaryawan/$type/$url';
+    } else {
+      return 'https://unifood.id/EDS//upload/dokumenkaryawan/$type/$url';
+    }
   }
 
   _buildProfileItem(

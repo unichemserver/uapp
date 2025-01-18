@@ -25,6 +25,7 @@ Future<List<Warehouse>> getWarehouse() async {
       return <Warehouse>[];
     }
   } catch (e) {
+    print('Error: $e');
     return <Warehouse>[];
   }
 }
@@ -54,11 +55,12 @@ Future<int> getTotalBalance(String itemid) async {
   try {
     String edsUrl = Utils.getSybaseUrl();
     edsUrl += 'detailitembalance?item=$itemid&page=1&limit=1';
+    print(edsUrl);
     var client = createHttpClient();
     final response = await client.get(
       Uri.parse(edsUrl),
     );
-
+    print(response.body);
     if (response.statusCode == 200) {
       final body = json.decode(response.body);
       return body['total'];
@@ -86,6 +88,7 @@ Future<BalanceApiResponse?> fetchBalance({
   required String endDate,
 }) async {
   try {
+    print('fetchBalance');
     String edsUrl = Utils.getSybaseUrl();
     // edsUrl += 'detailitembalance?item=$itemid&page=$page&limit=$limit';
     edsUrl += 'detailitembalance?item=$itemid&page=$page&limit=$limit&locationid=$warehouse&startdate=$startDate&enddate=$endDate';

@@ -21,4 +21,12 @@ class HiveKeys {
   static const String isNoo = 'isNoo';
   static const String isCustActive = 'isCustActive';
   static const String isOnRoute = 'isOnRoute';
+
+  static const String custActiveBox = 'custActiveBox';
+  static const String masterItemBox = 'masterItemBox';
+  static const String unitSetBox = 'unitSetBox';
+  static const String custTopBox = 'custTopBox';
+  static const String priceListBox = 'priceListBox';
+
+  static const String timerSyncMkt = 'timerSyncMkt';
 }

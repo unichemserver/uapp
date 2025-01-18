@@ -1,7 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:get/get.dart';
 
-class ReportController extends GetxController {
+class CamController extends GetxController {
   bool isPreviewPaused = false;
   bool isFlashOn = false;
   bool isLoading = false;
@@ -11,6 +11,13 @@ class ReportController extends GetxController {
 
   void initCamera() async {
     cameras = await availableCameras();
+    if (cameras!.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'No camera found!',
+      );
+      return;
+    }
     cameraController = CameraController(cameras![0], ResolutionPreset.max);
     cameraController.initialize().then((_) {
       if (isClosed) {

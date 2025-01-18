@@ -10,7 +10,7 @@ import 'package:uapp/core/widget/speech_to_textfield.dart';
 import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_controller.dart';
 
 class PaymentWidget extends StatelessWidget {
-  PaymentWidget({super.key});
+  const PaymentWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -91,16 +91,17 @@ class PaymentWidget extends StatelessWidget {
                       },
                     ),
                   ),
-                  Container(
-                      margin: const EdgeInsets.only(left: 8),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        ctx.statusCollection[ctx.selectedStatusCollection],
-                      ))
+                  // Container(
+                  //   margin: const EdgeInsets.only(left: 8),
+                  //   padding: const EdgeInsets.all(8),
+                  //   decoration: BoxDecoration(
+                  //     border: Border.all(color: Colors.grey),
+                  //     borderRadius: BorderRadius.circular(10),
+                  //   ),
+                  //   child: Text(
+                  //     ctx.statusCollection[ctx.selectedStatusCollection],
+                  //   ),
+                  // ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -210,9 +211,7 @@ class PaymentWidget extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: ctx.isToComplete
-                    ? Get.back
-                    : null,
+                onPressed: ctx.isToComplete ? Get.back : null,
                 child: const Text('Kembali ke Beranda'),
               )
             ],

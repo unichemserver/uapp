@@ -1,10 +1,10 @@
-import 'package:uapp/models/to.dart';
+import 'package:uapp/modules/marketing/model/to_model.dart';
 
 class Resi {
   final String nomor;
   final String namaPelanngan;
   final String namaSales;
-  final List<To> toItems;
+  final List<ToModel> toItems;
 
   Resi({
     required this.nomor,

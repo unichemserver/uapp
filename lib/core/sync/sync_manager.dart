@@ -18,45 +18,18 @@ class SyncManager {
   }
 
   Future<void> syncAll({void Function(String status)? onStatus}) async {
-    String bagian = userData.department;
-    if (bagian == 'MKT') {
-      await syncData(
-        'rute',
-        apiService.fetchRute,
-        'id_rute',
+    List<Future<void>> syncTasks = [];
+
+    syncTasks.add(
+      syncData(
+        'user',
+        apiService.fetchUser,
+        'id_user',
         onStatus: onStatus,
-      );
-      await syncData(
-        'item',
-        apiService.fetchItem,
-        'itemid',
-        onStatus: onStatus,
-      );
-      await syncData(
-        'invoice',
-        apiService.fetchInvoice,
-        'noinvoice',
-        onStatus: onStatus,
-      );
-      await syncData(
-        'customer',
-        apiService.fetchCustomer,
-        'CustID',
-        onStatus: onStatus,
-      );
-      // await syncData(
-      //   'price_list',
-      //   apiService.fetchPriceList,
-      //   'id',
-      //   onStatus: onStatus,
-      // );
-    }
-    await syncData(
-      'user',
-      apiService.fetchUser,
-      'id_user',
-      onStatus: onStatus,
+      ),
     );
+
+    await Future.wait(syncTasks);
   }
 
   Future<void> syncData(

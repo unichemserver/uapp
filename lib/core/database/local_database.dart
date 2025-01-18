@@ -36,71 +36,71 @@ class DatabaseHelper {
       path,
       version: 1,
       onCreate: (Database db, int version) async {
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS stocks(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_marketing_activity INTEGER NOT NULL,
-            item_id TEXT NOT NULL,
-            name TEXT NOT NULL,
-            quantity REAL NOT NULL,
-            unit TEXT NOT NULL,
-            image_path TEXT NOT NULL
-          )
-        ''');
+        // await db.execute('''
+        //   CREATE TABLE IF NOT EXISTS stocks(
+        //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+        //     id_marketing_activity INTEGER NOT NULL,
+        //     item_id TEXT NOT NULL,
+        //     name TEXT NOT NULL,
+        //     quantity REAL NOT NULL,
+        //     unit TEXT NOT NULL,
+        //     image_path TEXT NOT NULL
+        //   )
+        // ''');
 
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS competitors(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_marketing_activity INTEGER NOT NULL,
-            name TEXT NOT NULL,
-            price INTEGER NOT NULL,
-            program TEXT NOT NULL,
-            support TEXT NOT NULL
-          )
-          ''');
+        // await db.execute('''
+        //   CREATE TABLE IF NOT EXISTS competitors(
+        //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+        //     id_marketing_activity INTEGER NOT NULL,
+        //     name TEXT NOT NULL,
+        //     price INTEGER NOT NULL,
+        //     program TEXT NOT NULL,
+        //     support TEXT NOT NULL
+        //   )
+        //   ''');
 
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS imagepath (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_marketing_activity INTEGER NOT NULL,
-            image TEXT NOT NULL,
-            type TEXT NOT NULL
-          )
-          ''');
+        // await db.execute('''
+        //   CREATE TABLE IF NOT EXISTS imagepath (
+        //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+        //     id_marketing_activity INTEGER NOT NULL,
+        //     image TEXT NOT NULL,
+        //     type TEXT NOT NULL
+        //   )
+        //   ''');
 
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS collections (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_marketing_activity INTEGER NOT NULL,
-            noinvoice TEXT NOT NULL,
-            nocollect TEXT,
-            amount INTEGER NOT NULL,
-            type TEXT NOT NULL,
-            status TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-          )''');
+        // await db.execute('''
+        //   CREATE TABLE IF NOT EXISTS collections (
+        //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+        //     id_marketing_activity INTEGER NOT NULL,
+        //     noinvoice TEXT NOT NULL,
+        //     nocollect TEXT,
+        //     amount INTEGER NOT NULL,
+        //     type TEXT NOT NULL,
+        //     status TEXT NOT NULL,
+        //     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        //   )''');
 
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS marketing_activity (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT NOT NULL,
-            rute_id TEXT,
-            cust_id TEXT,
-            foto_ci TEXT,
-            foto_co TEXT,
-            waktu_ci TIMESTAMP,
-            waktu_co TIMESTAMP,
-            lat_ci DECIMAL(10, 8),
-            lon_ci DECIMAL(11, 8),
-            lat_co DECIMAL(10, 8),
-            lon_co DECIMAL(11, 8),
-            status_sync INTEGER DEFAULT 0,
-            status_call TEXT DEFAULT 'unv',
-            jenis TEXT,
-            ttd TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-          )
-          ''');
+        // await db.execute('''
+        //   CREATE TABLE IF NOT EXISTS marketing_activity (
+        //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+        //     user_id TEXT NOT NULL,
+        //     rute_id TEXT,
+        //     cust_id TEXT,
+        //     foto_ci TEXT,
+        //     foto_co TEXT,
+        //     waktu_ci TIMESTAMP,
+        //     waktu_co TIMESTAMP,
+        //     lat_ci DECIMAL(10, 8),
+        //     lon_ci DECIMAL(11, 8),
+        //     lat_co DECIMAL(10, 8),
+        //     lon_co DECIMAL(11, 8),
+        //     status_sync INTEGER DEFAULT 0,
+        //     status_call TEXT DEFAULT 'unv',
+        //     jenis TEXT,
+        //     ttd TEXT,
+        //     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        //   )
+        //   ''');
 
         await db.execute('''
           CREATE TABLE IF NOT EXISTS user (
@@ -115,87 +115,87 @@ class DatabaseHelper {
           )
         ''');
 
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS invoice (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            custID TEXT,
-            custname TEXT NOT NULL,
-            noinv TEXT NOT NULL,
-            amount INTEGER NOT NULL,
-            amountpaid INTEGER NOT NULL,
-            discrepancy INTEGER NOT NULL,
-            duedate TEXT NOT NULL,
-            currencyID TEXT NOT NULL
-          )
-        ''');
+        // await db.execute('''
+        //   CREATE TABLE IF NOT EXISTS invoice (
+        //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+        //     custID TEXT,
+        //     custname TEXT NOT NULL,
+        //     noinv TEXT NOT NULL,
+        //     amount INTEGER NOT NULL,
+        //     amountpaid INTEGER NOT NULL,
+        //     discrepancy INTEGER NOT NULL,
+        //     duedate TEXT NOT NULL,
+        //     currencyID TEXT NOT NULL
+        //   )
+        // ''');
 
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS item (
-            itemid TEXT PRIMARY KEY,
-            description TEXT NOT NULL,
-            unitsetid TEXT,
-            Inventory_Unit TEXT NOT NULL
-          )
-          ''');
-
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS rute (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_rute TEXT NOT NULL,
-            id_customer TEXT NOT NULL,
-            jadwal_rute TEXT NOT NULL,
-            keterangan TEXT,
-            custname TEXT
-            )
-        ''');
-
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS customer (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            CustID TEXT NOT NULL,
-            custname TEXT NOT NULL,
-            address TEXT NOT NULL,
-            phones TEXT NOT NULL,
-            PersonalName TEXT NOT NULL
-          )
-        ''');
-
-        await db.execute('''
-        CREATE TABLE IF NOT EXISTS takingorder (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_marketing_activity INTEGER NOT NULL,
-            itemid TEXT NOT NULL,
-            description TEXT NOT NULL,
-            quantity INTEGER NOT NULL,
-            unit TEXT NOT NULL,
-            price INTEGER NOT NULL
-          )
-        ''');
-
-        await db.execute('''
-        CREATE TABLE IF NOT EXISTS noo (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          group_pelanggan TEXT,
-          metode_pembayaran TEXT,
-          termin TEXT,
-          jaminan TEXT,
-          nama_perusahaan TEXT,
-          area_pemasaran TEXT,
-          nama_owner TEXT,
-          no_ktp TEXT,
-          umur INTEGER,
-          jekel TEXT,
-          no_telepon TEXT,
-          email TEXT,
-          address TEXT,
-          desa TEXT,
-          kec TEXT,
-          kab TEXT,
-          prov TEXT,
-          kode_pos TEXT,
-          status_sync INTEGER DEFAULT 0
-        )
-        ''');
+        // await db.execute('''
+        //   CREATE TABLE IF NOT EXISTS item (
+        //     itemid TEXT PRIMARY KEY,
+        //     description TEXT NOT NULL,
+        //     unitsetid TEXT,
+        //     Inventory_Unit TEXT NOT NULL
+        //   )
+        //   ''');
+        //
+        // await db.execute('''
+        //   CREATE TABLE IF NOT EXISTS rute (
+        //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+        //     id_rute TEXT NOT NULL,
+        //     id_customer TEXT NOT NULL,
+        //     jadwal_rute TEXT NOT NULL,
+        //     keterangan TEXT,
+        //     custname TEXT
+        //     )
+        // ''');
+        //
+        // await db.execute('''
+        //   CREATE TABLE IF NOT EXISTS customer (
+        //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+        //     CustID TEXT NOT NULL,
+        //     custname TEXT NOT NULL,
+        //     address TEXT NOT NULL,
+        //     phones TEXT NOT NULL,
+        //     PersonalName TEXT NOT NULL
+        //   )
+        // ''');
+        //
+        // await db.execute('''
+        // CREATE TABLE IF NOT EXISTS takingorder (
+        //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+        //     id_marketing_activity INTEGER NOT NULL,
+        //     itemid TEXT NOT NULL,
+        //     description TEXT NOT NULL,
+        //     quantity INTEGER NOT NULL,
+        //     unit TEXT NOT NULL,
+        //     price INTEGER NOT NULL
+        //   )
+        // ''');
+        //
+        // await db.execute('''
+        // CREATE TABLE IF NOT EXISTS noo (
+        //   id INTEGER PRIMARY KEY AUTOINCREMENT,
+        //   group_pelanggan TEXT,
+        //   metode_pembayaran TEXT,
+        //   termin TEXT,
+        //   jaminan TEXT,
+        //   nama_perusahaan TEXT,
+        //   area_pemasaran TEXT,
+        //   nama_owner TEXT,
+        //   no_ktp TEXT,
+        //   umur INTEGER,
+        //   jekel TEXT,
+        //   no_telepon TEXT,
+        //   email TEXT,
+        //   address TEXT,
+        //   desa TEXT,
+        //   kec TEXT,
+        //   kab TEXT,
+        //   prov TEXT,
+        //   kode_pos TEXT,
+        //   status_sync INTEGER DEFAULT 0
+        // )
+        // ''');
 
         await db.execute('''
         CREATE TABLE IF NOT EXISTS canvasing (
@@ -475,7 +475,7 @@ class DatabaseHelper {
     return collectionList;
   }
 
-  Future<List<Item>> getListItem() async {
+  Future<List<dynamic>> getListItem() async {
     Database db = await database;
     List<Map<String, dynamic>> result = await db.query('item');
 

@@ -12,113 +12,146 @@ class CheckDisplayPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<MarketingController>(
       init: MarketingController(),
-      initState: (_) {},
       builder: (ctx) {
         return Scaffold(
-          appBar: AppBar(
-            title: const Text(
-              'Cek Display',
-              style: TextStyle(
-                fontFamily: 'Rubik',
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            centerTitle: true,
-            leading: const SizedBox(),
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              Get.toNamed(Routes.REPORT)!.then((value) {
-                if (value != null) {
-                  ctx.addDisplay(value.toString());
-                }
-              });
-            },
-            child: const Icon(Icons.add),
-          ),
+          appBar: _buildAppBar(),
+          floatingActionButton: _buildFloatingActionButton(ctx),
           body: _buildBody(context, ctx),
         );
       },
     );
   }
 
-  _buildBody(BuildContext context, MarketingController ctx) {
-    if (ctx.displayList.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.inventory,
-              size: 100.0,
-            ),
-            Text(
-              'Belum ada foto yang anda upload',
-              style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                fontFamily: 'Rubik',
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: const Text(
+        'Cek Display',
+        style: TextStyle(
+          fontFamily: 'Rubik',
+          fontWeight: FontWeight.bold,
         ),
-      );
-    }
+      ),
+      centerTitle: true,
+      leading: const SizedBox(),
+    );
+  }
+
+  FloatingActionButton _buildFloatingActionButton(MarketingController ctx) {
+    return FloatingActionButton(
+      onPressed: () {
+        Get.toNamed(Routes.REPORT)!.then((value) {
+          if (value != null) {
+            ctx.addDisplayToDatabase(value);
+          }
+        });
+      },
+      child: const Icon(Icons.add),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, MarketingController ctx) {
+    return ctx.displayList.isEmpty
+        ? _buildEmptyState(context)
+        : _buildDisplayList(ctx);
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.inventory,
+            size: 100.0,
+          ),
+          Text(
+            'Belum ada foto yang anda upload',
+            style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                  fontFamily: 'Rubik',
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDisplayList(MarketingController ctx) {
     return ListView.builder(
       itemCount: ctx.displayList.length,
       itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            Get.dialog(
-              AlertDialog(
-                content: Image.file(File(ctx.displayList[index])),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      ctx.removeDisplay(ctx.displayList[index]);
-                      Get.back();
-                    },
-                    child: const Text('Hapus'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Get.back();
-                    },
-                    child: const Text('Tutup'),
-                  ),
-                ],
-              ),
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.all(10),
-            height: 200,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              image: DecorationImage(
-                image: FileImage(
-                  File(ctx.displayList[index]),
-                ),
-                fit: BoxFit.cover,
-              ),
-            ),
-            alignment: Alignment.bottomRight,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  ctx.removeDisplay(ctx.displayList[index]);
-                },
-              ),
+        return _buildDisplayItem(context, ctx, ctx.displayList[index]);
+      },
+    );
+  }
+
+  Widget _buildDisplayItem(
+    BuildContext context,
+    MarketingController ctx,
+    String imagePath,
+  ) {
+    return GestureDetector(
+      onTap: () => _showImageDialog(context, ctx, imagePath),
+      child: Dismissible(
+        key: Key(imagePath),
+        background: _buildDeleteBackground(),
+        confirmDismiss: (direction) {
+          ctx.deleteDisplayFromDatabase(imagePath);
+          return Future.value(true);
+        },
+        child: Container(
+          margin: const EdgeInsets.all(10),
+          height: 200,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            image: DecorationImage(
+              image: FileImage(File(imagePath)),
+              fit: BoxFit.cover,
             ),
           ),
-        );
-      },
+          alignment: Alignment.bottomRight,
+          // child: _buildDeleteButton(ctx, imagePath),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeleteButton(MarketingController ctx, String imagePath) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: IconButton(
+        icon: const Icon(Icons.delete, color: Colors.white),
+        onPressed: () {
+          ctx.deleteDisplayFromDatabase(imagePath);
+        },
+      ),
+    );
+  }
+
+  Widget _buildDeleteBackground() {
+    return Container(
+      color: Colors.red,
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Icon(Icons.delete, color: Colors.white),
+          SizedBox(width: 8.0),
+        ],
+      ),
+    );
+  }
+
+  void _showImageDialog(
+    BuildContext context,
+    MarketingController ctx,
+    String imagePath,
+  ) {
+    Get.dialog(
+      Image.file(File(imagePath)),
     );
   }
 }

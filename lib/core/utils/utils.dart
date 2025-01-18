@@ -3,16 +3,21 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
+import 'package:uapp/core/utils/assets.dart';
 import 'package:uapp/models/user.dart';
 
 class Utils {
+  static List<String> allowedPosisi = ['JB001', 'JB002', 'JB009'];
   static String formatCurrency(String value) {
     return 'Rp${value.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
   }
@@ -21,7 +26,7 @@ class Utils {
     final box = Hive.box(HiveKeys.appBox);
     final user = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
     final bagian = user.department;
-    return bagian == 'MKT';
+    return bagian == 'MKT' || user.nama == "FERDI FIRMANSYAH";
   }
 
   static Uint8List? fotoKaryawan() {
@@ -68,6 +73,21 @@ class Utils {
     return 'MOBILEPOS_$dateFormatted.txt';
   }
 
+  static void showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return PopScope(
+          canPop: false,
+          child: Center(
+            child: LottieBuilder.asset(Assets.loadingAnimation),
+          ),
+        );
+      },
+    );
+  }
+
   static void showDialogNotAllowed(BuildContext context) {
     showDialog(
       context: context,
@@ -77,7 +97,8 @@ class Utils {
           child: AlertDialog(
             title: const Text('Warning'),
             content: const Text(
-                'Anda menggunakan lokasi palsu, silahkan matikan lokasi palsu'),
+              'Anda menggunakan lokasi palsu, silahkan matikan lokasi palsu',
+            ),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
@@ -110,11 +131,17 @@ class Utils {
 
   static Future<bool> isInternetAvailable() async {
     final List<ConnectivityResult> connectivityResult =
-    await (Connectivity().checkConnectivity());
+        await (Connectivity().checkConnectivity());
     if (connectivityResult.contains(ConnectivityResult.none)) {
       return false;
     }
     return true;
+  }
+
+  static Future<bool> isUseMockLocation() async {
+    var isMock = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation)
+        .then((value) => value.isMocked);
+    return isMock;
   }
 
   static String getNik() {
@@ -123,7 +150,8 @@ class Utils {
     return user.id;
   }
 
-  static void _showSnackBar(BuildContext context, String title, String message, Color backgroundColor) {
+  static void _showSnackBar(BuildContext context, String title, String message,
+      Color backgroundColor) {
     if (Get.isSnackbarOpen) {
       Get.back();
     }
@@ -166,5 +194,19 @@ class Utils {
     } catch (e) {
       return ByteData(0);
     }
+  }
+
+  static Future<String?> pickImageFile() async {
+    final status = await Permission.storage.request();
+    if (status.isGranted) {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowCompression: true,
+      );
+      if (result != null) {
+        return result.files.single.path;
+      }
+    }
+    return null;
   }
 }

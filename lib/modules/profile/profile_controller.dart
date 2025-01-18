@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/database/local_database.dart';
+import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/models/profile.dart';
@@ -36,11 +37,10 @@ class ProfileController extends GetxController {
 
   Future<void> logout() async {
     if (Utils.isMarketing()) {
-      List<String> table = ['rute', 'item', 'invoice', 'customer'];
-      for (var i = 0; i < table.length; i++) {
-        await db.truncateTable(table[i]);
-      }
+      await MarketingDatabase().deleteAllData();
     }
+    final database = await db.database;
+    await database.delete('user');
     await ProfileApi.logout();
     await box.clear();
     Get.offAllNamed(Routes.AUTH);

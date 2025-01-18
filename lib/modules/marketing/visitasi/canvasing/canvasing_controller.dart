@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -6,22 +6,23 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:uapp/core/database/local_database.dart';
+import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
+import 'package:uapp/core/hive/hive_service.dart';
 import 'package:uapp/core/utils/jenis_call.dart';
 import 'package:uapp/core/utils/print_resi.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/models/canvasing.dart';
 import 'package:uapp/models/collection.dart';
-import 'package:uapp/models/item.dart';
 import 'package:uapp/models/resi.dart';
-import 'package:uapp/models/to.dart';
-import 'package:uapp/models/user.dart';
-import 'package:uapp/modules/home/home_controller.dart';
 import 'package:uapp/core/utils/date_utils.dart' as du;
+import 'package:uapp/modules/marketing/model/master_item.dart';
+import 'package:uapp/modules/marketing/model/price_list.dart';
+import 'package:uapp/modules/marketing/model/to_model.dart';
+import 'package:uapp/modules/marketing/utils/mkt_utils.dart';
 
 class CanvasingController extends GetxController with WidgetsBindingObserver {
-  final db = DatabaseHelper();
+  final db = MarketingDatabase();
   final box = Hive.box(HiveKeys.appBox);
   final GlobalKey<FormState> addFormKey = GlobalKey<FormState>();
   final TextEditingController namaController = TextEditingController();
@@ -30,8 +31,10 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   final TextEditingController alamatController = TextEditingController();
   final TextEditingController nominalController = TextEditingController();
   Canvasing? canvasing;
-  List<To> takingOrders = [];
-  List<Item> items = [];
+  List<ToModel> takingOrders = [];
+  List<MasterItem> items = [];
+  List<PriceList> priceList = [];
+  List<String> unitItem = [];
   List<String> jenisPembayaran = ['Cash'];
   List<String> statusCollection = ['Collected', 'Partial', 'Not Collected'];
   List<Collection> listCollection = [];
@@ -39,7 +42,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   int selectedJenisPembayaran = 0;
   int canvasingIndex = 0;
   int totalPayment = 0;
-  int idMA = 0;
+  String idMA = '';
   double? latitude;
   double? longitude;
   String customerId = '';
@@ -48,30 +51,44 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   String ttdPath = '';
   RxBool isCanvasingComplete = false.obs;
   bool isToComplete = false;
+  String selectedUnit = '';
+  Timer? checkMockTimer;
+
+  void checkingMockLocation() {
+    checkMockTimer?.cancel();
+    checkMockTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+      var isMockLocation = await Utils.isUseMockLocation();
+      if (isMockLocation) {
+        showWarningDialog();
+      }
+    });
+  }
 
   void completeTo() {
     isToComplete = true;
     update();
   }
 
-  printResi(int idMarketingActivity) async {
-    var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
-    var userId = userData.id;
-    List<To> toItems = await db.getTakingOrder(idMarketingActivity);
+  printResi(String idMarketingActivity) async {
+    var user = Utils.getUserData();
+    var userId = user.id;
+    var result = await db.query("taking_order",
+        where: "idMA = ?", whereArgs: [idMarketingActivity]);
+    var toItems = result.map((e) => ToModel.fromJson(e)).toList();
     var printData = Resi(
-      nomor: getNomorResi(idMarketingActivity,userId),
+      nomor: getNomorResi(idMarketingActivity, userId),
       namaPelanngan: pemilikController.text,
-      namaSales: userData.namaPanggilan ?? 'sales',
+      namaSales: user.namaPanggilan ?? 'sales',
       toItems: toItems,
     );
     PrintResi().printText(printData);
   }
 
-  String getNomorResi(int idMa, String idUser) {
+  String getNomorResi(String idMa, String idUser) {
     var date = du.DateUtils.getCurrentDate();
     var year = date.substring(2, 4);
     var month = date.substring(5, 7);
-    var nomor = idMa.toString().padLeft(3, '0');
+    var nomor = idMa.substring(idMa.length - 1);
     return 'FP.$year$month$idUser$nomor';
   }
 
@@ -81,8 +98,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   }
 
   void getListItem() async {
-    var itemsDb = await db.getListItem();
-    items = itemsDb;
+    items = await HiveService.getListItem();
     update();
   }
 
@@ -112,8 +128,9 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       'longitude': longitude,
       'image_path': outletImagePath,
     };
-    print('canvasingData: $canvasingData');
-    await db.updateCustomerCanvasing(canvasingData);
+    Map<String, dynamic> maData = {'cust_name': namaOutlet};
+    await db.insert("canvasing", canvasingData);
+    await db.update("marketing_activity", maData, "id = ?", [idMA]);
   }
 
   Future<Position?> getCurrentLocation() async {
@@ -122,12 +139,12 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     );
     latitude = positon.latitude;
     longitude = positon.longitude;
-    print('latitude: $latitude, longitude: $longitude');
-    if (await isNetworkAvailable()) {
+    if (await Utils.isInternetAvailable()) {
       var address = await getAddress(positon.latitude, positon.longitude);
       setOutletAddress(address);
     } else {
-      var alamat = "Alamat tidak ditemukan\nLatitude: $latitude\nLongitude: $longitude";
+      var alamat =
+          "Alamat tidak ditemukan\nLatitude: $latitude\nLongitude: $longitude";
       setOutletAddress(alamat);
     }
     return positon;
@@ -141,88 +158,25 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     return '$street\n$subLocality, $locality';
   }
 
-  // void isFirstTimeCanvasing(double lat, double lon) async {
-  //   bool isFirstTime =
-  //       box.get(HiveKeys.isFirstTimeCanvasing, defaultValue: true);
-  //   if (isFirstTime) {
-  //     var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
-  //     var dataOutlet = {
-  //       'latitude': lat,
-  //       'longitude': lon,
-  //     };
-  //     customerId = await db.addCustomerCanvasing(dataOutlet);
-  //     box.put(HiveKeys.selectedCustID, customerId);
-  //     var dataMA = {
-  //       'user_id': userData.id,
-  //       'cust_id': customerId,
-  //       'waktu_ci': DateTime.now().toIso8601String(),
-  //       'jenis': Call.canvasing,
-  //       'lat_ci': lat,
-  //       'lon_ci': lon,
-  //     };
-  //     idMA = await db.checkInCanvasing(dataMA);
-  //     print('idMA: $idMA');
-  //     box.put(HiveKeys.idMa, idMA);
-  //     box.put(HiveKeys.isFirstTimeCanvasing, false);
-  //   } else {
-  //     idMA = box.get(HiveKeys.idMa);
-  //     customerId = box.get(HiveKeys.selectedCustID);
-  //     canvasing = await db.getCanvasing(customerId);
-  //     setOutletAddress(canvasing?.alamat ?? '');
-  //     outletImagePath = canvasing?.imagePath ?? '';
-  //     namaController.text = canvasing?.namaOutlet ?? '';
-  //     pemilikController.text = canvasing?.namaOwner ?? '';
-  //     telpController.text = canvasing?.noTelp ?? '';
-  //     latitude = canvasing?.latitude;
-  //     longitude = canvasing?.longitude;
-  //     ttdPath = await db.getTtd(idMA) ?? '';
-  //     await getTakingOrder();
-  //     calculateTotalPayment();
-  //     getCollection();
-  //     update();
-  //   }
-  // }
-
   deleteTakingOrder(String itemId) async {
-    await db.deleteTakingOrder(idMA, itemId);
+    await db.delete('taking_order', 'idMA = ? AND item_id = ?', [idMA, itemId]);
     await getTakingOrder();
     calculateTotalPayment();
   }
 
   updateTakingOrder(
-      String itemId,
-      String namaItem,
-      int qty,
-      String unit,
-      int harga
-      ) async {
-    await db.updateTakingOrder(
-      idMA,
-      itemId,
-      namaItem,
-      qty,
-      unit,
-      harga,
-    );
+      String itemId, String namaItem, int qty, String unit, int harga) async {
     await getTakingOrder();
     calculateTotalPayment();
   }
 
-  addTakingOrder(
-    String itemId,
-    String namaItem,
-    int qty,
-    String unit,
-    int harga,
-  ) async {
-    await db.insertTakingOrder(
-      idMA,
-      itemId,
-      namaItem,
-      qty,
-      unit,
-      harga,
-    );
+  addTakingOrder(ToModel data) async {
+    var additionalData = {
+      'idMA': idMA,
+    };
+    var to = data.toJson();
+    to.addAll(additionalData);
+    await db.insert('taking_order', to);
     await getTakingOrder();
     calculateTotalPayment();
   }
@@ -230,25 +184,28 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   calculateTotalPayment() {
     totalPayment = 0;
     for (var item in takingOrders) {
-      totalPayment += item.price;
+      totalPayment += item.price!;
     }
     nominalController.text = Utils.formatCurrency(totalPayment.toString());
     update();
   }
 
   getTakingOrder() async {
-    takingOrders = await db.getTakingOrder(idMA);
+    var to =
+        await db.query('taking_order', where: 'idMA = ?', whereArgs: [idMA]);
+    takingOrders = to.map((e) => ToModel.fromJson(e)).toList();
     update();
   }
 
-  inserTtd() async {
-    await db.updateTtd(idMA, ttdPath);
-    ttdPath = await db.getTtd(idMA) ?? '';
+  inserTtd(String? path) async {
+    await db.update('marketing_activity', {'ttd': path}, 'id = ?', [idMA]);
+    ttdPath = path ?? '';
+    update();
   }
 
   savePayment(int amount) async {
     var dataPayment = {
-      'id_marketing_activity': idMA,
+      'idMA': idMA,
       'noinvoice': '',
       'nocollect': '',
       'amount': amount,
@@ -256,23 +213,24 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       'status': getStatuCollection(amount),
     };
     if (listCollection.isEmpty) {
-      await db.insertCollection(dataPayment);
+      await db.insert('collection', dataPayment);
       await getCollection();
       Get.snackbar('Success', 'Data berhasil disimpan');
       return;
     }
-    await db.updateCollection(listCollection.first.id!, dataPayment);
     Get.snackbar('Success', 'Data berhasil diperbarui');
     await getCollection();
   }
 
   Future<bool> isNetworkAvailable() async {
-    final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
-    return connectivityResult.contains(ConnectivityResult.mobile) || connectivityResult.contains(ConnectivityResult.wifi);
+    final List<ConnectivityResult> connectivityResult =
+        await (Connectivity().checkConnectivity());
+    return connectivityResult.contains(ConnectivityResult.mobile) ||
+        connectivityResult.contains(ConnectivityResult.wifi);
   }
 
   getCollection() async {
-    listCollection = await db.getCollections(idMA);
+    if (listCollection.isEmpty) return;
     nominalController.text =
         Utils.formatCurrency(listCollection.first.amount.toString());
     update();
@@ -281,45 +239,64 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   String getStatuCollection(int amount) {
     if (amount == totalPayment) {
       return 'collected';
-    }
-    if (amount < totalPayment) {
+    } else if (amount < totalPayment) {
       return 'partial collected';
-    }
-    if (amount == 0) {
+    } else if (amount == 0) {
+      return 'not collected';
+    } else {
       return 'not collected';
     }
-    return 'not collected';
   }
 
   checkIn(double lat, double lon) async {
-    var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
+    var userData = Utils.getUserData();
+    idMA = await MktUtils().generateMarketingActivityID();
+    customerId = await generateCanvasingID('canvasing');
     var dataOutlet = {
+      'CustID': customerId,
       'latitude': lat,
       'longitude': lon,
     };
-    customerId = await db.addCustomerCanvasing(dataOutlet);
-    box.put(HiveKeys.selectedCustID, customerId);
+    var waktuCi =
+        DateTime.now().toIso8601String().substring(0, 19).replaceAll('T', ' ');
     var dataMA = {
+      'id': idMA,
       'user_id': userData.id,
       'cust_id': customerId,
-      'waktu_ci': DateTime.now().toIso8601String(),
+      'waktu_ci': waktuCi,
       'jenis': Call.canvasing,
       'lat_ci': lat,
       'lon_ci': lon,
     };
-    idMA = await db.checkInCanvasing(dataMA);
-    box.put(HiveKeys.idMa, idMA);
+    await db.insert("canvasing", dataOutlet);
+    await db.insert("marketing_activity", dataMA);
+  }
+
+  Future<String> generateCanvasingID(String table) async {
+    var userId = Utils.getUserData().id;
+    String pattern = Call.canvasing + userId;
+    String query = '''
+      SELECT CustID FROM $table
+      WHERE CustID LIKE '$pattern%'
+      ORDER BY CustID DESC
+      LIMIT 1
+    ''';
+    List<Map> result = await db.rawQuery(query);
+    int newIncrement = 1;
+    if (result.isNotEmpty) {
+      String lastId = result.first['CustID'];
+      int lastIncrement = int.parse(lastId.substring(lastId.length - 4));
+      newIncrement = lastIncrement + 1;
+    }
+    String incrementString = newIncrement.toString().padLeft(4, '0');
+    return '$pattern$incrementString';
   }
 
   cancelCanvasing() async {
-    await db.deleteMarketingActivity(idMA);
-    await db.deleteCustomerCanvasing(customerId);
-    for (var item in takingOrders) {
-      await db.deleteTakingOrder(idMA, item.itemid);
-    }
-    for (var item in listCollection) {
-      await db.deleteCollection(item.id!);
-    }
+    await db.delete('marketing_activity', 'cust_id = ?', [customerId]);
+    await db.delete('canvasing', 'CustID = ?', [customerId]);
+    await db.delete('taking_order', 'idMA = ?', [idMA]);
+    await db.delete('collection', 'idMA = ?', [idMA]);
   }
 
   Future<void> updateCustData() async {
@@ -332,19 +309,36 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> checkOut() async {
-    // var ctx = Get.put(HomeController());
-    // ctx.checkOut(getStatusCall(), idMA);
-    print('check out');
     Position? position = await Geolocator.getCurrentPosition();
     double lat = position.latitude;
     double lon = position.longitude;
-    print('lat: $lat, lon: $lon');
-    await db.checkOut(
-      idMA,
-      lat,
-      lon,
-      getStatusCall(),
-      Call.canvasing,
+    var waktuCo =
+        DateTime.now().toIso8601String().substring(0, 19).replaceAll('T', ' ');
+    var statusCall = getStatusCall();
+    var dataMA = {
+      "lat_co": lat,
+      "lon_co": lon,
+      "waktu_co": waktuCo,
+      "cust_name": namaController.text,
+      "status_call": statusCall,
+    };
+    var dataCanvasing = {
+      "nama_outlet": namaController.text,
+      "nama_owner": pemilikController.text,
+      "no_hp": telpController.text,
+      "alamat": alamatController.text,
+      "image_path": outletImagePath,
+    };
+    await db.update('marketing_activity', dataMA, 'id = ?', [idMA]);
+    await db.update('canvasing', dataCanvasing, 'CustID = ?', [customerId]);
+  }
+
+  saveCustomerData() async {
+    await updateCustomerData(
+      namaController.text,
+      pemilikController.text,
+      telpController.text,
+      alamatController.text,
     );
   }
 
@@ -359,87 +353,106 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   }
 
   bool isCollectionFullCollected() {
-    if (listCollection.isEmpty) {
-      return false;
-    }
-    return listCollection.every((element) => element.status == 'collected');
+    return listCollection.isNotEmpty &&
+        listCollection.every((element) => element.status == 'collected');
   }
 
-  Future<bool> isUseMockLocation() async {
-    var isMock = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation)
-        .then((value) => value.isMocked);
-    return isMock;
-  }
-
-  isLocationServiceEnabled() async {
+  Future<void> isLocationServiceEnabled() async {
+    print("isLocationServiceEnabled");
     var isLocationEnabled = await Geolocator.isLocationServiceEnabled();
     if (!isLocationEnabled) {
-      Get.dialog(
-        PopScope(
-          canPop: false,
-          onPopInvoked: (didPop) {
-            if (!didPop) {
-              Get.back();
-            }
-          },
-          child: AlertDialog(
-            title: const Text('Warning'),
-            content: const Text('Silahkan aktifkan lokasi anda'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Get.back();
-                  Get.back();
-                },
-                child: const Text('OK'),
+      showLocationServiceDisabledDialog();
+    } else {
+      var isMockLocation = await Utils.isUseMockLocation();
+      if (isMockLocation) {
+        showWarningDialog();
+      } else {
+        handleArgumentsOrLocation();
+      }
+    }
+  }
+
+  void showLocationServiceDisabledDialog() {
+    Get.dialog(
+      PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) {
+          if (!didPop) {
+            Get.back();
+          }
+        },
+        child: AlertDialog(
+          title: const Text('Warning'),
+          content: const Text('Silahkan aktifkan lokasi anda'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Get.back();
+                Get.back();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> handleArgumentsOrLocation() async {
+    var args = Get.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      handleArguments(args);
+    } else {
+      var position = await getCurrentLocation();
+      if (position != null) {
+        checkIn(position.latitude, position.longitude);
+      }
+    }
+  }
+
+  void handleArguments(Map<String, dynamic> args) async {
+    customerId = args['id'];
+    idMA = args['ma'];
+    var result = await db
+        .query('canvasing', where: 'CustID = ?', whereArgs: [customerId]);
+    var maResult = await db
+        .query('marketing_activity', where: 'id = ?', whereArgs: [idMA]);
+    canvasing = Canvasing.fromJson(result.first);
+    namaController.text = canvasing!.namaOutlet ?? '';
+    pemilikController.text = canvasing!.namaOwner ?? '';
+    telpController.text = canvasing!.noTelp ?? '';
+    alamatController.text = canvasing!.alamat ?? '';
+    latitude = canvasing!.latitude;
+    longitude = canvasing!.longitude;
+    outletImagePath = canvasing!.imagePath ?? '';
+    ttdPath = maResult.first['ttd'] ?? '';
+    getTakingOrder();
+    calculateTotalPayment();
+    getCollection();
+  }
+
+  showWarningDialog() {
+    Get.dialog(
+      const PopScope(
+        canPop: false,
+        child: Dialog(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Warning'),
+              Text(
+                'Anda terdeteksi menggunakan Fake GPS atau Mock Location',
               ),
             ],
           ),
         ),
-      );
-    } else {
-      isUseMockLocation().then((value) {
-        if (value) {
-          showWarningDialog();
-        } else {
-          var args = Get.arguments;
-          if (args != null) {
-            customerId = args['CustID'];
-            idMA = args['id'];
-            namaController.text = args['nama_outlet'];
-            pemilikController.text = args['nama_owner'];
-            telpController.text = args['no_hp'];
-            latitude = args['latitude'];
-            longitude = args['longitude'];
-            ttdPath = args['ttd_path'];
-            outletImagePath = args['image_path'];
-            getTakingOrder();
-            calculateTotalPayment();
-            getCollection();
-          } else {
-            getCurrentLocation().then((position) {
-              checkIn(position!.latitude, position.longitude);
-            });
-          }
-        }
-      });
-    }
+      ),
+    );
   }
 
-  showWarningDialog() {
-    Get.defaultDialog(
-      title: 'Warning',
-      content: const Text('Anda menggunakan lokasi palsu'),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Get.back();
-            Get.back();
-          },
-          child: const Text('OK'),
-        ),
-      ],
-    );
+  void getPriceList() async {
+    priceList = await HiveService.getPriceList();
+    update();
   }
 
   @override
@@ -447,6 +460,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
     getListItem();
+    getPriceList();
     isLocationServiceEnabled();
   }
 
@@ -456,6 +470,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     pemilikController.dispose();
     telpController.dispose();
     alamatController.dispose();
+    checkMockTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.onClose();
   }
@@ -464,7 +479,6 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused) {
-      print("App is in background");
       if (customerId.isNotEmpty) {
         updateCustomerData(
           namaController.text,

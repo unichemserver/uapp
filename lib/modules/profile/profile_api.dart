@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -36,6 +35,7 @@ class ProfileApi {
           'user_id': userData.id,
         },
       );
+
       if (response.statusCode == 200) {
         return Profile.fromJson(jsonDecode(response.body));
       } else {

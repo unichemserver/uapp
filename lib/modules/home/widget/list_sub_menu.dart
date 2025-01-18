@@ -4,7 +4,7 @@ import 'package:uapp/models/menu.dart';
 import 'package:uapp/modules/webview/webview_screen.dart';
 
 class ListSubMenu extends StatelessWidget {
-  ListSubMenu({
+  const ListSubMenu({
     super.key,
     required this.index,
     required this.selectedService,
@@ -20,227 +20,88 @@ class ListSubMenu extends StatelessWidget {
   final MenuData? reportService;
 
   Icon getIcon(String iconName) {
-    Color defaultColor = Colors.blueAccent;
-    switch (iconName.toLowerCase()) {
-      case 'purchasing':
-        return Icon(Icons.shopping_cart, color: defaultColor);
-      case 'distribusi':
-        return Icon(Icons.local_shipping, color: defaultColor);
-      case 'dokumen transfer profile':
-        return Icon(Icons.swap_horiz, color: defaultColor);
-      case 'profile':
-        return Icon(Icons.person, color: defaultColor);
-      case 'financial':
-        return Icon(Icons.account_balance, color: defaultColor);
-      case 'memo':
-        return Icon(Icons.note, color: defaultColor);
-      case 'security':
-        return Icon(Icons.security, color: defaultColor);
-      case 'menu & roles':
-        return Icon(Icons.menu_book, color: defaultColor);
-      case 'hrd':
-        return Icon(Icons.business_center, color: defaultColor);
-      case 'production':
-        return Icon(Icons.factory, color: defaultColor);
-      case 'marketing':
-        return Icon(Icons.mark_email_read, color: defaultColor);
-      default:
-        return Icon(Icons.menu, color: defaultColor);
+    const defaultColor = Colors.blueAccent;
+    final iconMap = {
+      'purchasing': Icons.shopping_cart,
+      'distribusi': Icons.local_shipping,
+      'dokumen transfer profile': Icons.people,
+      'profile': Icons.person,
+      'financial': Icons.account_balance,
+      'memo': Icons.note,
+      'security': Icons.security,
+      'menu & roles': Icons.menu_book,
+      'hrd': Icons.business_center,
+      'production': Icons.factory,
+      'marketing': Icons.mark_email_read,
+      'transaction': Icons.monetization_on,
+      'it': Icons.computer,
+      'change entity': Icons.swap_horiz,
+      'menus & roles': Icons.menu_book,
+      'iso': Icons.verified_user,
+    };
+
+    return Icon(
+      iconMap[iconName.toLowerCase()] ?? Icons.menu,
+      color: defaultColor,
+    );
+  }
+
+  void _onTapMenu(String url, String title, BuildContext context) {
+    if (routeToPage(url, context)) {
+      return;
     }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WebViewScreen(
+          url: url,
+          title: title,
+        ),
+      ),
+    );
+  }
+
+  ListTile _buildListTile(
+    String namaMenu,
+    String urlMenu,
+    BuildContext context,
+  ) {
+    return ListTile(
+      leading: getIcon(namaMenu),
+      title: Text(namaMenu),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+      ),
+      onTap: () => _onTapMenu(urlMenu, namaMenu, context),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (selectedService == 1 &&
-        masterServices!.submenu[index].subsubmenu.isEmpty) {
-      String namaMenu = masterServices!.submenu[index].namaMenu.replaceAll(
-        'amp;',
-        '',
-      );
-      return ListTile(
-        leading: getIcon(namaMenu),
-        title: Text(namaMenu),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-        ),
-        onTap: () {
-          if (routeToPage(masterServices!.submenu[index].urlMenu, context)) {
-            print('route to page');
-            return;
-          }
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => WebViewScreen(
-                url: masterServices!.submenu[index].urlMenu,
-                title: masterServices!.submenu[index].namaMenu,
-              ),
-            ),
-          );
-        },
-      );
+    final menuData = selectedService == 1
+        ? masterServices
+        : selectedService == 2
+            ? transactionService
+            : reportService;
+
+    if (menuData == null) {
+      return const SizedBox.shrink();
     }
-    if (selectedService == 2 &&
-        transactionService!.submenu[index].subsubmenu.isEmpty) {
-      String namaMenu = transactionService!.submenu[index].namaMenu.replaceAll(
-        'amp;',
-        '',
-      );
-      return ListTile(
-        leading: getIcon(namaMenu),
-        title: Text(namaMenu),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-        ),
-        onTap: () {
-          if (routeToPage(transactionService!.submenu[index].urlMenu, context)) {
-            return;
-          }
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => WebViewScreen(
-                url: transactionService!.submenu[index].urlMenu,
-                title: transactionService!.submenu[index].namaMenu,
-              ),
-            ),
-          );
-        },
-      );
+
+    final submenu = menuData.submenu[index];
+    final namaMenu = submenu.namaMenu.replaceAll('amp;', '');
+
+    if (submenu.subsubmenu.isEmpty) {
+      return _buildListTile(namaMenu, submenu.urlMenu, context);
     }
-    if (selectedService == 3 &&
-        reportService!.submenu[index].subsubmenu.isEmpty) {
-      String namaMenu = reportService!.submenu[index].namaMenu.replaceAll(
-        'amp;',
-        '',
-      );
-      return ListTile(
-        leading: getIcon(namaMenu),
-        title: Text(namaMenu),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-        ),
-        onTap: () {
-          if (routeToPage(reportService!.submenu[index].urlMenu, context)) {
-            return;
-          }
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => WebViewScreen(
-                url: reportService!.submenu[index].urlMenu,
-                title: reportService!.submenu[index].namaMenu,
-              ),
-            ),
-          );
-        },
-      );
-    }
+
     return ExpansionTile(
-      leading: getIcon(selectedService == 1
-          ? masterServices!.submenu[index].namaMenu.replaceAll(
-              'amp;',
-              '',
-            )
-          : selectedService == 2
-              ? transactionService!.submenu[index].namaMenu.replaceAll(
-                  'amp;',
-                  '',
-                )
-              : reportService!.submenu[index].namaMenu.replaceAll('amp;', '')),
-      title: Text(
-        selectedService == 1
-            ? masterServices!.submenu[index].namaMenu.replaceAll(
-                'amp;',
-                '',
-              )
-            : selectedService == 2
-                ? transactionService!.submenu[index].namaMenu.replaceAll(
-                    'amp;',
-                    '',
-                  )
-                : reportService!.submenu[index].namaMenu.replaceAll(
-                    'amp;',
-                    '',
-                  ),
-      ),
-      children: selectedService == 1
-          ? masterServices!.submenu[index].subsubmenu
-              .map((e) => ListTile(
-                    onTap: () {
-                      if (routeToPage(e.urlMenu, context)) {
-                        return;
-                      }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => WebViewScreen(
-                            url: e.urlMenu,
-                            title: e.namaMenu,
-                          ),
-                        ),
-                      );
-                    },
-                    leading: const SizedBox(width: 20),
-                    title: Text(e.namaMenu),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                    ),
-                  ))
-              .toList()
-          : selectedService == 2
-              ? transactionService!.submenu[index].subsubmenu
-                  .map((e) => ListTile(
-                        onTap: () {
-                          if (routeToPage(e.urlMenu, context)) {
-                            return;
-                          }
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => WebViewScreen(
-                                url: e.urlMenu,
-                                title: e.namaMenu,
-                              ),
-                            ),
-                          );
-                        },
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios,
-                          size: 16,
-                        ),
-                        leading: const SizedBox(width: 20),
-                        title: Text(e.namaMenu),
-                      ))
-                  .toList()
-              : reportService!.submenu[index].subsubmenu
-                  .map((e) => ListTile(
-                        onTap: () {
-                          if (routeToPage(e.urlMenu, context)) {
-                            return;
-                          }
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => WebViewScreen(
-                                url: e.urlMenu,
-                                title: e.namaMenu,
-                              ),
-                            ),
-                          );
-                        },
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios,
-                          size: 16,
-                        ),
-                        leading: const SizedBox(width: 20),
-                        title: Text(e.namaMenu),
-                      ))
-                  .toList(),
+      leading: getIcon(namaMenu),
+      title: Text(namaMenu),
+      children: submenu.subsubmenu.map((e) {
+        return _buildListTile(e.namaMenu, e.urlMenu, context);
+      }).toList(),
     );
   }
 }

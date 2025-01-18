@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:uapp/core/utils/rupiah_formatter.dart';
-import 'package:uapp/models/competitor.dart';
+import 'package:uapp/modules/marketing/model/competitor_model.dart';
 
 class CompetitorReportDialog extends StatefulWidget {
   const CompetitorReportDialog({super.key, this.competitor,required this.idMarketingActivity});
 
-  final Competitor? competitor;
-  final int idMarketingActivity;
+  final CompetitorModel? competitor;
+  final String idMarketingActivity;
 
   @override
   State<CompetitorReportDialog> createState() => _CompetitorReportDialogState();
@@ -22,10 +22,10 @@ class _CompetitorReportDialogState extends State<CompetitorReportDialog> {
   void initState() {
     super.initState();
     if (widget.competitor != null) {
-      nameController.text = widget.competitor!.name;
+      nameController.text = widget.competitor!.name!;
       priceController.text = widget.competitor!.price.toString();
-      programController.text = widget.competitor!.program;
-      supportController.text = widget.competitor!.support;
+      programController.text = widget.competitor!.program!;
+      supportController.text = widget.competitor!.support!;
     }
   }
   @override
@@ -168,8 +168,7 @@ class _CompetitorReportDialogState extends State<CompetitorReportDialog> {
                       if (formKey.currentState!.validate()) {
                         // the price only take the number
                         var price = priceController.text.replaceAll(RegExp(r'[^0-9]'), '');
-                        var competitor = Competitor(
-                          id: DateTime.now().millisecondsSinceEpoch,
+                        var competitor = CompetitorModel(
                           idMA: widget.idMarketingActivity,
                           name: nameController.text,
                           price: int.parse(price),

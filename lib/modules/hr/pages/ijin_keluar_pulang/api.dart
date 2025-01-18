@@ -7,7 +7,6 @@ import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/models/user.dart';
 import 'package:uapp/modules/hr/hr_method_api.dart';
 import 'package:uapp/modules/hr/model/sik.dart';
-import 'package:uapp/modules/hr/pages/ijin_keluar_pulang/api_param.dart';
 
 Future<String?> addSuratIjinKeluar(Map<String,String> params) async {
   try {

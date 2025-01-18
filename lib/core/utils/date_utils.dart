@@ -82,7 +82,7 @@ class DateUtils {
     DateTime firstDayOfNextMonth =
         DateTime(dateTime.year, dateTime.month + 1, 1);
     DateTime lastDayOfCurrentMonth =
-        firstDayOfNextMonth.subtract(Duration(days: 1));
+        firstDayOfNextMonth.subtract(const Duration(days: 1));
     return lastDayOfCurrentMonth.day;
   }
 

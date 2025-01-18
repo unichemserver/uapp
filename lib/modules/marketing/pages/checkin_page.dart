@@ -3,14 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
-import 'package:uapp/core/utils/jenis_call.dart';
-import 'package:uapp/core/widget/loading_dialog.dart';
+import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/modules/marketing/marketing_controller.dart';
 
 class CheckInPage extends StatelessWidget {
-  CheckInPage({super.key});
-
-  String imagePath = '';
+  const CheckInPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +36,7 @@ class CheckInPage extends StatelessWidget {
               children: [
                 const SizedBox(height: 16),
                 Text(
-                  'Foto Check In',
+                  'Foto Check-In',
                   style: Theme.of(context).textTheme.titleMedium!.copyWith(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Rubik',
@@ -54,12 +51,12 @@ class CheckInPage extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: imagePath.isEmpty
+                  child: ctx.imagePath.isEmpty
                       ? GestureDetector(
                           onTap: () async {
                             var result = await Get.toNamed(Routes.REPORT);
                             if (result != null) {
-                              imagePath = result as String;
+                              ctx.imagePath = result as String;
                               ctx.update();
                             }
                           },
@@ -91,7 +88,7 @@ class CheckInPage extends StatelessWidget {
                             Get.dialog(
                               AlertDialog(
                                 content: Image.file(
-                                  File(imagePath),
+                                  File(ctx.imagePath),
                                   fit: BoxFit.cover,
                                 ),
                                 actions: [
@@ -103,7 +100,7 @@ class CheckInPage extends StatelessWidget {
                                   ),
                                   TextButton(
                                     onPressed: () {
-                                      imagePath = '';
+                                      ctx.imagePath = '';
                                       ctx.update();
                                       Get.back();
                                     },
@@ -114,60 +111,59 @@ class CheckInPage extends StatelessWidget {
                             );
                           },
                           child: Image.file(
-                            File(imagePath),
+                            File(ctx.imagePath),
                             fit: BoxFit.cover,
                           ),
                         ),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Lokasi Check In',
+                  'Lokasi Check-In',
                   style: Theme.of(context).textTheme.titleMedium!.copyWith(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Rubik',
                       ),
                 ),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    ctx.userAddress!.split('*')[0],
-                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                          fontFamily: 'Rubik',
-                        ),
-                  ),
-                  subtitle: Text(
-                    ctx.userAddress!.split('*')[1],
-                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                          fontFamily: 'Rubik',
-                        ),
-                  ),
-                  leading: const Icon(Icons.location_on),
-                  trailing: IconButton(
-                    onPressed: ctx.getUserPosition,
-                    icon: const Icon(Icons.my_location),
-                  ),
-                ),
+                _buildUserLocation(ctx, context),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () async {
-                    if (imagePath.isEmpty) {
-                      Get.snackbar(
-                        'Error',
-                        'Upload foto terlebih dahulu',
-                        backgroundColor: Colors.red,
-                        colorText: Colors.white,
-                      );
-                      return;
-                    } else {
-                      showDialog(
-                        context: context,
-                        builder: (_) => LoadingDialog(),
-                      );
-                      await ctx.checkIn(imagePath);
-                      Get.back();
-                      ctx.changeIndex(2);
-                    }
-                  },
+                  onPressed: ctx.userPosition == null
+                      ? null
+                      : () async {
+                          if (ctx.imagePath.isEmpty) {
+                            Utils.showErrorSnackBar(
+                              context,
+                              'Silahkan upload foto terlebih dahulu',
+                            );
+                            return;
+                          }
+                          Get.dialog(
+                            AlertDialog(
+                              title: const Text('Konfirmasi'),
+                              content: const Text(
+                                'Apakah anda yakin ingin melakukan check-in?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Get.back();
+                                  },
+                                  child: const Text('Batal'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Get.back();
+                                    // Utils.showLoadingDialog(context);
+                                    ctx.checkIn().then((_) {
+                                      // Navigator.of(context).pop();
+                                    });
+                                  },
+                                  child: const Text('Ya'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       vertical: 16,
@@ -178,7 +174,7 @@ class CheckInPage extends StatelessWidget {
                     minimumSize: const Size(double.infinity, 48),
                   ),
                   child: const Text(
-                    'Check In',
+                    'Check-In',
                     style: TextStyle(
                       fontFamily: 'Rubik',
                       fontWeight: FontWeight.bold,
@@ -190,6 +186,41 @@ class CheckInPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  ListTile _buildUserLocation(MarketingController ctx, BuildContext context) {
+    String address =
+        ctx.userAddress == null ? '' : ctx.userAddress!.split('*')[0];
+    String region =
+        ctx.userAddress == null ? '' : ctx.userAddress!.split('*')[1];
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(
+        address.isEmpty
+            ? ctx.userPosition == null
+                ? 'Mencari lokasi...'
+                : ctx.userPosition!.latitude.toString()
+            : address,
+        style: Theme.of(context).textTheme.titleMedium!.copyWith(
+              fontFamily: 'Rubik',
+            ),
+      ),
+      subtitle: Text(
+        region.isEmpty
+            ? ctx.userPosition == null
+                ? 'Mencari lokasi...'
+                : ctx.userPosition!.longitude.toString()
+            : region,
+        style: Theme.of(context).textTheme.titleMedium!.copyWith(
+              fontFamily: 'Rubik',
+            ),
+      ),
+      leading: const Icon(Icons.location_on),
+      trailing: IconButton(
+        onPressed: ctx.getUserPosition,
+        icon: const Icon(Icons.my_location),
+      ),
     );
   }
 }

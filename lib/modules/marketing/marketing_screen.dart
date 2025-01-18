@@ -5,8 +5,8 @@ import 'package:uapp/modules/marketing/pages/check_competitor_page.dart';
 import 'package:uapp/modules/marketing/pages/check_display_page.dart';
 import 'package:uapp/modules/marketing/pages/check_stock_page.dart';
 import 'package:uapp/modules/marketing/pages/checkin_page.dart';
+import 'package:uapp/modules/marketing/pages/checkout_page.dart';
 import 'package:uapp/modules/marketing/pages/collection_page.dart';
-import 'package:uapp/modules/marketing/pages/select_rute_page.dart';
 import 'package:uapp/modules/marketing/pages/taking_order_page.dart';
 
 import 'package:uapp/modules/marketing/marketing_controller.dart';
@@ -15,13 +15,13 @@ class MarketingScreen extends StatelessWidget {
   MarketingScreen({super.key});
 
   List<Widget> pages = [
-    SelectRutePage(),
-    CheckInPage(),
-    CheckStockPage(),
-    CheckCompetitorPage(),
-    CheckDisplayPage(),
+    const CheckInPage(),
+    const CheckStockPage(),
+    const CheckCompetitorPage(),
+    const CheckDisplayPage(),
     TakingOrderPage(),
     CollectionPage(),
+    const CheckoutPage(),
   ];
 
   @override
@@ -30,84 +30,122 @@ class MarketingScreen extends StatelessWidget {
       init: MarketingController(),
       initState: (_) {},
       builder: (ctx) {
-        return Scaffold(
-          appBar: (ctx.currentIndex == 0 || ctx.currentIndex == 1)
-              ? null
-              : AppBar(
-                  title: Text('Kunjungan ${ctx.customerId}'),
-                  centerTitle: true,
-                  leading: const SizedBox(),
-                ),
-          body: Column(
-            children: [
-              Expanded(
-                child: pages[ctx.currentIndex],
-              ),
-              (ctx.currentIndex == 0 || ctx.currentIndex == 1)
-                  ? const SizedBox()
-                  : SizedBox(
-                      height: 60,
-                      child: BottomNavigationBar(
-                        currentIndex: ctx.currentIndex,
-                        onTap: (value) {
-                          if (ctx.jenisCall == Call.noo && value == 4) {
-                            Get.snackbar('Info', 'Menu ini tidak tersedia ketika anda memilih untuk melaporkan NOO');
-                            return;
-                          }
-
-                          if (value != 0 && value != 1) {
-                            ctx.currentIndex = value;
-                            ctx.update();
-                          }
-
-                          if (value == 3) {
-                            ctx.getCompetitors();
-                          } else if (value == 4) {
-                            ctx.getDisplay();
-                          } else if (value == 5) {
-                            ctx.getTakingOrders();
-                          } else if (value == 6) {
-                            ctx.getCollections();
-                          }
-                        },
-                        selectedItemColor: Colors.blue,
-                        unselectedLabelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        unselectedItemColor: Colors.grey,
-                        items: const [
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.map),
-                            label: 'Rute',
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.login),
-                            label: 'Check In',
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.inventory),
-                            label: 'Stock',
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.people),
-                            label: 'Competitor',
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.display_settings),
-                            label: 'Display',
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.swap_horiz),
-                            label: 'TO',
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.collections),
-                            label: 'Collection',
-                          ),
-                        ],
-                      ),
+        return PopScope(
+          canPop: ctx.currentIndex == 0,
+          onPopInvoked: (didPop) {
+            if (!didPop) {
+              if (ctx.currentIndex != 0) {
+                Get.dialog(
+                  AlertDialog(
+                    title: const Text('Konfirmasi'),
+                    content: const Text(
+                      'Apakah Anda yakin ingin keluar dari halaman ini?',
                     ),
-            ],
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: const Text('Tidak'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Get.back();
+                          Get.back();
+                        },
+                        child: const Text('Ya'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            }
+          },
+          child: Scaffold(
+            // appBar: (ctx.currentIndex == 0)
+            //     ? null
+            //     : AppBar(
+            //         title: Text('${ctx.customerName}'),
+            //         centerTitle: true,
+            //         leading: const SizedBox(),
+            //       ),
+            body: Column(
+              children: [
+                ctx.currentIndex == 0
+                    ? const SizedBox()
+                    : Container(
+                        padding: const EdgeInsets.all(8),
+                        color: Colors.grey[200],
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                ctx.customerName!,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.titleSmall,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                Expanded(
+                  child: pages[ctx.currentIndex],
+                ),
+                (ctx.currentIndex == 0)
+                    ? const SizedBox()
+                    : SizedBox(
+                        height: 60,
+                        child: BottomNavigationBar(
+                          currentIndex: ctx.currentIndex,
+                          onTap: (value) {
+                            if ((ctx.jenisCall == Call.noo) && (value == 5)) {
+                              return;
+                            }
+                            if (value != 0) {
+                              ctx.currentIndex = value;
+                              ctx.update();
+                            }
+                          },
+                          selectedItemColor: Colors.blue,
+                          unselectedLabelStyle: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                          unselectedItemColor: Colors.grey,
+                          items: const [
+                            BottomNavigationBarItem(
+                              icon: Icon(Icons.login),
+                              label: 'Check-In',
+                            ),
+                            BottomNavigationBarItem(
+                              icon: Icon(Icons.inventory),
+                              label: 'Stock',
+                            ),
+                            BottomNavigationBarItem(
+                              icon: Icon(Icons.people),
+                              label: 'Competitor',
+                            ),
+                            BottomNavigationBarItem(
+                              icon: Icon(Icons.collections),
+                              label: 'Display',
+                            ),
+                            BottomNavigationBarItem(
+                              icon: Icon(Icons.swap_horiz),
+                              label: 'TO',
+                            ),
+                            BottomNavigationBarItem(
+                              icon: Icon(Icons.attach_money),
+                              label: 'Collection',
+                            ),
+                            BottomNavigationBarItem(
+                              icon: Icon(Icons.logout),
+                              label: 'Checkout',
+                            ),
+                          ],
+                        ),
+                      ),
+              ],
+            ),
           ),
         );
       },

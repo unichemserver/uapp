@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/utils/instance.dart';
@@ -68,18 +67,5 @@ class AuthController extends GetxController {
         );
       }
     });
-  }
-
-  @override
-  void onInit() {
-    super.onInit();
-    _requestPermission();
-  }
-
-  _requestPermission() async {
-    Permission location = Permission.location;
-    Permission notification = Permission.notification;
-    if (!await location.isGranted) await location.request();
-    if (!await notification.isGranted) await notification.request();
   }
 }

@@ -1,41 +1,38 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:uapp/app/routes.dart';
-import 'package:uapp/core/database/local_database.dart';
+import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/utils/date_utils.dart' as du;
-import 'package:uapp/core/utils/jenis_call.dart';
 import 'package:uapp/core/utils/utils.dart';
-import 'package:uapp/models/collection.dart';
-import 'package:uapp/models/competitor.dart';
 import 'package:uapp/models/customer.dart';
-import 'package:uapp/models/item.dart';
-import 'package:uapp/models/noo.dart';
 import 'package:uapp/models/route.dart' as rt;
-import 'package:uapp/models/stock.dart';
-import 'package:uapp/models/sudah_invoice.dart';
-import 'package:uapp/models/to.dart';
-import 'package:uapp/models/user.dart';
+import 'package:uapp/modules/marketing/api/api_client.dart';
 import 'package:uapp/modules/marketing/marketing_api.dart';
+import 'package:uapp/modules/marketing/model/collection_model.dart';
+import 'package:uapp/modules/marketing/model/competitor_model.dart';
+import 'package:uapp/modules/marketing/model/cust_top.dart';
+import 'package:uapp/modules/marketing/model/invoice_model.dart';
+import 'package:uapp/modules/marketing/model/master_item.dart';
+import 'package:uapp/modules/marketing/model/stock_model.dart';
+import 'package:uapp/modules/marketing/model/to_model.dart';
 
 class MarketingController extends GetxController {
-  final db = DatabaseHelper();
+  final db = MarketingDatabase();
   final api = MarketingApiService();
   final box = Hive.box(HiveKeys.appBox);
   List<rt.Route> listRute = [];
   List<Customer> existingCustomer = [];
-  List<Stock> products = [];
-  List<Item> items = [];
-  List<Competitor> competitors = [];
+  List<StockModel> products = [];
+  List<MasterItem> items = [];
+  List<CompetitorModel> competitors = [];
   List<String> displayList = [];
-  List<To> takingOrders = [];
-  List<Collection> listCollection = [];
-  List<SudahInvoice> listInvoice = [];
+  List<ToModel> takingOrders = [];
+  List<CollectionModel> listCollection = [];
+  List<BelumInvoice> listInvoice = [];
   List<String> paymentMethod = ['Cash', 'Transfer Bank', 'Giro'];
   List<String> statusPayment = [
     'Collected',
@@ -43,23 +40,57 @@ class MarketingController extends GetxController {
     'Not Collected'
   ];
   List<String> finishFotoCi = [];
+  List<CustTop> listCustTop = [];
 
+  CustTop? selectedCustTop;
   Position? userPosition;
-  SudahInvoice? selectedInvoice;
+  double latitude = 0.0;
+  double longitude = 0.0;
+  BelumInvoice? selectedInvoice;
 
   String jenisCall = '';
   String? customerId = '';
-  String? userAddress;
+  String? customerName = '';
+  String? userAddress = '*';
   String? ruteId;
   String? selectedPaymentMethod;
+  String? buktiTransfer;
+  String imagePath = '';
+  String ttdPath = '';
 
   int currentIndex = 0;
   int currentReportIndex = 0;
   int jenisRute = -1;
   int selectedOnRoute = -1;
   int selectedOffRoute = -1;
-  int? idMarketingActivity;
+  String? idMarketingActivity;
   int selectedStatusPayment = -1;
+
+  final MarketingApiClient apiClient = MarketingApiClient();
+
+  void setCustTop(CustTop? value) async {
+    await db.update(
+      'marketing_activity',
+      {'top_id': value!.topID},
+      'id = ?',
+      [idMarketingActivity],
+    );
+  }
+
+  void getCustTop() async {
+    final data = await db.query(
+      'marketing_activity',
+      where: 'id = ?',
+      whereArgs: [idMarketingActivity],
+    );
+    if (data.isNotEmpty) {
+      final topId = data[0]['top_id'] as String?;
+      if (topId != null) {
+        selectedCustTop = listCustTop.firstWhere((element) => element.topID == topId);
+      }
+    }
+    update();
+  }
 
   void selectStatusPayment(int? value) {
     selectedStatusPayment = value!;
@@ -71,34 +102,19 @@ class MarketingController extends GetxController {
     update();
   }
 
-  void selectInvoice(SudahInvoice? value) {
+  void selectInvoice(BelumInvoice? value) {
     selectedInvoice = value;
     update();
   }
 
-  void setCustomerId(String id) {
+  void setCustomerId(String id, String name) {
     customerId = id;
+    customerName = name;
     update();
   }
 
   void changeJenisCall(String jenis) {
-    box.put(HiveKeys.jenisCall, jenis);
     jenisCall = jenis;
-    update();
-  }
-
-  void changeSelectedOnRoute(int index) {
-    selectedOnRoute = index;
-    update();
-  }
-
-  void changeSelectedOffRoute(int index) {
-    selectedOffRoute = index;
-    update();
-  }
-
-  void changeJenisRute(int index) {
-    jenisRute = index;
     update();
   }
 
@@ -112,71 +128,13 @@ class MarketingController extends GetxController {
     update();
   }
 
-  void getExistingCustomer() async {
-    existingCustomer.clear();
-    var customers = await db.getExistingCustomer();
-    existingCustomer.addAll(customers);
-    update();
-  }
-
-  void getRuteToday() async {
-    String tanggal = du.DateUtils.getCurrentDate();
-    int hari = du.DateUtils.getDayOfWeek(tanggal);
-    int week = du.DateUtils.getWeekOfMonth(tanggal);
-    print('Hari: ${String.fromCharCode(hari + 64)}, Week: $week');
-    var rute = await db.getRute(
-      week,
-      String.fromCharCode(hari + 64),
-    );
-    listRute = rute.map((e) => rt.Route.fromJson(e)).toList();
-    uploadDataMarketingActivity();
-    update();
-  }
-
-  uploadDataMarketingActivity() async {
-    if (await checkMADataUploaded()) {
-      print('Data MA sudah diupload');
-      return;
-    }
-    if (listRute.isEmpty) {
-      print('Data rute kosong');
-      return;
-    }
-    Get.snackbar('Info', 'Sedang mengupload data marketing activity');
-    var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
-    var userId = userData.id;
-    for (var route in listRute) {
-      var idMA = await api.getIDMarketingActivity(
-        route.idRute,
-        route.custID,
-      );
-      await db.insertMarketingActivity(
-        idMA,
-        route.idRute,
-        userId,
-        route.custID!,
-      );
-    }
-    Get.snackbar('Info', 'Data marketing activity berhasil diupload');
-    box.put(du.DateUtils.getCurrentDate(), true);
-  }
-
-  Future<bool> checkMADataUploaded() async {
-    var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
-    List<dynamic> todayActivity = await api.getTodayActivity(
-      userData.id.toString(),
-    );
-    List<dynamic> localActivity = await db.getTodayActivity(
-      userData.id.toString(),
-    );
-    return todayActivity.length == localActivity.length;
-  }
-
   Future<void> getUserPosition() async {
     userPosition = await Geolocator.getCurrentPosition();
     if (userPosition!.isMocked) {
       Utils.showDialogNotAllowed(Get.context!);
     }
+    latitude = userPosition!.latitude;
+    longitude = userPosition!.longitude;
     List<Placemark> placemarks = await placemarkFromCoordinates(
       userPosition!.latitude,
       userPosition!.longitude,
@@ -188,214 +146,380 @@ class MarketingController extends GetxController {
     update();
   }
 
-  Future<void> checkIn(String imagePath) async {
-    var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
-    var userId = userData.id;
+  Future<void> checkIn() async {
+    var arg = Get.arguments as Map<String, dynamic>;
+    var type = arg['type'];
+    var custId = arg['id'];
+    var custName = arg['name'];
+    var userId = Utils.getUserData().id;
     if (userPosition == null) {
       await getUserPosition();
     }
     var lat = userPosition!.latitude;
     var lon = userPosition!.longitude;
+    var now = DateTime.now();
+    var waktuCi = now.toIso8601String().replaceAll('T', ' ').split('.').first;
+    idMarketingActivity = await generateMarketingActivityID();
     var data = {
+      'id': idMarketingActivity,
       'user_id': userId,
-      'cust_id': customerId,
+      'cust_id': custId,
+      'cust_name': custName,
       'rute_id': ruteId,
       'foto_ci': imagePath,
       'lat_ci': lat,
       'lon_ci': lon,
-      'jenis': jenisCall,
-      'waktu_ci': DateTime.now().toIso8601String(),
+      'jenis': type,
+      'waktu_ci': waktuCi,
     };
-    int idMA;
-    if (ruteId != null) {
-      idMA = await db.checkInOnRoute(ruteId!, userId, imagePath, lat, lon);
-    } else {
-      idMA = await db.insertMarketingActivityData(data);
+    setCustomerId(custId.toString(), custName.toString());
+    await db.insert('marketing_activity', data);
+    box.put(HiveKeys.idMa, idMarketingActivity);
+    changeIndex(1);
+    getListInvoice();
+    getListItem();
+    getListTop();
+  }
+
+  Future<String> generateMarketingActivityID() async {
+    var dateToday = du.DateUtils.getFormatDate();
+    var userId = Utils.getUserData().id;
+    String pattern = 'CM$userId$dateToday';
+    String query = '''
+    SELECT id FROM marketing_activity
+      WHERE id LIKE '$pattern%'
+      ORDER BY created_at DESC
+      LIMIT 1
+    ''';
+    List<Map> result = await db.rawQuery(query);
+    int newIncrement = 1;
+    if (result.isNotEmpty) {
+      String lastId = result.first['id'];
+      int lastIncrement = int.parse(lastId.substring(lastId.length - 3));
+      newIncrement = lastIncrement + 1;
     }
-    setDataCheckIn(idMA);
+    return '$pattern${newIncrement.toString().padLeft(3, '0')}';
   }
 
-  void setDataCheckIn(int id) {
-    idMarketingActivity = id;
-    box.put(HiveKeys.jenisCall, jenisCall);
-    box.put(HiveKeys.isCheckIn, true);
-    box.put(HiveKeys.selectedCustID, customerId);
-    box.put(HiveKeys.selectedRuteID, ruteId);
-    box.put(HiveKeys.idMa, id);
-    update();
+  Future<void> checkOut() async {
+    await getUserPosition();
+    Map<String, dynamic> data = {
+      'waktu_co': DateTime.now()
+          .toIso8601String()
+          .replaceAll('T', ' ')
+          .split('.')
+          .first,
+      'lat_co': userPosition!.latitude,
+      'lon_co': userPosition!.longitude,
+      'status_call': takingOrders.isEmpty ? 'vno' : 'vwo',
+    };
+    await db.update(
+      'marketing_activity',
+      data,
+      'id = ?',
+      [idMarketingActivity],
+    );
   }
 
-  void isCheckIn() {
-    var isUserCheckIn = box.get(HiveKeys.isCheckIn, defaultValue: false);
-    if (isUserCheckIn) {
-      jenisCall = box.get(HiveKeys.jenisCall);
-      customerId = box.get(HiveKeys.selectedCustID, defaultValue: '');
-      ruteId = box.get(HiveKeys.selectedRuteID);
-      idMarketingActivity = box.get(HiveKeys.idMa);
+  Future<void> getListItem() async {
+    final box = await Hive.openBox<MasterItem>(HiveKeys.masterItemBox);
+    if (box.isNotEmpty) {
+      items = box.values.map((e) => MasterItem.fromJson(e.toJson())).toList();
       update();
-      getStocks();
-      if (jenisCall != Call.canvasing) {
-        currentIndex = 2;
+      return;
+    }
+    final response = await apiClient.postRequest(method: 'get_list_item');
+    if (response.success) {
+      items =
+          (response.data as List).map((e) => MasterItem.fromJson(e)).toList();
+      for (var element in items) {
+        box.add(MasterItem(
+          itemID: element.itemID,
+          description: element.description,
+          salesUnit: element.salesUnit,
+          salesPrice: element.salesPrice,
+        ));
+      }
+      update();
+    }
+  }
+
+  Future<void> getListTop() async {
+    final box = await Hive.openBox<CustTop>(HiveKeys.custTopBox);
+    bool isLocalDataAvailable = box.isNotEmpty;
+    if (isLocalDataAvailable) {
+      listCustTop =
+          box.values.map((e) => CustTop.fromJson(e.toJson())).toList();
+      update();
+      return;
+    }
+    final response = await apiClient.postRequest(method: 'get_cust_top');
+    if (response.success) {
+      listCustTop =
+          (response.data as List).map((e) => CustTop.fromJson(e)).toList();
+      for (var element in listCustTop) {
+        box.add(CustTop(
+          topID: element.topID,
+          custID: element.custID,
+        ));
+      }
+      update();
+    }
+  }
+
+  Future<void> getListInvoice() async {
+    final localData = await db.query('invoice');
+    if (localData.isEmpty) {
+      final response =
+          await apiClient.postRequest(method: 'get_unbilled_invoice');
+      if (response.success) {
+        var invoiceList = (response.data as List)
+            .map((e) => BelumInvoice.fromJson(e))
+            .toList();
         update();
+        for (var element in invoiceList) {
+          db.insert('invoice', element.toJson());
+        }
       } else {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.toNamed(Routes.CANVASING);
-        });
+        Utils.showErrorSnackBar(
+          Get.context!,
+          'Gagal mengambil data invoice',
+        );
       }
     }
-  }
-
-  // Start CRUD Stock
-  void getStocks() async {
-    var stocks = await db.getStockReports(idMarketingActivity!);
-    products = stocks;
-    update();
-  }
-
-  void addStockToDatabase(Stock stocks) async {
-    await db.insertStockReport(stocks.toJson());
-    getStocks();
-  }
-
-  void removeStockFromDatabase(Stock stocks) async {
-    await db.removeStockReport(stocks.id);
-    getStocks();
-  }
-
-  void updateStockToDatabase(Stock stocks) async {
-    await db.updateStockReport(stocks.toJson());
-    getStocks();
-  }
-
-  // End CRUD Stock
-
-  // Start CRUD Competitor
-  void getCompetitors() async {
-    var competitors = await db.getCompetitors(idMarketingActivity!);
-    this.competitors = competitors;
-    update();
-  }
-
-  void addCompetitorToDatabase(Competitor competitor) async {
-    await db.insertCompetitor(competitor.toJson());
-    getCompetitors();
-  }
-
-  void removeCompetitorFromDatabase(Competitor competitor) async {
-    await db.removeCompetitor(competitor.id);
-    getCompetitors();
-  }
-
-  void updateCompetitorToDatabase(Competitor competitor) async {
-    await db.updateCompetitor(competitor.toJson());
-    getCompetitors();
-  }
-
-  // End CRUD Competitor
-
-  // Start CRUD Taking Order
-  void getTakingOrders() async {
-    takingOrders = await db.getTakingOrder(idMarketingActivity!);
-    update();
-  }
-
-  addTakingOrderToDatabase(
-    String itemID,
-    String description,
-    int quantity,
-    String unit,
-    int price,
-  ) async {
-    await db.insertTakingOrder(
-      idMarketingActivity!,
-      itemID,
-      description,
-      quantity,
-      unit,
-      price,
+    listInvoice = await db.query(
+      'invoice',
+      where: 'Kode_Customer = ?',
+      whereArgs: [customerId!],
+    ).then(
+      (value) {
+        return value.map((e) => BelumInvoice.fromJson(e)).toList();
+      },
     );
-    getTakingOrders();
-  }
-
-  void removeTakingOrderFromDatabase(String takingOrder) async {
-    await db.deleteTakingOrder(idMarketingActivity!, takingOrder);
-    getTakingOrders();
-  }
-
-  // End CRUD Taking Order
-
-  // Start CRUD Collection
-  void getCollections() async {
-    var collections = await db.getCollections(idMarketingActivity!);
-    listCollection = collections;
+    print(listInvoice.length);
     update();
   }
 
-  void addCollectionToDatabase(Map<String, Object?> collection) async {
-    await db.insertCollection(collection);
-    getCollections();
-  }
-
-  void removeCollectionFromDatabase(int id) async {
-    await db.deleteCollection(id);
-    getCollections();
-  }
-
-  // End CRUD Collection
-
-  // Start CRUD Display
-  void getDisplay() async {
-    displayList = await db.getDisplay(idMarketingActivity!);
+  getStockFromDatabase() async {
+    products = await db.query(
+      'stock',
+      where: 'idMA = ?',
+      whereArgs: [idMarketingActivity],
+    ).then((value) {
+      return value.map((e) => StockModel.fromJson(e)).toList();
+    });
     update();
   }
 
-  void addDisplay(String imagePath) async {
-    await db.insertDisplay(idMarketingActivity!, imagePath);
-    getDisplay();
+  addStockToDatabase(StockModel stock) async {
+    await db.insert('stock', stock.toJson());
+    getStockFromDatabase();
   }
 
-  void removeDisplay(String imagePath) async {
-    await db.deleteDisplay(idMarketingActivity!, imagePath);
-    getDisplay();
+  deleteStockFromDatabase(StockModel stock) async {
+    await db.delete(
+      'stock',
+      'idMA = ? AND item_id = ?',
+      [stock.idMA, stock.itemId],
+    );
+    getStockFromDatabase();
   }
 
-  // End CRUD Display
+  updateStockToDatabase(StockModel stock) async {
+    await db.update(
+      'stock',
+      stock.toJson(),
+      'idMA = ? AND item_id = ?',
+      [stock.idMA, stock.itemId],
+    );
+    getStockFromDatabase();
+  }
 
-  void getListItem() async {
-    var itemsDb = await db.getListItem();
-    items = itemsDb;
+  getCompetitorFromDatabase() async {
+    competitors = await db.query(
+      'competitor',
+      where: 'idMA = ?',
+      whereArgs: [idMarketingActivity],
+    ).then((value) {
+      return value.map((e) => CompetitorModel.fromJson(e)).toList();
+    });
     update();
   }
 
-  void getInvoice() async {
-    var invoices = await db.getData('invoice');
-    listInvoice = invoices.map((e) => SudahInvoice.fromJson(e)).toList();
-    listInvoice =
-        listInvoice.where((element) => element.custID == customerId).toList();
+  addCompetitorToDatabase(CompetitorModel competitor) async {
+    await db.insert('competitor', competitor.toJson());
+    getCompetitorFromDatabase();
+  }
+
+  deleteCompetitorFromDatabase(CompetitorModel competitor) async {
+    await db.delete(
+      'competitor',
+      'idMA = ? AND name = ?',
+      [competitor.idMA, competitor.name],
+    );
+    getCompetitorFromDatabase();
+  }
+
+  getDisplayFromDatabase() async {
+    displayList = await db.query(
+      'display',
+      where: 'idMA = ?',
+      whereArgs: [idMarketingActivity],
+    ).then((value) {
+      return value.map((e) => e['image'] as String).toList();
+    });
     update();
   }
 
-  void insertTtd(String imagePath) async {
-    await db.updateTtd(idMarketingActivity!, imagePath);
+  addDisplayToDatabase(String image) async {
+    await db.insert('display', {
+      'idMA': idMarketingActivity,
+      'image': image,
+      'type': 'display',
+    });
+    getDisplayFromDatabase();
+  }
+
+  deleteDisplayFromDatabase(String image) async {
+    await db.delete(
+      'display',
+      'idMA = ? AND image = ?',
+      [idMarketingActivity, image],
+    );
+    getDisplayFromDatabase();
+  }
+
+  addTakingOrderToDatabase(ToModel data) async {
+    await db.insert('taking_order', data.toJson());
+    getTakingOrderFromDatabase();
+  }
+
+  getTakingOrderFromDatabase() async {
+    takingOrders = await db.query(
+      'taking_order',
+      where: 'idMA = ?',
+      whereArgs: [idMarketingActivity],
+    ).then((value) {
+      return value.map((e) => ToModel.fromJson(e)).toList();
+    });
     update();
   }
 
-  Future<int> saveDataNooToDB(Noo data) async {
-    return await db.addNoo(data.toJson());
+  deleteTakingOrderFromDatabase(ToModel data) async {
+    await db.delete(
+      'taking_order',
+      'idMA = ? AND itemid = ?',
+      [idMarketingActivity!, data.itemid],
+    );
+    getTakingOrderFromDatabase();
   }
 
-  void getListFinishFotoCi() async {
-    finishFotoCi = await db.getFinishFotoCi();
+  getSignatureFromDatabase() async {
+    final data = await db.query(
+      'marketing_activity',
+      where: 'id = ?',
+      whereArgs: [idMarketingActivity],
+    );
+    if (data.isNotEmpty) {
+      final ttd = data[0]['ttd'] as String?;
+      if (ttd != null) {
+        ttdPath = ttd;
+      }
+    }
     update();
+  }
+
+  void updateSignature(String image) async {
+    await db.update(
+      'marketing_activity',
+      {'ttd': image.isEmpty ? null : image},
+      'id = ?',
+      [idMarketingActivity],
+    );
+  }
+
+  getCollectionFromDatabase() async {
+    listCollection = await db.query(
+      'collection',
+      where: 'idMA = ?',
+      whereArgs: [idMarketingActivity],
+    ).then((value) {
+      return value.map((e) => CollectionModel.fromMap(e)).toList();
+    });
+    update();
+  }
+
+  addCollectionToDatabase(CollectionModel data) async {
+    await db.insert('collection', data.toMap());
+    getCollectionFromDatabase();
+  }
+
+  deleteCollectionFromDatabase(CollectionModel data) async {
+    await db.delete(
+      'collection',
+      'idMA = ? AND noinvoice = ? AND nocollect = ? AND amount = ? AND type = ? AND status = ?',
+      [
+        idMarketingActivity,
+        data.noInvoice,
+        data.noCollect,
+        data.amount,
+        data.type,
+        data.status
+      ],
+    );
+    getCollectionFromDatabase();
+  }
+
+  void rotateScreen(bool toPortrait) {
+    if (toPortrait) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }
+  }
+
+  Future<void> isUserCheckedIn() async {
+    final arg = Get.arguments as Map<String, dynamic>;
+    final custId = arg['id'];
+    final name = arg['name'];
+    final type = arg['type'];
+    changeJenisCall(type);
+    final idMA = arg['ma'];
+    if (idMA != null) {
+      idMarketingActivity = idMA;
+      setCustomerId(custId, name);
+      changeIndex(1);
+      getListInvoice();
+      getListItem();
+      getListTop();
+      getStockFromDatabase();
+      getCompetitorFromDatabase();
+      getDisplayFromDatabase();
+      getTakingOrderFromDatabase();
+      getSignatureFromDatabase();
+      getCollectionFromDatabase();
+      getCustTop();
+    } else {
+      await getUserPosition();
+    }
   }
 
   @override
-  void onInit() {
-    super.onInit();
-    getListFinishFotoCi();
-    getRuteToday();
-    getUserPosition();
-    isCheckIn();
-    getListItem();
+  void onReady() {
+    super.onReady();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Utils.showLoadingDialog(Get.context!);
+      Future.wait([
+        isUserCheckedIn(),
+      ]).then((value) {
+        // Get.back();
+      });
+    });
   }
 }

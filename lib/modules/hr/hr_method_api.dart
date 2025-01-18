@@ -43,4 +43,6 @@ class HrMethodApi {
   static const String orderReparasi = 'order_reparasi';
   static const String editOrderReparasi = 'edit_order_reparasi';
   static const String deleteOrderReparasi = 'delete_order_reparasi';
+
+  static const String getHrMenu = 'hr_menu';
 }

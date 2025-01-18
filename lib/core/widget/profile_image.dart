@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:uapp/core/utils/assets.dart';
 
 class ProfileImage extends StatelessWidget {
   const ProfileImage({
@@ -13,19 +14,6 @@ class ProfileImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // return FadeInImage.assetNetwork(
-    //   placeholder: Assets.logoAsset,
-    //   image: imgUrl,
-    //   fit: BoxFit.cover,
-    //   width: radius,
-    //   height: radius,
-    //   imageErrorBuilder: (context, error, stackTrace) {
-    //     return const CircleAvatar(
-    //       backgroundImage: AssetImage(Assets.logoAsset),
-    //       backgroundColor: Colors.white,
-    //     );
-    //   },
-    // );
     return Container(
       width: radius,
       decoration: BoxDecoration(
@@ -35,7 +23,12 @@ class ProfileImage extends StatelessWidget {
           width: 2,
         ),
         image: DecorationImage(
-          image: CachedNetworkImageProvider(imgUrl),
+          image: CachedNetworkImageProvider(
+            imgUrl,
+            errorListener: (_) {
+              const AssetImage(Assets.iconApp);
+            },
+          ),
         ),
       ),
     );

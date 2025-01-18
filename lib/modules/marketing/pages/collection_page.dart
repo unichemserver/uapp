@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:uapp/app/routes.dart';
-import 'package:uapp/models/collection.dart';
-import 'package:uapp/modules/home/home_controller.dart';
 import 'package:uapp/modules/marketing/marketing_controller.dart';
+import 'package:uapp/modules/marketing/model/collection_model.dart';
 import 'package:uapp/modules/marketing/widget/collection_report_dialog.dart';
 
 class CollectionPage extends StatelessWidget {
@@ -29,63 +27,17 @@ class CollectionPage extends StatelessWidget {
             ),
             centerTitle: true,
             leading: const SizedBox(),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: () {
-                  var stock = ctx.products;
-                  var competitor = ctx.competitors;
-                  var display = ctx.displayList;
-                  if (stock.isEmpty && competitor.isEmpty && display.isEmpty) {
-                    Get.snackbar(
-                      'Peringatan',
-                      'Silahkan isi semua laporan terlebih dahulu',
-                      backgroundColor: Colors.red,
-                      colorText: Colors.white,
-                    );
-                    return;
-                  }
-                  Get.dialog(
-                    AlertDialog(
-                      title: const Text('Checkout'),
-                      content: const Text('Apakah anda yakin ingin checkout?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Get.back();
-                          },
-                          child: const Text('Tidak'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Get.put(HomeController()).checkOut(
-                              getStatusCall(ctx),
-                              ctx.idMarketingActivity!,
-                            );
-                            Get.offAllNamed(Routes.HOME);
-                          },
-                          child: const Text('Ya'),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () async {
-              ctx.getInvoice();
-              var result = await Get.dialog(CollectionReportDialog());
+              CollectionModel? result = await Get.dialog(CollectionReportDialog());
               if (result != null) {
-                result.removeWhere((key, value) => value == null);
                 ctx.addCollectionToDatabase(result);
-                ctx.getCollections();
               }
             },
             child: const Icon(Icons.add),
           ),
-          body: _buildBody(context, ctx.listCollection),
+          body: _buildBody(context, ctx),
         );
       },
     );
@@ -121,14 +73,14 @@ class CollectionPage extends StatelessWidget {
     }
   }
 
-  IconData getIconStatus(String status) {
+  Icon getIconStatus(String status) {
     switch (status.toLowerCase()) {
       case 'collected':
-        return Icons.check_circle;
+        return const Icon(Icons.check_circle, color: Colors.green);
       case 'partial collected':
-        return Icons.hourglass_bottom;
+        return const Icon(Icons.hourglass_bottom, color: Colors.orange);
       default:
-        return Icons.highlight_off;
+        return const Icon(Icons.highlight_off, color: Colors.red);
     }
   }
 
@@ -139,9 +91,9 @@ class CollectionPage extends StatelessWidget {
 
   _buildBody(
       BuildContext context,
-      List<Collection> listCollection,
+      MarketingController ctx,
       ) {
-    if (listCollection.isEmpty) {
+    if (ctx.listCollection.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -162,9 +114,9 @@ class CollectionPage extends StatelessWidget {
       );
     }
     return ListView.builder(
-      itemCount: listCollection.length,
+      itemCount: ctx.listCollection.length,
       itemBuilder: (context, index) {
-        Collection collection = listCollection[index];
+        CollectionModel collection = ctx.listCollection[index];
         return ListTile(
           leading: Icon(getIcon(collection.type)),
           title: Row(
@@ -176,17 +128,15 @@ class CollectionPage extends StatelessWidget {
           ),
           subtitle: Row(
             children: [
-              Icon(getIconStatus(collection.status)),
+              getIconStatus(collection.status),
               const SizedBox(width: 10),
-              Text(formatCurrency(collection.amount)),
+              Text(formatCurrency(collection.amount.toInt())),
             ],
           ),
           trailing: IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () {
-              Get.find<MarketingController>()
-                  .removeCollectionFromDatabase(collection.id!);
-              Get.find<MarketingController>().getCollections();
+              ctx.deleteCollectionFromDatabase(collection);
             },
           ),
         );

@@ -9,7 +9,7 @@ class User {
   final String posisi;
   final String jenis;
   final String colectorid;
-  final String salesrepid;
+  final String? salesrepid;
   final String idupline;
   final String token;
   final String foto;

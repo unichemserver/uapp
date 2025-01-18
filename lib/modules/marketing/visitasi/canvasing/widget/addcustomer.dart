@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
-import 'package:uapp/core/widget/speech_to_textfield.dart';
+import 'package:uapp/core/widget/app_textfield.dart';
 import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_controller.dart';
 
 class AddCustomerWidget extends StatelessWidget {
@@ -71,9 +71,12 @@ class AddCustomerWidget extends StatelessWidget {
                                       },
                                     );
                                   },
-                                  child: Image.file(
-                                    File(ctx.outletImagePath),
-                                    fit: BoxFit.cover,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.file(
+                                      File(ctx.outletImagePath),
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -107,7 +110,7 @@ class AddCustomerWidget extends StatelessWidget {
                   'Nama Outlet',
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
-                SpeechToTextField(
+                AppTextField(
                   readOnly: ctx.isToComplete,
                   prefixIcon: const Icon(Icons.store),
                   controller: ctx.namaController,
@@ -126,7 +129,7 @@ class AddCustomerWidget extends StatelessWidget {
                   'Nama Pemilik',
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
-                SpeechToTextField(
+                AppTextField(
                   readOnly: ctx.isToComplete,
                   prefixIcon: const Icon(Icons.person),
                   controller: ctx.pemilikController,
@@ -145,7 +148,7 @@ class AddCustomerWidget extends StatelessWidget {
                   'Nomor Telepon',
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
-                SpeechToTextField(
+                AppTextField(
                   readOnly: ctx.isToComplete,
                   prefixIcon: const Icon(Icons.phone),
                   controller: ctx.telpController,

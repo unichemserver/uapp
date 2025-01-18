@@ -17,36 +17,16 @@ class NooDialog extends StatefulWidget {
 }
 
 class _NooDialogState extends State<NooDialog> {
-  final TextEditingController nameController = TextEditingController(
-    text: 'Toko Baru',
-  );
-  final TextEditingController areaController = TextEditingController(
-    text: 'Area Baru',
-  );
-  final TextEditingController ownerController = TextEditingController(
-    text: 'Owner Baru',
-  );
-  final TextEditingController ktpController = TextEditingController(
-    text: '1234567890',
-  );
-  final TextEditingController ageController = TextEditingController(
-    text: '30',
-  );
-  final TextEditingController phoneController = TextEditingController(
-    text: '081234567890',
-  );
-  final TextEditingController emailController = TextEditingController(
-    text: 'owner@gmail.com',
-  );
-  final TextEditingController addressController = TextEditingController(
-    text: 'Jl. Alamat Baru',
-  );
-  final TextEditingController terminController = TextEditingController(
-    text: '30',
-  );
-  final TextEditingController kodePosController = TextEditingController(
-    text: '12345',
-  );
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController areaController = TextEditingController();
+  final TextEditingController ownerController = TextEditingController();
+  final TextEditingController ktpController = TextEditingController();
+  final TextEditingController ageController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController terminController = TextEditingController();
+  final TextEditingController kodePosController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final String baseUrl = 'https://www.emsifa.com/api-wilayah-indonesia/api';
   final List<String> nooList = [
@@ -694,8 +674,8 @@ class _NooDialogState extends State<NooDialog> {
 
   _saveDataToDb(Noo data) async {
     final ctx = Get.find<MarketingController>();
-    int custID = await ctx.saveDataNooToDB(data);
-    ctx.setCustomerId(custID.toString());
+    // int custID = await ctx.saveDataNooToDB(data);
+    // ctx.setCustomerId(custID.toString());
     Get.back();
     ctx.changeIndex(1);
   }

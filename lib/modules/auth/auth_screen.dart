@@ -2,22 +2,72 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:uapp/app/fonts.dart';
 import 'package:uapp/app/strings.dart';
 import 'package:uapp/core/utils/assets.dart';
 import 'package:uapp/core/utils/instance.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
 import 'package:uapp/core/widget/loading_dialog.dart';
-import 'package:uapp/core/widget/speech_to_textfield.dart';
 import 'package:uapp/modules/auth/auth_controller.dart';
 import 'package:uapp/core/widget/webview_widget.dart';
 
-class AuthScreen extends StatelessWidget {
-  AuthScreen({super.key});
+class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
 
+  @override
+  State<AuthScreen> createState() => _AuthScreenState();
+}
+
+class _AuthScreenState extends State<AuthScreen> {
   final TextEditingController unameController = TextEditingController();
   final TextEditingController passController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  _isNeedPermission() async {
+    Permission location = Permission.location;
+    Permission notification = Permission.notification;
+    return !(await location.isGranted) || !(await notification.isGranted);
+  }
+
+  _requestPermission() async {
+    Permission location = Permission.location;
+    Permission notification = Permission.notification;
+    if (!await location.isGranted) await location.request();
+    if (!await notification.isGranted) await notification.request();
+  }
+
+  _showPermissionDialog() {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Perhatian'),
+        content: const Text(
+          'Aplikasi U-APP membutuhkan akses lokasi dan notifikasi untuk dapat berjalan dengan baik. Pastikan Anda mengizinkan akses tersebut.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Get.back();
+              _requestPermission();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _isNeedPermission().then((value) {
+        if (value) {
+          _showPermissionDialog();
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,10 +105,11 @@ class AuthScreen extends StatelessWidget {
                     const SizedBox(
                       height: 50,
                     ),
-                    SpeechToTextField(
+                    AppTextField(
                       controller: unameController,
                       hintText: 'Masukkan nomor NIK',
                       prefixIcon: const Icon(Icons.person),
+                      keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value!.isEmpty) {
                           return 'Nomor NIK tidak boleh kosong';
@@ -71,6 +122,7 @@ class AuthScreen extends StatelessWidget {
                     ),
                     AppTextField(
                       obscureText: !ctx.isPasswordVisible,
+                      hintText: 'Masukkan kata sandi',
                       validator: (value) {
                         if (value!.isEmpty) {
                           return 'Kata sandi tidak boleh kosong';
@@ -132,7 +184,7 @@ class AuthScreen extends StatelessWidget {
                     const SizedBox(
                       height: 8,
                     ),
-                    Divider(),
+                    const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -142,7 +194,6 @@ class AuthScreen extends StatelessWidget {
                             ctx.toggleAgree(value!);
                           },
                         ),
-                        // Dengan menggunakan aplikasi ini, Anda secara otomatis menyetujui Kebijakan Privasi dan Syarat Penggunaan yang berlaku.
                         Expanded(
                           child: RichText(
                             text: TextSpan(

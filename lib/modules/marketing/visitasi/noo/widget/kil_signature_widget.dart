@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hand_signature/signature.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/widget/person_signature.dart';
 
 class KilSignatureWidget extends StatelessWidget {
@@ -13,10 +12,12 @@ class KilSignatureWidget extends StatelessWidget {
       leading: const Icon(Icons.create),
       children: [
         SizedBox(
-          height: width,
+          height: width + (width / 2),
           child: Column(
             children: [
-              Expanded(
+              SizedBox(
+                height: width / 2,
+                width: width,
                 child: Row(
                   children: [
                     Expanded(
@@ -28,18 +29,19 @@ class KilSignatureWidget extends StatelessWidget {
                       ),
                     ),
                     Expanded(
-                        child: Expanded(
                       child: PersonSignature(
                         title: 'DIAJUKAN',
                         name: 'Nama Sales',
                         position: 'ASM',
                         tgl: 'Tgl.',
                       ),
-                    )),
+                    ),
                   ],
                 ),
               ),
-              Expanded(
+              SizedBox(
+                height: width / 2,
+                width: width,
                 child: Row(
                   children: [
                     Expanded(
@@ -59,6 +61,17 @@ class KilSignatureWidget extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
+              ),
+              Expanded(
+                child: SizedBox(
+                  width: width,
+                  child: PersonSignature(
+                    title: 'DISETUJUI',
+                    name: 'RYAN HARRIS',
+                    position: 'CEO',
+                    tgl: 'Tgl.',
+                  ),
                 ),
               ),
             ],

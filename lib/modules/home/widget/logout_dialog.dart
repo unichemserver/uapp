@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/widget/loading_dialog.dart';
 import 'package:uapp/modules/home/home_controller.dart';

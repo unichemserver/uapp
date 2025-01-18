@@ -27,11 +27,11 @@ class SplashScreen extends StatelessWidget {
                         opacity: controller.fadeAnimation,
                         child: Text(
                           Strings.appTitle,
-                          style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                          style: TextStyle(
                             color: Theme.of(context).primaryColor,
                             fontFamily: Fonts.rubik,
                             fontWeight: FontWeight.bold,
-                            fontSize: width / 4,
+                            fontSize: width / 5,
                           ),
                           textAlign: TextAlign.center,
                         ),

@@ -1,4 +1,3 @@
-import 'package:uapp/modules/memo/data/memo.dart';
 import 'package:uapp/modules/memo/data/model/memo_accounting.dart';
 import 'package:uapp/modules/memo/data/model/memo_barang_rusak.dart';
 import 'package:uapp/modules/memo/data/model/memo_khusus.dart';

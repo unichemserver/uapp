@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/core/utils/utils.dart';
-import 'package:uapp/models/sudah_invoice.dart';
 import 'package:uapp/modules/marketing/marketing_controller.dart';
+import 'package:uapp/modules/marketing/model/invoice_model.dart';
 
 class InvoiceListSheet extends StatelessWidget {
   const InvoiceListSheet({
@@ -40,40 +40,39 @@ class InvoiceListSheet extends StatelessWidget {
               : ListView.builder(
                   itemCount: ctx.listInvoice.length,
                   itemBuilder: (context, index) {
-                    SudahInvoice invoice = ctx.listInvoice[index];
+                    BelumInvoice invoice = ctx.listInvoice[index];
                     double width = MediaQuery.of(context).size.width;
                     return ExpansionTile(
                       leading: Radio(
                         value: invoice,
                         groupValue: ctx.selectedInvoice,
                         onChanged: (value) {
-                          ctx.selectInvoice(value as SudahInvoice);
+                          ctx.selectInvoice(value as BelumInvoice);
                           Get.back();
                         },
                       ),
                       title: Row(
                         children: [
                           const Icon(Icons.receipt_long),
-                          Text(invoice.noinv),
+                          Text(invoice.nomorInvoice!),
                         ],
                       ),
-                      subtitle: Text(invoice.custname),
                       expandedCrossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(width: width - width / 2),
-                        const Text('Total Tagihan:'),
+                        const Text('Nilai Invoice:'),
                         Text(
-                          Utils.formatCurrency(invoice.amount.toString()),
+                          Utils.formatCurrency(invoice.nilaiInvoice.toString()),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        const Text('Jumlah Terbayar:'),
+                        const Text('Sisa Piutang:'),
                         Text(
-                          Utils.formatCurrency(invoice.amountpaid.toString()),
+                          Utils.formatCurrency(invoice.sisaPiutang.toString()),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const Text('Jatuh Tempo:'),
                         Text(
-                          formatDate(DateTime.parse(invoice.duedate)),
+                          formatDate(DateTime.parse(invoice.jatuhTempo!)),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],

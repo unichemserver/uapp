@@ -1,23 +1,28 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/database/local_database.dart';
+import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/sync/sync_api_service.dart';
 import 'package:uapp/core/sync/sync_manager.dart';
-import 'package:uapp/core/utils/alarm_manager.dart';
+import 'package:uapp/core/background_service/alarm_manager.dart';
 import 'package:uapp/core/utils/jenis_call.dart';
+import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/utils.dart';
+import 'package:uapp/models/hr_approval_response.dart';
 import 'package:uapp/models/marketing_activity.dart';
 import 'package:uapp/models/menu.dart';
 import 'package:uapp/models/user.dart';
 import 'package:uapp/modules/home/home_api.dart';
+import 'package:workmanager/workmanager.dart';
 
-class HomeController extends GetxController {
+class HomeController extends GetxController with WidgetsBindingObserver {
   final Box box = Hive.box(HiveKeys.appBox);
   final syncManager = SyncManager(SyncApiService(), DatabaseHelper());
   final db = DatabaseHelper();
@@ -37,7 +42,8 @@ class HomeController extends GetxController {
   User? userData;
   bool showPassword = false;
   bool showConfirmPassword = false;
-  Timer? timer;
+  HrResponse? hrResponse;
+  List<HrSuratIjin> hrApprovalList = [];
 
   void togglePasswordVisibility() {
     showPassword = !showPassword;
@@ -81,14 +87,6 @@ class HomeController extends GetxController {
     }
   }
 
-  getListMarketingActivity() async {
-    if (!Utils.isMarketing()) return;
-    final data = await db.getMarketingActivityList();
-    listMarketingActivity.clear();
-    listMarketingActivity.addAll(data);
-    update();
-  }
-
   void getFotoNamaUrl() {
     String baseUrl = box.get(HiveKeys.baseURL);
     userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
@@ -113,9 +111,13 @@ class HomeController extends GetxController {
     try {
       await sync.syncAll(onStatus: (status) {});
     } finally {
-      showPersistentSnackbar('Sinkronisasi data selesai');
-      await Future.delayed(const Duration(seconds: 3));
       dismissSnackbar();
+      Get.snackbar(
+        'Sync Data',
+        'Sinkronisasi data selesai',
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 2),
+      );
     }
   }
 
@@ -139,26 +141,81 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    firstSync();
+    WidgetsBinding.instance.addObserver(this);
+    // firstSync();
     getAvailableMenus();
     getFotoNamaUrl();
-    checkPasswordStatus();
-    getListMarketingActivity();
+    // checkPasswordStatus();
     scheduleUploadDataPeriodicly();
+    getHrPendingApproval();
   }
 
-  void scheduleUploadDataPeriodicly() {
-    var user = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
-    if (user.department == 'MKT') {
-      print('Schedule Upload Data');
-      scheduleUploadDataPeriodic();
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      AlarmManager.updateLocation();
     }
   }
 
   @override
   void onClose() {
-    timer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.onClose();
+  }
+
+  void getHrPendingApproval() {
+    final userid = Utils.getUserData().id;
+    final baseUrl = box.get(HiveKeys.baseURL);
+    HomeApi.getHrApproval(baseUrl, userid).then((value) {
+      if (value != null) {
+        hrResponse = value;
+        update();
+      }
+    });
+  }
+
+  void scheduleUploadDataPeriodicly() async {
+    await Future.delayed(const Duration(seconds: 5));
+    if (Utils.getUserData().department == 'MKT') {
+      AlarmManager.scheduleUploadDataMA();
+    }
+
+    AlarmManager.updateLocation();
+    Workmanager().registerPeriodicTask(
+      'locationTrackingTask',
+      'TrackLocation',
+      frequency: const Duration(minutes: 15),
+    );
+
+    // final NotificationPermission permission =
+    //     await FlutterForegroundTask.checkNotificationPermission();
+    // if (permission != NotificationPermission.granted) {
+    //   await FlutterForegroundTask.requestNotificationPermission();
+    // }
+    // if (Platform.isAndroid) {
+    //   if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
+    //     await FlutterForegroundTask.requestIgnoreBatteryOptimization();
+    //   }
+    // }
+    // FlutterForegroundTask.init(
+    //   androidNotificationOptions: AndroidNotificationOptions(
+    //     channelId: 'location_service',
+    //     channelName: 'Location Service',
+    //   ),
+    //   iosNotificationOptions: const IOSNotificationOptions(
+    //     showNotification: true,
+    //     playSound: false,
+    //   ),
+    //   foregroundTaskOptions: ForegroundTaskOptions(
+    //     eventAction: ForegroundTaskEventAction.repeat(10000),
+    //     autoRunOnBoot: true,
+    //     autoRunOnMyPackageReplaced: true,
+    //     allowWakeLock: true,
+    //     allowWifiLock: true,
+    //   ),
+    // );
+    // await _startService();
+    // Log.d('Service started');
   }
 
   checkPasswordStatus() async {
@@ -182,16 +239,7 @@ class HomeController extends GetxController {
     bool isLogout = await HomeApi.logout(baseUrl, token);
     if (isLogout) {
       clearDatabase();
-      box.delete(HiveKeys.userData);
-      box.delete(HiveKeys.baseURL);
-      box.delete(HiveKeys.menu);
-      box.delete(HiveKeys.isSync);
-      box.delete(HiveKeys.isCheckIn);
-      box.delete(HiveKeys.selectedCustID);
-      box.delete(HiveKeys.selectedRuteID);
-      box.delete(HiveKeys.idMa);
-      box.delete(HiveKeys.jenisCall);
-      Get.offAllNamed(Routes.AUTH);
+      box.clear();
     } else {
       Get.snackbar('Error', 'Logout Gagal, Silahkan Coba Lagi');
     }
@@ -200,9 +248,11 @@ class HomeController extends GetxController {
   Future<void> clearDatabase() async {
     try {
       final db = DatabaseHelper();
+      final dbMa = MarketingDatabase();
       await db.deleteSyncData();
+      await dbMa.deleteAllData();
     } catch (e) {
-      print('Error: $e');
+      Log.d('Error: $e');
     }
   }
 
@@ -229,7 +279,16 @@ class HomeController extends GetxController {
     final box = Hive.box(HiveKeys.appBox);
     final userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
     final salesrepid = userData.salesrepid;
-    if (salesrepid.isEmpty || salesrepid == '0') {
+    if (userData.namaPanggilan?.toLowerCase() == 'ferdi') {
+      return true;
+    }
+    if (userData.department == 'MKT') {
+      return true;
+    }
+    if (salesrepid == null ||
+        salesrepid.isEmpty ||
+        salesrepid == '0' ||
+        userData.department != 'MKT') {
       return false;
     }
     return true;
@@ -246,7 +305,7 @@ class HomeController extends GetxController {
 
   void requestMenu() async {
     final url = box.get(HiveKeys.baseURL);
-    final user = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
+    final user = Utils.getUserData();
     final department = user.department;
     final bagian = user.bagian;
     final role = user.role;
@@ -297,12 +356,9 @@ class HomeController extends GetxController {
   }
 
   Future<void> checkOut(String statusCall, int idMarketingActivity) async {
-    print('CheckOut');
     var userPosition = await Geolocator.getCurrentPosition();
     var lat = userPosition.latitude;
     var lon = userPosition.longitude;
-    print('Save CheckOut to Database');
-    print('Status Call: $statusCall');
     await db.checkOut(
       idMarketingActivity,
       lat,
@@ -311,12 +367,9 @@ class HomeController extends GetxController {
       box.get(HiveKeys.jenisCall),
     );
     bool isConnect = await Utils.isInternetAvailable();
-    print('Check Internet Connection: $isConnect');
     if (isConnect) {
-      print('Upload Report Data');
       await uploadReportData(idMarketingActivity);
     }
-    print('Set Checkin to False');
     setDataCheckIn();
     Get.back();
     Get.snackbar('Success', 'Checkout Success');
@@ -341,23 +394,22 @@ class HomeController extends GetxController {
 
   Future<void> uploadReportData(int idMarketingActivity) async {
     var dataActivity = await db.getMarketingActivity(idMarketingActivity);
-    print('Data Activity: $dataActivity');
+
     var stockItemsDb = await db.getStockReports(idMarketingActivity);
     var stockItems = stockItemsDb.map((e) => e.toJson()).toList();
-    print('Stock Items: $stockItems');
+
     var competitorItemsDb = await db.getCompetitors(idMarketingActivity);
     var competitorItems = competitorItemsDb.map((e) => e.toJson()).toList();
-    print('Competitor Items: $competitorItems');
+
     var collectionItemsDb = await db.getCollections(idMarketingActivity);
     var collectionItems = collectionItemsDb.map((e) => e.toJson()).toList();
-    print('Collection Items: $collectionItems');
+
     var imageItems = await db.getImageItems(idMarketingActivity);
-    print('Image Items: $imageItems');
+
     var toItems = await db.getTakingOrder(idMarketingActivity);
-    print('Taking Order Items: ${toItems.map((e) => e.toMap()).toList()}');
 
     var jenisCall = dataActivity['jenis'];
-    print('Jenis Call: $jenisCall');
+
     Map<String, dynamic> reportData = dataActivity;
     if (jenisCall == Call.noo) {
       var customerId = box.get(HiveKeys.selectedCustID);
@@ -389,7 +441,7 @@ class HomeController extends GetxController {
     } else if (jenisCall == Call.canvasing) {
       var customerId = dataActivity['cust_id'];
       var canvasingItem = await db.getCanvasingById(customerId);
-      print('Test: ${canvasingItem.toJson()}');
+
       var custId = await HomeApi().uploadCanvasingReport(
         canvasingItem.toJson(),
         box.get(HiveKeys.baseURL),

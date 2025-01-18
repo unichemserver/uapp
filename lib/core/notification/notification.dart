@@ -17,21 +17,24 @@ Future<void> initializeNotifications() async {
 }
 
 Future<void> showNotification(
-    String title, String body) async {
-  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    String channelID, String channelName, int id, String title, String body,
+    {bool ongoing = false}) async {
+  AndroidNotificationDetails androidPlatformChannelSpecifics =
       AndroidNotificationDetails(
-    'channel_id',
-    'channel_name',
+    channelID,
+    channelName,
     channelDescription: 'your_channel_description',
     importance: Importance.max,
     priority: Priority.high,
     showWhen: false,
+    ongoing: ongoing,
   );
 
-  const NotificationDetails platformChannelSpecifics =
-      NotificationDetails(android: androidPlatformChannelSpecifics);
+  NotificationDetails platformChannelSpecifics = NotificationDetails(
+    android: androidPlatformChannelSpecifics,
+  );
   await flutterLocalNotificationsPlugin.show(
-    0,
+    id,
     title,
     body,
     platformChannelSpecifics,

@@ -52,7 +52,7 @@ class PrintResi {
 
   String getFormattedStringToPrint(Resi resi) {
     String receipt = '';
-    var subtotal = resi.toItems.map((e) => e.price).reduce((value, element) => value + element);
+    var subtotal = resi.toItems.map((e) => e.price).reduce((value, element) => value! + element!);
     var subtotalFormatted = rp(subtotal.toString());
 
     receipt += spacetwo;
@@ -62,15 +62,15 @@ class PrintResi {
     receipt += spaceone;
     for (var item in resi.toItems) {
       receipt += '${item.description}\n';
-      String quantity = formatQuantity(item.quantity);
-      String unit = rp(formatUnit(item.unit));
+      String quantity = formatQuantity(item.quantity!);
+      String unit = rp(formatUnit(item.unit!));
       String price = rp(item.price.toString());
       receipt += '${formatLabelValue('$quantity X $unit', price)}\n';
     }
     receipt += spaceone;
     receipt += '${formatLabelValue('SUB TOTAL', subtotalFormatted)}\n';
     receipt += '${formatLabelValue('DISKON', '0')}\n';
-    receipt += '${formatLabelValue('PPN (0%)', '0')}\n';
+    // receipt += '${formatLabelValue('PPN (0%)', '0')}\n';
     receipt += spaceone;
     receipt += '${formatLabelValue('TOTAL', subtotalFormatted)}\n';
     receipt += spacetwo;

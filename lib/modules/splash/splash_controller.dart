@@ -1,15 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
-import 'package:uapp/core/utils/utils.dart';
-import 'package:uapp/core/widget/no_connection_dialog.dart';
-import 'package:uapp/models/user.dart';
-import 'package:http/http.dart' as http;
+import 'package:uapp/core/utils/fake_gps_checker.dart';
 
 class SplashController extends GetxController with GetTickerProviderStateMixin {
   late final AnimationController _scaleController;
@@ -30,20 +25,20 @@ class SplashController extends GetxController with GetTickerProviderStateMixin {
 
   void initAnimation() {
     _scaleController = AnimationController(
-      duration: const Duration(seconds: 1),
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
 
     _fadeController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 1),
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(begin: 0, end: 0.5).animate(
+    _scaleAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
     );
 
-    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.25).animate(
+    _fadeAnimation = Tween<double>(begin: 1, end: 0.5).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
 
@@ -58,84 +53,36 @@ class SplashController extends GetxController with GetTickerProviderStateMixin {
     _scaleController.forward().then((value) => _fadeController.forward());
   }
 
-  void _checkLogin() {
+  void _checkLogin() async {
     _isLogged = box.get(HiveKeys.userData) != null;
+    bool isFakeGpsInstalled = await FakeGpsChecker.isFakeGpsInstalled();
+    bool isUsingMockLocation = await FakeGpsChecker.isMockLocationEnabled();
 
-    Future.delayed(const Duration(seconds: 4), () {
-      if (_isLogged) {
-        // _changeStatusBarVisibility();
-        _checkInternetAvailability();
+    Future.delayed(const Duration(seconds: 2), () {
+      if (isFakeGpsInstalled || isUsingMockLocation) {
+        Get.dialog(
+          PopScope(
+            canPop: true,
+            child: AlertDialog(
+              title: const Text('Warning'),
+              content: const Text('Anda terdeteksi menggunakan Fake GPS atau Mock Location'),
+              actions: [
+                TextButton(
+                  onPressed: () => SystemNavigator.pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          ),
+        );
       } else {
-        Get.offNamed(Routes.AUTH);
-      }
-    });
-  }
-
-  void _changeStatusBarVisibility() {
-    if (Utils.isMarketing()) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        systemNavigationBarColor: Colors.transparent,
-      ));
-    }
-  }
-
-  void _checkInternetAvailability() async {
-    bool isInternetAvailable = await Utils.isInternetAvailable();
-    if (Utils.isMarketing()) {
-      Get.offNamed(Routes.HOME);
-      return;
-    }
-    if (isInternetAvailable) {
-      _checkPasswordStatus();
-    } else {
-      Get.dialog(NoConnectionDialog(
-        onOkPressed: () {
-          Get.back();
-          onInit();
-        },
-      ));
-    }
-  }
-
-  void _checkPasswordStatus() async {
-    try {
-      var userDataJson = box.get(HiveKeys.userData, defaultValue: null);
-      if (userDataJson == null) {
-        throw Exception("User data is null");
-      }
-
-      var userData = User.fromJson(jsonDecode(userDataJson));
-
-      var baseUrlString = box.get(HiveKeys.baseURL, defaultValue: null);
-      if (baseUrlString == null) {
-        throw Exception("Base URL is null");
-      }
-
-      var baseUrl = Uri.parse(baseUrlString);
-      var response = await http.post(baseUrl, body: {
-        'action': 'getuserpassword',
-        'user_id': userData.id,
-      });
-
-      if (response.statusCode == 200) {
-        var responseBody = jsonDecode(response.body);
-        var status = responseBody['status'];
-
-        if (status == "1") {
+        if (_isLogged) {
           Get.offNamed(Routes.HOME);
         } else {
-          Get.offNamed(Routes.CHANGE_PASSWORD);
+          Get.offNamed(Routes.AUTH);
         }
-      } else {
-        Get.snackbar('Error', 'Terjadi kesalahan saat mengecek status password');
-        Get.offNamed(Routes.HOME);
       }
-    } catch (e) {
-      print(e);
-      Get.snackbar('Error', e.toString());
-    }
+    });
   }
 
   @override

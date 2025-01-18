@@ -1,21 +1,20 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:uapp/modules/report/report_controller.dart';
+import 'package:uapp/modules/camera/cam_controller.dart';
 
-class ReportScreen extends StatelessWidget {
-  const ReportScreen({super.key});
+class CamScreen extends StatelessWidget {
+  const CamScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<ReportController>(
-      init: ReportController(),
+    return GetBuilder<CamController>(
+      init: CamController(),
       initState: (_) {},
       builder: (ctx) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Report'),
+            title: const Text('Take Picture'),
           ),
           body: ctx.cameras == null
               ? const Center(

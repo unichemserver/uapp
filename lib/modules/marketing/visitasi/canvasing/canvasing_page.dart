@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/core/widget/loading_dialog.dart';
 import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_controller.dart';
 import 'package:uapp/modules/marketing/visitasi/canvasing/widget/addcustomer.dart';
@@ -52,8 +53,7 @@ class CanvasingPage extends StatelessWidget {
     Get.dialog(
       AlertDialog(
         title: const Text('Checkout'),
-        content:
-        const Text('Apakah anda yakin ingin checkout?'),
+        content: const Text('Apakah anda yakin ingin checkout?'),
         actions: [
           TextButton(
             onPressed: () {
@@ -78,23 +78,28 @@ class CanvasingPage extends StatelessWidget {
     );
   }
 
-  showCancelConfirmationDialog(CanvasingController ctx) {
+  showCancelConfirmationDialog(CanvasingController ctx, BuildContext context) {
     Get.dialog(
       AlertDialog(
         title: const Text('Cancel Canvasing'),
-        content: const Text('Apakah anda yakin ingin membatalkan proses canvasing?'),
+        content:
+            const Text('Apakah anda yakin ingin membatalkan proses canvasing?'),
         actions: [
           TextButton(
             onPressed: () {
+              Get.back();
               Get.back();
             },
             child: const Text('Tidak'),
           ),
           TextButton(
             onPressed: () {
-              ctx.cancelCanvasing();
               Get.back();
-              Get.back();
+              Utils.showLoadingDialog(context);
+              ctx.cancelCanvasing().then((value) {
+                Navigator.of(context).pop();
+                Get.back();
+              });
             },
             child: const Text('Ya'),
           ),
@@ -129,7 +134,7 @@ class CanvasingPage extends StatelessWidget {
               if (ctx.isToComplete) {
                 Get.back();
               } else {
-                showCancelConfirmationDialog(ctx);
+                showCancelConfirmationDialog(ctx, context);
               }
             }
           },
@@ -148,24 +153,23 @@ class CanvasingPage extends StatelessWidget {
                   if (ctx.isToComplete) {
                     Get.back();
                   } else {
-                    showCancelConfirmationDialog(ctx);
+                    showCancelConfirmationDialog(ctx, context);
                   }
                 },
               ),
-              // actions: [
-              //   IconButton(
-              //     onPressed: () {
-              //       validateForm(ctx);
-              //     },
-              //     icon: const Icon(Icons.save),
-              //   ),
-              // ],
             ),
             body: canvasingWidgets[ctx.canvasingIndex],
             bottomNavigationBar: BottomNavigationBar(
               currentIndex: ctx.canvasingIndex,
               onTap: (index) {
+                if (index != 0 && !isFormFullyFilled(ctx)) {
+                  showWarningSnackBar('Form Customer belum lengkap');
+                  return;
+                }
                 ctx.setCanvasingIndex(index);
+                if (index != 0) {
+                  ctx.saveCustomerData();
+                }
               },
               items: const [
                 BottomNavigationBarItem(

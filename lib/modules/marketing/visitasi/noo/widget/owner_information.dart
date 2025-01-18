@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:uapp/core/widget/speech_to_textfield.dart';
+import 'package:uapp/core/widget/app_textfield.dart';
+import 'package:uapp/modules/marketing/visitasi/noo/noo_address_model.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/widget/address_information.dart';
 
 class OwnerInformation extends StatelessWidget {
-  const OwnerInformation({super.key});
+  OwnerInformation({
+    super.key,
+    required this.ownerNameCtrl,
+    required this.idNoCtrl,
+    required this.ageGenderCtrl,
+    required this.phoneCtrl,
+    required this.emailCtrl,
+    this.ownerAddress,
+  });
+
+  final TextEditingController ownerNameCtrl;
+  final TextEditingController idNoCtrl;
+  final TextEditingController ageGenderCtrl;
+  final TextEditingController phoneCtrl;
+  final TextEditingController emailCtrl;
+  NooAddressModel? ownerAddress;
 
   @override
   Widget build(BuildContext context) {
@@ -17,45 +33,46 @@ class OwnerInformation extends StatelessWidget {
           'Nama Pemilik Usaha:',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(
-          controller: TextEditingController(),
+        AppTextField(
+          controller: ownerNameCtrl,
         ),
         const SizedBox(height: 16),
         Text(
           'No. KTP/SIM:',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(
-          controller: TextEditingController(),
+        AppTextField(
+          controller: idNoCtrl,
         ),
         const SizedBox(height: 16),
         Text(
           'Umur/ Jenis Kelamin:',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(
-          controller: TextEditingController(),
+        AppTextField(
+          controller: ageGenderCtrl,
         ),
         const SizedBox(height: 16),
         Text(
           'No. Telepon/ Handphone:',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(
-          controller: TextEditingController(),
+        AppTextField(
+          controller: phoneCtrl,
         ),
         const SizedBox(height: 16),
         Text(
           'Email:',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(
-          controller: TextEditingController(),
+        AppTextField(
+          controller: emailCtrl,
         ),
         const SizedBox(height: 16),
         AddressInformation(
           title: 'Alamat Rumah Pemilik',
-        )
+          addressModel: ownerAddress,
+        ),
       ],
     );
   }

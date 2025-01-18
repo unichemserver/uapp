@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:uapp/core/utils/jenis_call.dart';
 import 'package:uapp/core/utils/log.dart';
+import 'package:uapp/models/hr_approval_response.dart';
 import 'package:uapp/models/user.dart';
 
 import '../../core/hive/hive_keys.dart';
@@ -59,6 +60,29 @@ class HomeApi {
     }
   }
 
+  static Future<HrResponse?> getHrApproval(String url, String userId) async {
+    try {
+      final baseUrl = Uri.parse(url);
+      final bodyRequest = {
+        'action': 'hr',
+        'method': 'pending_approval',
+        'userid': userId,
+      };
+      final response = await http.post(
+        baseUrl,
+        body: bodyRequest,
+      );
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return HrResponse.fromJson(jsonData);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
   static Future<String?> getListMenu(
     String url,
     String department,
@@ -77,6 +101,7 @@ class HomeApi {
         baseUrl,
         body: bodyRequest,
       );
+      print(response.body);
       if (response.statusCode == 200) {
         return response.body;
       } else {

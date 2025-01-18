@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
-import 'package:uapp/core/widget/loading_dialog.dart';
 import 'package:uapp/modules/memo/widget/dropdown_list.dart';
 import 'package:uapp/modules/memo/widget/label_text.dart';
 import 'package:uapp/modules/production/data/model/warehouse.dart';

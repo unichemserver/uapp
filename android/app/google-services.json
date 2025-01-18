@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "399697140827",
+    "project_id": "u-app-d2e3e",
+    "storage_bucket": "u-app-d2e3e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:399697140827:android:5a0c7d343997b449da737e",
+        "android_client_info": {
+          "package_name": "com.uci.uapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAewFxxV_pXR71MzvLfYGA4wz7GU_KVG8M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

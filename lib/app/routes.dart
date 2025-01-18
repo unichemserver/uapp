@@ -9,19 +9,23 @@ import 'package:uapp/modules/chat/pages/contact_page.dart';
 import 'package:uapp/modules/home/home_binding.dart';
 import 'package:uapp/modules/home/home_screen.dart';
 import 'package:uapp/modules/home/pages/change_password_page.dart';
-import 'package:uapp/modules/home/pages/sync_page.dart';
 import 'package:uapp/modules/hr/hr_menu_page.dart';
 import 'package:uapp/modules/marketing/marketing_binding.dart';
 import 'package:uapp/modules/marketing/marketing_screen.dart';
+import 'package:uapp/modules/marketing/sync_marketing_screen.dart';
 import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_binding.dart';
 import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_page.dart';
+import 'package:uapp/modules/marketing/visitasi/custactive/custactive_binding.dart';
+import 'package:uapp/modules/marketing/visitasi/custactive/custactive_page.dart';
+import 'package:uapp/modules/marketing/visitasi/history_visitasi.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_binding.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_page.dart';
+import 'package:uapp/modules/marketing/visitasi/noo/noo_saved.dart';
 import 'package:uapp/modules/memo/memo_utils.dart';
 import 'package:uapp/modules/profile/profile_binding.dart';
 import 'package:uapp/modules/profile/profile_screen.dart';
-import 'package:uapp/modules/report/report_binding.dart';
-import 'package:uapp/modules/report/report_screen.dart';
+import 'package:uapp/modules/camera/cam_binding.dart';
+import 'package:uapp/modules/camera/cam_screen.dart';
 import 'package:uapp/modules/settings/setting_binding.dart';
 import 'package:uapp/modules/settings/setting_screen.dart';
 import 'package:uapp/modules/splash/splash_binding.dart';
@@ -36,18 +40,21 @@ class Routes {
   static const String CANVASING = '/canvasing';
   static const String NOO = '/noo';
   static const String PERMISSION = '/permission';
-  static const String SYNC = '/sync';
   static const String HR = '/hr';
   static const String CHANGE_PASSWORD = '/change-password';
   static const String PROFILE = '/profile';
   static const String CHAT = '/chat';
   static const String CONTACT = '/contact';
   static const String SETTING = '/setting';
+  static const String CUSTACTIVE = '/custactive';
+  static const String HISTORY_VISITASI = '/history-visitasi';
+  static const String SAVED_NOO = '/saved-noo';
+  static const String SYNC_MARKETING = '/sync-marketing';
 
   static List<GetPage> pages = [
     GetPage(
       name: INITIAL,
-      page: () => SplashScreen(),
+      page: () => const SplashScreen(),
       binding: SplashBinding(),
     ),
     GetPage(
@@ -57,7 +64,7 @@ class Routes {
     ),
     GetPage(
       name: AUTH,
-      page: () => AuthScreen(),
+      page: () => const AuthScreen(),
       binding: AuthBinding(),
     ),
     GetPage(
@@ -67,17 +74,13 @@ class Routes {
     ),
     GetPage(
       name: REPORT,
-      page: () => ReportScreen(),
-      binding: ReportBinding(),
+      page: () => const CamScreen(),
+      binding: CamBinding(),
     ),
     GetPage(
       name: CANVASING,
       page: () => CanvasingPage(),
       binding: CanvasingBinding(),
-    ),
-    GetPage(
-      name: SYNC,
-      page: () => const SyncPage(),
     ),
     GetPage(
       name: HR,
@@ -89,7 +92,7 @@ class Routes {
     ),
     GetPage(
       name: PROFILE,
-      page: () => ProfileScreen(),
+      page: () => const ProfileScreen(),
       binding: ProfileBinding(),
     ),
     GetPage(
@@ -103,13 +106,30 @@ class Routes {
     ),
     GetPage(
       name: SETTING,
-      page: () => SettingScreen(),
+      page: () => const SettingScreen(),
       binding: SettingBinding(),
     ),
     GetPage(
       name: NOO,
       page: () => NooPage(),
       binding: NooBinding(),
+    ),
+    GetPage(
+      name: CUSTACTIVE,
+      page: () => CustactivePage(),
+      binding: CustactiveBinding(),
+    ),
+    GetPage(
+      name: HISTORY_VISITASI,
+      page: () => HistoryVisitasi(type: Get.arguments),
+    ),
+    GetPage(
+      name: SAVED_NOO,
+      page: () => const NooSaved(),
+    ),
+    GetPage(
+      name: SYNC_MARKETING,
+      page: ()=>const SyncMarketingScreen(),
     ),
     ...createdMemoList.map((e) => GetPage(
           name: '/${e.name.replaceAll(' ', '_').toLowerCase()}',

@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/utils/rupiah_formatter.dart';
 import 'package:uapp/core/utils/utils.dart';
-import 'package:uapp/models/collection.dart';
 import 'package:uapp/modules/marketing/marketing_controller.dart';
+import 'package:uapp/modules/marketing/model/collection_model.dart';
 import 'package:uapp/modules/marketing/widget/list_invoice.dart';
 
 class CollectionReportDialog extends StatelessWidget {
@@ -22,8 +25,9 @@ class CollectionReportDialog extends StatelessWidget {
           init: MarketingController(),
           initState: (_) {},
           builder: (ctx) {
-            String selectedNoInv = ctx.selectedInvoice?.noinv ?? '';
-            int selectedAmount = ctx.selectedInvoice?.discrepancy ?? 0;
+            String selectedNoInv = ctx.selectedInvoice?.nomorInvoice ?? '';
+            int selectedAmount =
+                int.parse(ctx.selectedInvoice?.sisaPiutang!.split('.').first ?? '0');
             final noInvController = TextEditingController(text: selectedNoInv);
             final amountController = TextEditingController(
               text: Utils.formatCurrency(
@@ -104,6 +108,7 @@ class CollectionReportDialog extends StatelessWidget {
                           }).toList(),
                         ),
                         const SizedBox(height: 16),
+                        buildBuktiTransfer(ctx),
                         TextFormField(
                           controller: amountPaidController,
                           enabled: ctx.selectedPaymentMethod != null,
@@ -111,7 +116,7 @@ class CollectionReportDialog extends StatelessWidget {
                           inputFormatters: [RupiahInputFormatter()],
                           onChanged: (value) {
                             String number =
-                            value.replaceAll(RegExp(r'[^0-9]'), '');
+                                value.replaceAll(RegExp(r'[^0-9]'), '');
                             int amount = int.tryParse(number) ?? 0;
                             if (amount == 0) {
                               ctx.selectStatusPayment(2);
@@ -120,12 +125,7 @@ class CollectionReportDialog extends StatelessWidget {
                             } else if (amount < selectedAmount) {
                               ctx.selectStatusPayment(1);
                             } else if (amount > selectedAmount) {
-                              Get.snackbar(
-                                'Error',
-                                'Jumlah bayar tidak boleh melebihi jumlah tagihan',
-                                backgroundColor: Colors.red,
-                                colorText: Colors.white,
-                              );
+                              amountPaidController.text = amountController.text;
                             }
                           },
                           decoration: const InputDecoration(
@@ -145,51 +145,14 @@ class CollectionReportDialog extends StatelessWidget {
                           'Status Pembayaran',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            ChoiceChip(
-                              label: const Row(
-                                children: [
-                                  Icon(Icons.check_circle),
-                                  SizedBox(width: 4),
-                                  Text('Collected'),
-                                ],
-                              ),
-                              selected: ctx.selectedStatusPayment == 0,
-                              onSelected: (value) {},
-                            ),
-                            ChoiceChip(
-                              label: const Row(
-                                children: [
-                                  Icon(Icons.hourglass_bottom),
-                                  SizedBox(width: 4),
-                                  Text('Partial Collected'),
-                                ],
-                              ),
-                              selected: ctx.selectedStatusPayment == 1,
-                              onSelected: (value) {},
-                            ),
-                            ChoiceChip(
-                              label: const Row(
-                                children: [
-                                  Icon(Icons.highlight_off),
-                                  SizedBox(width: 4),
-                                  Text('Not Collected'),
-                                ],
-                              ),
-                              selected: ctx.selectedStatusPayment == 2,
-                              onSelected: (value) {},
-                            ),
-                          ],
-                        ),
+                        buildSelectedChip(ctx.selectedStatusPayment),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
                             int amount = int.tryParse(
-                              amountPaidController.text
-                                  .replaceAll(RegExp(r'[^0-9]'), ''),
-                            ) ??
+                                  amountPaidController.text
+                                      .replaceAll(RegExp(r'[^0-9]'), ''),
+                                ) ??
                                 0;
                             if (ctx.selectedPaymentMethod == null) {
                               Get.snackbar(
@@ -198,29 +161,24 @@ class CollectionReportDialog extends StatelessWidget {
                                 backgroundColor: Colors.red,
                                 colorText: Colors.white,
                               );
-                            } else if (amount > selectedAmount) {
-                              Get.snackbar(
-                                'Error',
-                                'Jumlah bayar tidak boleh melebihi jumlah tagihan',
-                                backgroundColor: Colors.red,
-                                colorText: Colors.white,
-                              );
                             } else {
-                              String noColl = 'COLL${DateTime.now().toString().split(' ')[0]}${ctx.idMarketingActivity}';
-                              var data = Collection(
+                              String noColl =
+                                  'COLL${DateTime.now().toString().split(' ')[0]}${ctx.idMarketingActivity}';
+                              var data = CollectionModel(
                                 idMA: ctx.idMarketingActivity!,
                                 noInvoice: noInvController.text,
-                                amount: amount,
+                                amount: amount.toInt(),
                                 type: ctx.selectedPaymentMethod!,
-                                noCollection: noColl,
+                                noCollect: noColl,
+                                buktiBayar: ctx.buktiTransfer,
                                 status: ctx.selectedStatusPayment == 0
                                     ? 'collected'
                                     : ctx.selectedStatusPayment == 1
-                                    ? 'partial collected'
-                                    : 'not collected',
+                                        ? 'partial collected'
+                                        : 'not collected',
                               );
                               // clear all input
-                              Get.back(result: data.toJson());
+                              Get.back(result: data);
                               noInvController.clear();
                               amountController.clear();
                               amountPaidController.clear();
@@ -244,6 +202,126 @@ class CollectionReportDialog extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget buildBuktiTransfer(MarketingController ctx) {
+    if (ctx.selectedPaymentMethod == 'Transfer Bank') {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        child: GestureDetector(
+          onTap: ctx.buktiTransfer == null
+              ? null
+              : () async {
+                  var result = await Get.toNamed(Routes.REPORT);
+                  if (result != null) {
+                    ctx.buktiTransfer = result;
+                    ctx.update();
+                  }
+                },
+          child: Container(
+            height: 150,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Theme.of(Get.context!).disabledColor,
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: ctx.buktiTransfer == null
+                ? GestureDetector(
+                  onTap: () async {
+                    var imgPath = await Get.toNamed(Routes.REPORT);
+                    if (imgPath != null) {
+                      ctx.buktiTransfer = imgPath;
+                      ctx.update();
+                    }
+                  },
+                  child: const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.cloud_upload),
+                          Text('Upload Bukti Transfer'),
+                        ],
+                      ),
+                    ),
+                )
+                : GestureDetector(
+                    onTap: () async {
+                      await Get.dialog(
+                        Dialog.fullscreen(
+                          child: Image.file(File(ctx.buktiTransfer!)),
+                        ),
+                      );
+                    },
+                    child: Stack(
+                      children: [
+                        Image.file(
+                          File(ctx.buktiTransfer!),
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () {
+                              ctx.buktiTransfer = null;
+                              ctx.update();
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ),
+      );
+    }
+    return const SizedBox();
+  }
+
+  Widget buildSelectedChip(int selectedStatusPayment) {
+    switch (selectedStatusPayment) {
+      case 0:
+        return ChoiceChip(
+          label: const Row(
+            children: [
+              Icon(Icons.check_circle),
+              SizedBox(width: 4),
+              Text('Collected'),
+            ],
+          ),
+          selected: true,
+          onSelected: (value) {},
+        );
+      case 1:
+        return ChoiceChip(
+          label: const Row(
+            children: [
+              Icon(Icons.hourglass_bottom),
+              SizedBox(width: 4),
+              Text('Partial Collected'),
+            ],
+          ),
+          selected: true,
+          onSelected: (value) {},
+        );
+      case 2:
+        return ChoiceChip(
+          label: const Row(
+            children: [
+              Icon(Icons.highlight_off),
+              SizedBox(width: 4),
+              Text('Not Collected'),
+            ],
+          ),
+          selected: true,
+          onSelected: (value) {},
+        );
+      default:
+        return Container(); // Return an empty container if no valid status is selected
+    }
   }
 
   IconData getIcon(String iconName) {

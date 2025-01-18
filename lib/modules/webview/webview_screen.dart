@@ -29,6 +29,53 @@ class _WebViewScreenState extends State<WebViewScreen> {
   String url = '';
   bool isMobileView = true;
 
+  String getErrorMessage(WebResourceErrorType? errorType) {
+    switch (errorType) {
+      case WebResourceErrorType.authentication:
+        return 'User authentication failed on server.';
+      case WebResourceErrorType.badUrl:
+        return 'Malformed URL.';
+      case WebResourceErrorType.connect:
+        return 'Failed to connect to the server.';
+      case WebResourceErrorType.failedSslHandshake:
+        return 'Failed to perform SSL handshake.';
+      case WebResourceErrorType.file:
+        return 'Generic file error.';
+      case WebResourceErrorType.fileNotFound:
+        return 'File not found.';
+      case WebResourceErrorType.hostLookup:
+        return 'Server or proxy hostname lookup failed.';
+      case WebResourceErrorType.io:
+        return 'Failed to read or write to the server.';
+      case WebResourceErrorType.proxyAuthentication:
+        return 'User authentication failed on proxy.';
+      case WebResourceErrorType.redirectLoop:
+        return 'Too many redirects.';
+      case WebResourceErrorType.timeout:
+        return 'Connection timed out.';
+      case WebResourceErrorType.tooManyRequests:
+        return 'Too many requests during this load.';
+      case WebResourceErrorType.unknown:
+        return 'Generic error.';
+      case WebResourceErrorType.unsafeResource:
+        return 'Resource load was canceled by Safe Browsing.';
+      case WebResourceErrorType.unsupportedAuthScheme:
+        return 'Unsupported authentication scheme (not basic or digest).';
+      case WebResourceErrorType.unsupportedScheme:
+        return 'Unsupported URI scheme.';
+      case WebResourceErrorType.webContentProcessTerminated:
+        return 'The web content process was terminated.';
+      case WebResourceErrorType.webViewInvalidated:
+        return 'The web view was invalidated.';
+      case WebResourceErrorType.javaScriptExceptionOccurred:
+        return 'A JavaScript exception occurred.';
+      case WebResourceErrorType.javaScriptResultTypeIsUnsupported:
+        return 'The result of JavaScript execution could not be returned.';
+      default:
+        return 'Unknown error.';
+    }
+  }
+
   void initWebController() {
     var userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
     String token = userData.token;
@@ -39,6 +86,10 @@ class _WebViewScreenState extends State<WebViewScreen> {
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
+      ..setUserAgent(
+        // "Mozilla/5.0 (Linux; Android 10; Mobile; rv:68.0) Gecko/68.0 Firefox/68.0",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
@@ -58,7 +109,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
               builder: (context) {
                 return AlertDialog(
                   title: const Text('Error'),
-                  content: const Text('Terjadi kesalahan, silahkan coba lagi'),
+                  content: Text(
+                    getErrorMessage(error.errorType),
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () {
@@ -90,12 +143,19 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   @override
+  void dispose() {
+    webViewKey.currentState?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
           IconButton(
+            tooltip: 'Change view to ${isMobileView ? 'desktop' : 'mobile'}',
             onPressed: () {
               if (isMobileView) {
                 controller
@@ -108,9 +168,11 @@ class _WebViewScreenState extends State<WebViewScreen> {
                   });
                 });
               } else {
-                controller.runJavaScript(
+                controller
+                    .runJavaScript(
                   'document.querySelector("meta[name=\'viewport\']").setAttribute("content", "width=device-width, initial-scale=1")',
-                ).then((value) {
+                )
+                    .then((value) {
                   setState(() {
                     isMobileView = true;
                   });
@@ -122,8 +184,12 @@ class _WebViewScreenState extends State<WebViewScreen> {
             ),
           ),
           IconButton(
+            tooltip: 'Refresh',
             onPressed: () {
               controller.reload();
+              setState(() {
+                isMobileView = true;
+              });
             },
             icon: const Icon(Icons.refresh),
           ),

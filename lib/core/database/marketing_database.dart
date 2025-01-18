@@ -1,0 +1,180 @@
+import 'package:sqflite/sqflite.dart';
+import 'package:uapp/core/database/ext.dart';
+
+class MarketingDatabase {
+  static final MarketingDatabase _instance =
+      MarketingDatabase._privateConstructor();
+  static Database? _database;
+
+  MarketingDatabase._privateConstructor();
+
+  factory MarketingDatabase() {
+    return _instance;
+  }
+
+  Future<Database> get database async {
+    if (_database != null) {
+      return _database!;
+    }
+    _database = await _initDatabase();
+    return _database!;
+  }
+
+  Future<Database> _initDatabase() async {
+    return await openDatabase(
+      'marketing.db',
+      version: 1,
+      onCreate: _onCreate,
+    );
+  }
+
+  Future<void> _onCreate(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS marketing_activity (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        rute_id TEXT,
+        cust_id TEXT,
+        top_id TEXT,
+        cust_name TEXT,
+        foto_ci TEXT,
+        waktu_ci TEXT,
+        waktu_co TEXT,
+        lat_ci DECIMAL(10, 8),
+        lon_ci DECIMAL(11, 8),
+        lat_co DECIMAL(10, 8),
+        lon_co DECIMAL(11, 8),
+        status_call TEXT DEFAULT 'unv',
+        jenis TEXT,
+        ttd TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        status_sync INTEGER DEFAULT 0
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS stock (
+        idMA TEXT,
+        item_id TEXT,
+        name TEXT,
+        quantity DECIMAL(10, 2),
+        unit TEXT,
+        image_path TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS competitor (
+        idMA TEXT,
+        name TEXT,
+        price DECIMAL(10, 2),
+        program TEXT,
+        support TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS display (
+        idMA TEXT,
+        image TEXT,
+        type TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS taking_order (
+        idMA TEXT,
+        itemid TEXT,
+        description TEXT,
+        quantity DECIMAL(10, 2),
+        unit TEXT,
+        price DECIMAL(10, 2)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS collection (
+        idMA TEXT,
+        noinvoice TEXT,
+        nocollect TEXT,
+        amount DECIMAL(10, 2),
+        type TEXT,
+        bukti_bayar TEXT,
+        status TEXT
+      )
+    ''');
+
+    await db.execute(invoiceTable);
+    await db.execute(masterNooTable);
+    await db.execute(ttdNooTable);
+    await db.execute(nooAddressTable);
+    await db.execute(nooDocumentTable);
+    await db.execute(nooSpesimenTable);
+    await db.execute(canvasingTable);
+    await db.execute(deleteSevenDaysMarketingActivity);
+  }
+
+  Future<int> insert(String table, Map<String, dynamic> data,
+      {String? nullColumnHack}) async {
+    final db = await database;
+    return await db.insert(
+      table,
+      data,
+      nullColumnHack: nullColumnHack,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> query(
+    String table, {
+    String? where,
+    List<dynamic>? whereArgs,
+  }) async {
+    final db = await database;
+    return await db.query(
+      table,
+      where: where,
+      whereArgs: whereArgs,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> rawQuery(String query, {List<dynamic>? args}) async {
+    final db = await database;
+    return await db.rawQuery(query, args);
+  }
+
+  Future<int> update(String table, Map<String, dynamic> data, String where,
+      List<dynamic> whereArgs) async {
+    final db = await database;
+    return await db.update(
+      table,
+      data,
+      where: where,
+      whereArgs: whereArgs,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<int> delete(
+      String table, String where, List<dynamic> whereArgs) async {
+    final db = await database;
+    return await db.delete(table, where: where, whereArgs: whereArgs);
+  }
+
+  Future<void> deleteAllData() async {
+    final db = await database;
+    await db.delete('marketing_activity');
+    await db.delete('stock');
+    await db.delete('competitor');
+    await db.delete('display');
+    await db.delete('taking_order');
+    await db.delete('collection');
+    await db.delete('invoice');
+    await db.delete('masternoo');
+    // await db.delete('ttdnoo');
+    await db.delete('nooaddress');
+    await db.delete('noodocument');
+    await db.delete('noospesimen');
+    await db.delete('canvasing');
+  }
+}

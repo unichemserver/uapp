@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+import 'package:uapp/core/utils/assets.dart';
 
 class LoadingDialog extends StatelessWidget {
   const LoadingDialog({
@@ -18,7 +20,11 @@ class LoadingDialog extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(),
+              SizedBox(
+                height: 50,
+                width: 50,
+                child: LottieBuilder.asset(Assets.loadingAnimation),
+              ),
               const SizedBox(width: 16),
               Text(message ?? 'Loading...'),
             ],

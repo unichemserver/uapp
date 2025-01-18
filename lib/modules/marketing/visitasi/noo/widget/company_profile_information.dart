@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:uapp/core/widget/speech_to_textfield.dart';
+import 'package:uapp/core/widget/app_textfield.dart';
 
 class CompanyProfileInformation extends StatelessWidget {
-  const CompanyProfileInformation({super.key});
+  const CompanyProfileInformation({
+    super.key,
+    required this.bidangUsahaCtrl,
+    required this.tglMulaiUsahaCtrl,
+    required this.produkUtamaCtrl,
+    required this.produkLainCtrl,
+    required this.limaCustUtamaCtrl,
+    required this.estOmsetMonthCtrl,
+  });
+
+  final TextEditingController bidangUsahaCtrl;
+  final TextEditingController tglMulaiUsahaCtrl;
+  final TextEditingController produkUtamaCtrl;
+  final TextEditingController produkLainCtrl;
+  final TextEditingController limaCustUtamaCtrl;
+  final TextEditingController estOmsetMonthCtrl;
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(title: Text('Profil Perusahaan'),
+    return ExpansionTile(
+      title: const Text('Profil Perusahaan'),
       leading: const Icon(Icons.business),
       expandedAlignment: Alignment.topLeft,
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
@@ -15,53 +31,49 @@ class CompanyProfileInformation extends StatelessWidget {
           'Bidang Usaha:',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(
-          controller: TextEditingController(),
+        AppTextField(
+          controller: bidangUsahaCtrl,
         ),
         const SizedBox(height: 16),
-        // 2. mulai menjalankan usaha
-        // 3. produk/ jasa utama
-        // 4. produk/ jasa lainnya
-        // 5. 5 pelanggan utama
-        // 6. perkiraan omset per bulan
         Text(
           'Mulai menjalankan usaha:',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(
-          controller: TextEditingController(),
+        AppTextField(
+          controller: tglMulaiUsahaCtrl,
         ),
         const SizedBox(height: 16),
         Text(
           'Produk/ Jasa Utama:',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(
-          controller: TextEditingController(),
+        AppTextField(
+          controller: produkUtamaCtrl,
         ),
         const SizedBox(height: 16),
         Text(
           'Produk/ Jasa Lainnya:',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(
-          controller: TextEditingController(),
+        AppTextField(
+          controller: produkLainCtrl,
         ),
         const SizedBox(height: 16),
         Text(
           '5 Pelanggan Utama:',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(
-          controller: TextEditingController(),
+        AppTextField(
+          controller: limaCustUtamaCtrl,
+          maxLines: 5,
         ),
         const SizedBox(height: 16),
         Text(
           'Perkiraan Omset per Bulan:',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        SpeechToTextField(
-          controller: TextEditingController(),
+        AppTextField(
+          controller: estOmsetMonthCtrl,
         ),
       ],
     );

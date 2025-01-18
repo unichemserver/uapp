@@ -4,15 +4,21 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
-import 'package:uapp/models/item.dart';
-import 'package:uapp/models/stock.dart';
 import 'package:uapp/modules/marketing/marketing_controller.dart';
+import 'package:uapp/modules/marketing/model/master_item.dart';
+import 'package:uapp/modules/marketing/model/stock_model.dart';
 
 class StockReportDialog extends StatefulWidget {
-  const StockReportDialog({super.key, this.stockData, required this.items});
+  const StockReportDialog({
+    super.key,
+    this.stockData,
+    required this.items,
+    required this.idMA,
+  });
 
-  final Stock? stockData;
-  final List<Item> items;
+  final StockModel? stockData;
+  final String idMA;
+  final List<MasterItem> items;
 
   @override
   State<StockReportDialog> createState() => _StockReportDialogState();
@@ -24,20 +30,28 @@ class _StockReportDialogState extends State<StockReportDialog> {
   final TextEditingController unitController = TextEditingController();
   String imagePath = '';
   final formKey = GlobalKey<FormState>();
-  Item? selectedStockName;
+  MasterItem? selectedStockName;
 
   @override
   void initState() {
     super.initState();
     if (widget.stockData != null) {
-      productNameController.text = widget.stockData!.name;
+      productNameController.text = widget.stockData!.name!;
       quantityController.text = widget.stockData!.quantity.toString();
-      unitController.text = widget.stockData!.unit;
-      imagePath = widget.stockData!.imagePath;
+      unitController.text = widget.stockData!.unit!;
+      imagePath = widget.stockData!.imagePath!;
       selectedStockName = widget.items.firstWhere(
         (element) => element.description == widget.stockData!.name,
       );
     }
+  }
+
+  @override
+  void dispose() {
+    productNameController.dispose();
+    quantityController.dispose();
+    unitController.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,13 +85,13 @@ class _StockReportDialogState extends State<StockReportDialog> {
                         const SizedBox(
                           height: 8.0,
                         ),
-                        DropdownSearch<Item>(
+                        DropdownSearch<MasterItem>(
                           items: widget.items,
-                          itemAsString: (Item item) => item.description,
+                          itemAsString: (MasterItem item) => item.description!,
                           selectedItem: selectedStockName,
-                          onChanged: (Item? item) {
-                            productNameController.text = item!.description;
-                            unitController.text = item.inventoryUnit;
+                          onChanged: (MasterItem? item) {
+                            productNameController.text = item!.description!;
+                            unitController.text = item.salesUnit!;
                             selectedStockName = item;
                             setState(() {});
                           },
@@ -171,7 +185,8 @@ class _StockReportDialogState extends State<StockReportDialog> {
                                   height: 200.0,
                                   decoration: BoxDecoration(
                                     border: Border.all(
-                                      color: Theme.of(context).colorScheme.primary,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
@@ -181,16 +196,19 @@ class _StockReportDialogState extends State<StockReportDialog> {
                                       IconButton(
                                         icon: const Icon(Icons.add_a_photo),
                                         onPressed: () async {
-                                          var imagePath = await Navigator.pushNamed(
-                                              context, Routes.REPORT);
+                                          var imagePath =
+                                              await Navigator.pushNamed(
+                                                  context, Routes.REPORT);
                                           if (imagePath != null) {
                                             setState(() {
-                                              this.imagePath = imagePath.toString();
+                                              this.imagePath =
+                                                  imagePath.toString();
                                             });
                                           }
                                         },
                                       ),
-                                      const Text('Tidak ada gambar yang dipilih'),
+                                      const Text(
+                                          'Tidak ada gambar yang dipilih'),
                                     ],
                                   ),
                                 )
@@ -204,6 +222,12 @@ class _StockReportDialogState extends State<StockReportDialog> {
                                             File(imagePath),
                                           ),
                                           actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Tutup'),
+                                            ),
                                             TextButton(
                                               onPressed: () {
                                                 setState(() {
@@ -241,18 +265,16 @@ class _StockReportDialogState extends State<StockReportDialog> {
                               ),
                             );
                           } else {
-                            var ruteId = Get.find<MarketingController>().idMarketingActivity;
-                            var stockData = Stock(
-                              id: widget.stockData?.id ??
-                                  DateTime.now().millisecondsSinceEpoch,
-                              idMA: widget.stockData?.idMA ?? ruteId!,
-                              itemID: selectedStockName!.itemid,
-                              name: selectedStockName!.description,
-                              quantity: double.parse(quantityController.text),
+                            var stockData = StockModel(
+                              idMA: widget.idMA,
+                              itemId: selectedStockName!.itemID!,
+                              name: selectedStockName!.description!,
+                              quantity: int.parse(quantityController.text),
                               unit: unitController.text,
                               imagePath: imagePath,
                             );
                             Navigator.pop(context, stockData);
+                            // print(stockData.toJson());
                           }
                         }
                       },
