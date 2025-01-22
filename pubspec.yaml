@@ -52,6 +52,7 @@ dependencies:
   flutter_foreground_task: ^8.17.0
   workmanager: ^0.5.2
   device_apps: ^2.2.0
+  firebase_messaging: ^15.2.1
 
 dev_dependencies:
   flutter_test:

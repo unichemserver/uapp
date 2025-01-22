@@ -14,7 +14,7 @@ import 'package:uapp/modules/marketing/marketing_controller.dart';
 class MarketingScreen extends StatelessWidget {
   MarketingScreen({super.key});
 
-  List<Widget> pages = [
+  final List<Widget> pages = [
     const CheckInPage(),
     const CheckStockPage(),
     const CheckCompetitorPage(),

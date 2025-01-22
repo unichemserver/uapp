@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -148,6 +149,14 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     // checkPasswordStatus();
     scheduleUploadDataPeriodicly();
     getHrPendingApproval();
+    observeFCM();
+  }
+
+  void observeFCM() {
+    Log.d('Observe FCM');
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      Log.d('FCM Message: ${message.data}');
+    });
   }
 
   @override
