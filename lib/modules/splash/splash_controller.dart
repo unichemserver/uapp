@@ -1,4 +1,3 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -22,13 +21,6 @@ class SplashController extends GetxController with GetTickerProviderStateMixin {
     super.onInit();
     initAnimation();
     _checkLogin();
-    _getFCMToken();
-  }
-
-  void _getFCMToken() async {
-    final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-    String? fcmToken = await firebaseMessaging.getToken();
-    print('FCM Token: $fcmToken');
   }
 
   void initAnimation() {

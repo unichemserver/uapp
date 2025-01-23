@@ -11,4 +11,7 @@ class NotifId {
 
   static const int MKT_SYNC_ID = 1;
   static const int USER_LOC_ID = 2;
+
+  static const String NOTIF_CH_ID = 'notif_ch_id';
+  static const String NOTIF_CH_NAME = 'notif_ch_name';
 }

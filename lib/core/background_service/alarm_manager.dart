@@ -21,7 +21,7 @@ class AlarmManager {
     AndroidAlarmManager.periodic(
       const Duration(minutes: 10),
       alarmId,
-      _uploadDataMarketing,
+      uploadDataMarketing,
       allowWhileIdle: true,
       exact: true,
       wakeup: true,
@@ -29,7 +29,7 @@ class AlarmManager {
     );
   }
 
-  static void _uploadDataMarketing() async {
+  static void uploadDataMarketing() async {
     await HiveService.init();
     final db = MarketingDatabase();
     final api = MarketingApiClient();
@@ -46,7 +46,6 @@ class AlarmManager {
         'Tidak ada koneksi internet yang tersedia',
       );
     }
-    Log.d('Upload data marketing');
   }
 
   static void updateLocation() {

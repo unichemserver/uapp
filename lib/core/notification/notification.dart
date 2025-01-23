@@ -17,15 +17,23 @@ Future<void> initializeNotifications() async {
 }
 
 Future<void> showNotification(
-    String channelID, String channelName, int id, String title, String body,
-    {bool ongoing = false}) async {
+  String channelID,
+  String channelName,
+  int id,
+  String title,
+  String body, {
+  bool ongoing = false,
+  Priority priority = Priority.high,
+  Importance importance = Importance.max,
+
+}) async {
   AndroidNotificationDetails androidPlatformChannelSpecifics =
       AndroidNotificationDetails(
     channelID,
     channelName,
     channelDescription: 'your_channel_description',
-    importance: Importance.max,
-    priority: Priority.high,
+    importance: importance,
+    priority: priority,
     showWhen: false,
     ongoing: ongoing,
   );

@@ -9,6 +9,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/database/local_database.dart';
 import 'package:uapp/core/database/marketing_database.dart';
+import 'package:uapp/core/firebase/fcm_service.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/sync/sync_api_service.dart';
 import 'package:uapp/core/sync/sync_manager.dart';
@@ -154,9 +155,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
   void observeFCM() {
     Log.d('Observe FCM');
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      Log.d('FCM Message: ${message.data}');
-    });
+    FCMService().initialize();
   }
 
   @override

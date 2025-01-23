@@ -134,9 +134,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<Position?> getCurrentLocation() async {
-    Position? positon = await Geolocator.getCurrentPosition(
-      timeLimit: const Duration(seconds: 2),
-    );
+    Position? positon = await Geolocator.getCurrentPosition();
     latitude = positon.latitude;
     longitude = positon.longitude;
     if (await Utils.isInternetAvailable()) {
@@ -358,9 +356,11 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> isLocationServiceEnabled() async {
-    print("isLocationServiceEnabled");
     var isLocationEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!isLocationEnabled) {
+    var locPermission = await Geolocator.checkPermission();
+    var isLocGranted = locPermission == LocationPermission.always ||
+        locPermission == LocationPermission.whileInUse;
+    if (!isLocationEnabled || !isLocGranted) {
       showLocationServiceDisabledDialog();
     } else {
       var isMockLocation = await Utils.isUseMockLocation();
