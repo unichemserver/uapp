@@ -29,4 +29,5 @@ class HiveKeys {
   static const String priceListBox = 'priceListBox';
 
   static const String timerSyncMkt = 'timerSyncMkt';
+  static const String idPeralatan = 'idPeralatan';
 }

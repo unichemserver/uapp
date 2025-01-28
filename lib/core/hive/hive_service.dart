@@ -57,4 +57,14 @@ class HiveService {
     final box = Hive.box(HiveKeys.appBox);
     return box.get(HiveKeys.baseURL);
   }
+
+  static String idPeralatanIT() {
+    final box = Hive.box(HiveKeys.appBox);
+    return box.get(HiveKeys.idPeralatan);
+  }
+
+  static void setIdPeralatanIT(String id) {
+    final box = Hive.box(HiveKeys.appBox);
+    box.put(HiveKeys.idPeralatan, id);
+  }
 }

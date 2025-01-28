@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/fonts.dart';
 import 'package:uapp/app/routes.dart';
+import 'package:uapp/core/background_service/alarm_manager.dart';
 import 'package:uapp/core/utils/rupiah_formatter.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/core/widget/speech_to_textfield.dart';
@@ -91,17 +92,6 @@ class PaymentWidget extends StatelessWidget {
                       },
                     ),
                   ),
-                  // Container(
-                  //   margin: const EdgeInsets.only(left: 8),
-                  //   padding: const EdgeInsets.all(8),
-                  //   decoration: BoxDecoration(
-                  //     border: Border.all(color: Colors.grey),
-                  //     borderRadius: BorderRadius.circular(10),
-                  //   ),
-                  //   child: Text(
-                  //     ctx.statusCollection[ctx.selectedStatusCollection],
-                  //   ),
-                  // ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -200,6 +190,7 @@ class PaymentWidget extends StatelessWidget {
                   if (!ctx.isToComplete) {
                     await ctx.updateCustData();
                     await ctx.checkOut();
+                    AlarmManager.uploadDataMA();
                   }
                   ctx.printResi(ctx.idMA).then((value) {
                     ctx.completeTo();

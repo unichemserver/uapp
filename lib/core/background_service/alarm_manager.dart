@@ -17,11 +17,11 @@ class AlarmManager {
   }
 
   static void scheduleUploadDataMA() {
-    const int alarmId = AlarmId.marketing;
+    const int alarmId = AlarmId.marketingPeriodic;
     AndroidAlarmManager.periodic(
       const Duration(minutes: 10),
       alarmId,
-      uploadDataMarketing,
+      _uploadDataMarketing,
       allowWhileIdle: true,
       exact: true,
       wakeup: true,
@@ -29,7 +29,17 @@ class AlarmManager {
     );
   }
 
-  static void uploadDataMarketing() async {
+  static uploadDataMA() {
+    const int alarmId = AlarmId.marketingPeriodic;
+    AndroidAlarmManager.oneShot(
+      const Duration(seconds: 5),
+      alarmId,
+      _uploadDataMarketing,
+      exact: true,
+    );
+  }
+
+  static void _uploadDataMarketing() async {
     await HiveService.init();
     final db = MarketingDatabase();
     final api = MarketingApiClient();

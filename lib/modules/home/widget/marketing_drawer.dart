@@ -24,6 +24,7 @@ class MarketingDrawer extends StatelessWidget {
           ),
         ),
         ExpansionTile(
+          initiallyExpanded: true,
           title: const Text('Kunjungan'),
           leading: const Icon(Icons.location_on),
           children: [
@@ -40,6 +41,7 @@ class MarketingDrawer extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(left: 16),
               child: ExpansionTile(
+                initiallyExpanded: true,
                 title: const Text('Off Route'),
                 leading: const Icon(Icons.location_off),
                 children: [

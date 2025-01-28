@@ -11,9 +11,9 @@ class CanvasingPage extends StatelessWidget {
   CanvasingPage({super.key});
 
   final List<Widget> canvasingWidgets = [
-    AddCustomerWidget(),
-    OrderWidget(),
-    PaymentWidget(),
+    const AddCustomerWidget(),
+    const OrderWidget(),
+    const PaymentWidget(),
   ];
 
   showWarningSnackBar(String message) {

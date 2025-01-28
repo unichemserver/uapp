@@ -138,7 +138,8 @@ class MarketingDatabase {
     );
   }
 
-  Future<List<Map<String, dynamic>>> rawQuery(String query, {List<dynamic>? args}) async {
+  Future<List<Map<String, dynamic>>> rawQuery(String query,
+      {List<dynamic>? args}) async {
     final db = await database;
     return await db.rawQuery(query, args);
   }
@@ -176,5 +177,29 @@ class MarketingDatabase {
     await db.delete('noodocument');
     await db.delete('noospesimen');
     await db.delete('canvasing');
+  }
+
+  Future<Map<String, dynamic>> getAllData() async {
+    final db = await database;
+    final List<String> tables = [
+      'marketing_activity',
+      'stock',
+      'competitor',
+      'display',
+      'taking_order',
+      'collection',
+      'invoice',
+      'masternoo',
+      'nooaddress',
+      'noodocument',
+      'noospesimen',
+      'canvasing'
+    ];
+    final Map<String, dynamic> result = {};
+    for (String table in tables) {
+      final List<Map<String, dynamic>> tableData = await db.query(table);
+      result[table] = tableData;
+    }
+    return result;
   }
 }

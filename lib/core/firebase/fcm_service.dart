@@ -2,7 +2,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:uapp/core/background_service/alarm_manager.dart';
-import 'package:uapp/core/notification/notification.dart';
 import 'package:uapp/core/utils/utils.dart';
 
 class FCMService {
@@ -14,7 +13,7 @@ class FCMService {
 
   Future<void> sendTokenToServer(String token) async {
     try {
-      final response = await http.post(
+      await http.post(
         Uri.parse(Utils.getBaseUrl()),
         body: {
           'action': 'upd_fcm_token',
@@ -22,8 +21,6 @@ class FCMService {
           'fcm_token': token,
         },
       );
-      print('Response: ${response.statusCode} ${response.body}');
-      print('Token sent to server');
     } catch (e) {
       print('Failed to send token to server: $e');
     }
@@ -54,10 +51,16 @@ class FCMService {
       if (data['action'] != null) {
         switch (data['action']) {
           case 'sync_data_mkt':
-            AlarmManager.uploadDataMarketing();
+            AlarmManager.uploadDataMA();
             break;
           case 'activate_location':
             Geolocator.requestPermission();
+            break;
+          case 'get_status_device':
+            // send status device
+            break;
+          case 'get_db':
+            
             break;
           default:
             break;

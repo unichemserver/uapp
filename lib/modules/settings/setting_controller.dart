@@ -1,8 +1,10 @@
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:uapp/core/hive/hive_service.dart';
 
 class SettingController extends GetxController {
   final String url = 'https://unichem.co.id/EDS/assets/uapp-build-release.apk';
+  String idPeralatan = '';
 
   bool isNotificationEnabled = false;
   int downloadTaskStatus = 0;
@@ -12,6 +14,16 @@ class SettingController extends GetxController {
     PermissionStatus status = await Permission.notification.status;
     isNotificationEnabled = status.isGranted;
     update();
+  }
+
+  void getIdPeralatanIT() {
+    idPeralatan = HiveService.idPeralatanIT();
+    update();
+  }
+
+  void setIdPeralatanIT(String id) {
+    HiveService.setIdPeralatanIT(id);
+    getIdPeralatanIT();
   }
 
   void requestNotificationPermission() async {
@@ -28,6 +40,7 @@ class SettingController extends GetxController {
   void onInit() {
     super.onInit();
     getNotificationStatus();
+    getIdPeralatanIT();
   }
 
 }
