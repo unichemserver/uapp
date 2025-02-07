@@ -21,7 +21,7 @@ class CustactiveController extends GetxController {
 
   Future<void> updateCustomerActive() async {
     final box = await Hive.openBox<CustActive>(HiveKeys.custActiveBox);
-    box.clear();
+    await box.clear();
     var data = await _fetchCustActive();
     if (data.isNotEmpty) {
       custActive = data.map((e) => CustactiveModel.fromJson(e)).toList();
@@ -84,7 +84,7 @@ class CustactiveController extends GetxController {
   }
 
   Future<List<dynamic>> _fetchCustActive() async {
-    final bodyRequest = {'salesrepid': Utils.getUserData().salesrepid};
+    final bodyRequest = {'collectorid': Utils.getUserData().colectorid};
 
     final response = await apiClient.postRequest(
       method: 'get_cust_active',

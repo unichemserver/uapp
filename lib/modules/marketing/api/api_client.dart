@@ -35,6 +35,7 @@ class MarketingApiClient {
       url,
       body: body,
     );
+    
     if (response.statusCode == 200) {
       final bodyResponse = jsonDecode(response.body);
       return ApiResponse.fromJson(bodyResponse);

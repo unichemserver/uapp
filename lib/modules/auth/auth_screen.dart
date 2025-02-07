@@ -7,6 +7,7 @@ import 'package:uapp/app/fonts.dart';
 import 'package:uapp/app/strings.dart';
 import 'package:uapp/core/utils/assets.dart';
 import 'package:uapp/core/utils/instance.dart';
+import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
 import 'package:uapp/core/widget/loading_dialog.dart';
 import 'package:uapp/modules/auth/auth_controller.dart';
@@ -246,9 +247,21 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     ElevatedButton(
                       onPressed: ctx.isAgree
-                          ? () {
+                          ? () async {
                               if (formKey.currentState!.validate()) {
                                 if (ctx.selectedInstance != null) {
+                                  bool isInternetAvailable =
+                                      await Utils.isInternetAvailable();
+                                  if (!isInternetAvailable) {
+                                    if (Get.isSnackbarOpen) {
+                                      Get.back();
+                                    }
+                                    Get.snackbar(
+                                      'Tidak Ada Koneksi Internet',
+                                      'Pastikan Anda terhubung ke internet',
+                                    );
+                                    return;
+                                  }
                                   showDialog(
                                     context: context,
                                     barrierDismissible: false,

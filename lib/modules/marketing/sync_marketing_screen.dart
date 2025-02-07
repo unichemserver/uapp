@@ -118,7 +118,7 @@ class _SyncMarketingScreenState extends State<SyncMarketingScreen> {
   Future<void> syncListCustomer() async {
     final box = await Hive.openBox<CustActive>(HiveKeys.custActiveBox);
     await box.clear();
-    final bodyRequest = {'salesrepid': Utils.getUserData().salesrepid};
+    final bodyRequest = {'collectorid': Utils.getUserData().colectorid};
     final response = await apiClient.postRequest(
       method: 'get_cust_active',
       additionalData: bodyRequest,

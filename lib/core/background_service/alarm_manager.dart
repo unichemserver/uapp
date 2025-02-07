@@ -87,6 +87,11 @@ class AlarmManager {
     //   'Aplikasi sedang berjalan di latar belakang',
     // );
   }
+
+  static Future<void> cancelAllAlarm() async {
+    await AndroidAlarmManager.cancel(AlarmId.marketingPeriodic);
+    await AndroidAlarmManager.cancel(AlarmId.location);
+  }
 }
 
 Future<void> sendLocationToAPI(Position position) async {

@@ -147,7 +147,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     getAvailableMenus();
     getFotoNamaUrl();
     // checkPasswordStatus();
-    scheduleUploadDataPeriodicly();
+    // scheduleUploadDataPeriodicly();
     getHrPendingApproval();
     observeFCM();
   }

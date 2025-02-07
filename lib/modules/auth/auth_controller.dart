@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/utils/instance.dart';
+import 'package:uapp/models/user.dart';
 import 'package:uapp/modules/auth/auth_api.dart';
 
 class AuthController extends GetxController {
@@ -46,26 +47,28 @@ class AuthController extends GetxController {
     update();
   }
 
-  login(String username, String password) {
+  Future<void> login(String username, String password) async {
     final url = box.get(HiveKeys.baseURL);
     setLoadingMessage('Login...');
-    AuthApi.login(url, username, password).then((user) {
-      if (user != null) {
-        setLoadingMessage('Sinkronisasi...');
-        box.put(HiveKeys.userData, json.encode(user.toJson()));
-        Get.snackbar(
-          'Login Berhasil',
-          'Selamat datang ${user.namaPanggilan}',
-        );
-        Get.offAllNamed(Routes.HOME);
-      } else {
-        setLoadingMessage(null);
-        Get.back();
-        Get.snackbar(
-          'Login Gagal',
-          'Username atau password salah',
-        );
-      }
-    });
+
+    final User? user = await AuthApi.login(url, username, password);
+    if (user == null) {
+      setLoadingMessage(null);
+      Get.back();
+      Get.snackbar(
+        'Login Gagal',
+        'Username atau password salah',
+      );
+      return;
+    }
+
+    setLoadingMessage('Sinkronisasi...');
+    box.put(HiveKeys.userData, json.encode(user.toJson()));
+
+    Get.offAllNamed(Routes.HOME);
+    Get.snackbar(
+      'Login Berhasil',
+      'Selamat datang ${user.namaPanggilan}',
+    );
   }
 }

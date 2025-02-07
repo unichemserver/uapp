@@ -41,6 +41,7 @@ class ProfileController extends GetxController {
     }
     await ProfileApi.logout();
     await box.clear();
+    await AlarmManager.cancelAllAlarm();
     Get.offAllNamed(Routes.AUTH);
   }
 
