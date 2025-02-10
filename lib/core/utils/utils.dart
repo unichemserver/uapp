@@ -175,6 +175,19 @@ class Utils {
     _showSnackBar(context, 'Gagal', message, Colors.red);
   }
 
+  static void showInAppNotif(String title, String message) {
+    if (Get.isSnackbarOpen) {
+      Get.back();
+    }
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.blue,
+      colorText: Colors.white,
+    );
+  }
+
   static String? generateBase64Image(ByteData byteData) {
     try {
       String starterFormat = 'data:image/png;base64,';

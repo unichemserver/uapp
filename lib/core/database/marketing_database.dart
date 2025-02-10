@@ -5,6 +5,7 @@ class MarketingDatabase {
   static final MarketingDatabase _instance =
       MarketingDatabase._privateConstructor();
   static Database? _database;
+  final int marketingDbVersion = 1;
 
   MarketingDatabase._privateConstructor();
 
@@ -23,7 +24,7 @@ class MarketingDatabase {
   Future<Database> _initDatabase() async {
     return await openDatabase(
       'marketing.db',
-      version: 1,
+      version: marketingDbVersion,
       onCreate: _onCreate,
     );
   }
@@ -88,7 +89,9 @@ class MarketingDatabase {
         description TEXT,
         quantity DECIMAL(10, 2),
         unit TEXT,
-        price DECIMAL(10, 2)
+        price DECIMAL(10, 2),
+        top TEXT,
+        unit_id TEXT
       )
     ''');
 

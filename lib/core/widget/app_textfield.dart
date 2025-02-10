@@ -19,6 +19,7 @@ class AppTextField extends StatelessWidget {
     this.label,
     this.onSubmitted,
     this.textInputAction = TextInputAction.next,
+    this.maxLength,
   });
 
   final TextEditingController controller;
@@ -36,6 +37,7 @@ class AppTextField extends StatelessWidget {
   final String? label;
   final void Function(String)? onSubmitted;
   final TextInputAction? textInputAction;
+  final int? maxLength;
 
   @override
   Widget build(BuildContext context) {
@@ -52,10 +54,12 @@ class AppTextField extends StatelessWidget {
       keyboardType: keyboardType,
       textInputAction: TextInputAction.next,
       onFieldSubmitted: onSubmitted,
+      maxLength: maxLength,
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
         ),
+        counterText: '',
         hintText: hintText,
         labelText: label,
         border: OutlineInputBorder(

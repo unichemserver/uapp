@@ -10,9 +10,8 @@ import 'package:uapp/core/database/local_database.dart';
 import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/firebase/fcm_service.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
-import 'package:uapp/core/sync/sync_api_service.dart';
-import 'package:uapp/core/sync/sync_manager.dart';
 import 'package:uapp/core/background_service/alarm_manager.dart';
+import 'package:uapp/core/sync/sync_manager.dart';
 import 'package:uapp/core/utils/jenis_call.dart';
 import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/utils.dart';
@@ -25,8 +24,8 @@ import 'package:workmanager/workmanager.dart';
 
 class HomeController extends GetxController with WidgetsBindingObserver {
   final Box box = Hive.box(HiveKeys.appBox);
-  final syncManager = SyncManager(SyncApiService(), DatabaseHelper());
   final db = DatabaseHelper();
+  final syncManager = SyncManager();
   String foto = '';
   final List<MenuData> menus = [];
   final List<String> listServices = [
@@ -101,24 +100,10 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   void firstSync() async {
     bool isSync = box.get(HiveKeys.isSync, defaultValue: false);
     if (!isSync) {
-      await performSyncOperation();
+      Utils.showInAppNotif('Sync Data', 'Sedang Melakukan Sinkronisasi Data');
+      await syncManager.syncData();
+      Utils.showInAppNotif('Sync Data', 'Sinkronisasi Data Selesai');
       box.put(HiveKeys.isSync, true);
-    }
-  }
-
-  Future<void> performSyncOperation() async {
-    final sync = SyncManager(SyncApiService(), db);
-    showPersistentSnackbar('Sedang melakukan sinkronisasi data...');
-    try {
-      await sync.syncAll(onStatus: (status) {});
-    } finally {
-      dismissSnackbar();
-      Get.snackbar(
-        'Sync Data',
-        'Sinkronisasi data selesai',
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 2),
-      );
     }
   }
 
@@ -143,7 +128,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
-    // firstSync();
+    firstSync();
     getAvailableMenus();
     getFotoNamaUrl();
     // checkPasswordStatus();

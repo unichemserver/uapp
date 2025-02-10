@@ -1,22 +1,22 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
 import 'package:uapp/modules/marketing/model/master_item.dart';
+import 'package:uapp/modules/marketing/model/price_list.dart';
 import 'package:uapp/modules/marketing/model/to_model.dart';
-import 'package:uapp/modules/marketing/model/unit_set.dart';
 
 class ToReportDialog extends StatefulWidget {
   const ToReportDialog({
     super.key,
     required this.items,
     required this.idMA,
+    required this.priceList,
   });
 
   final List<MasterItem> items;
   final String idMA;
+  final List<PriceList> priceList;
 
   @override
   State<ToReportDialog> createState() => _ToReportDialogState();
@@ -27,45 +27,28 @@ class _ToReportDialogState extends State<ToReportDialog> {
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _unitController = TextEditingController();
   final TextEditingController _totalController = TextEditingController();
-  List<UnitSet> _unitSet = [];
-  List<UnitSet> _filteredUnitSet = [];
+  final List<String> _topID = [];
+  final List<String> _listUnit = [];
+  List<PriceList> _priceList = [];
   MasterItem? _selectedItem;
-  UnitSet? _selectedUnit;
-  late Box box;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeBox();
-  }
+  String selectedUnit = '';
+  String selectedTopID = '';
 
   @override
   void dispose() {
     _quantityController.dispose();
     _unitController.dispose();
     _totalController.dispose();
-    box.close();
     super.dispose();
   }
 
-  Future<void> _initializeBox() async {
-    box = await Hive.openBox<UnitSet>(HiveKeys.unitSetBox);
-    _unitSet = box.values.cast<UnitSet>().toList();
-  }
-
-  void _filterUnitSet(String? unitSetID) {
-    if (unitSetID != null) {
-      _filteredUnitSet = _unitSet
-          .where((unit) => unit.unitSetID == unitSetID)
-          .toList();
-      setState(() {});
-    }
-  }
-
-  void _calculateTotal() {
-    final quantity = int.tryParse(_quantityController.text) ?? 0;
-    final unitValue = int.tryParse(_unitController.text) ?? 0;
-    _totalController.text = (quantity * unitValue).toString();
+  void _calculateTotal(String value) {
+    if (value.isEmpty) return;
+    final quantity = int.tryParse(value) ?? 0;
+    final unitValue =
+        int.tryParse(_unitController.text.replaceAll('.', '')) ?? 0;
+    _totalController.text = (quantity * unitValue).toString().replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
   }
 
   void _onSave() {
@@ -77,6 +60,8 @@ class _ToReportDialogState extends State<ToReportDialog> {
         quantity: int.parse(_quantityController.text),
         unit: _unitController.text,
         price: int.parse(_totalController.text),
+        topID: selectedTopID,
+        unitID: selectedUnit,
       );
       Navigator.of(context).pop(data);
     }
@@ -98,15 +83,58 @@ class _ToReportDialogState extends State<ToReportDialog> {
                 Expanded(
                   child: ListView(
                     children: [
+                      const Text('Pilih Produk'),
                       _buildItemDropdown(),
+                      _buildUnitDropdown(),
+                      _buildTopIDDropdown(),
                       const SizedBox(height: 16.0),
-                      _buildQuantityRow(),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: AppTextField(
+                              controller: _quantityController,
+                              label: 'Jumlah',
+                              maxLength: 5,
+                              keyboardType: TextInputType.number,
+                              onChanged: _calculateTotal,
+                              suffixIcon: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(selectedUnit),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16.0),
+                          Expanded(
+                            flex: 3,
+                            child: AppTextField(
+                              controller: _unitController,
+                              label: 'Satuan',
+                              keyboardType: TextInputType.number,
+                              prefixIcon: const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('Rp'),
+                                ],
+                              ),
+                              readOnly: true,
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 16.0),
-                      _buildUnitField(),
                       const SizedBox(height: 16.0),
                       AppTextField(
                         controller: _totalController,
                         label: 'Total',
+                        prefixIcon: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Rp'),
+                          ],
+                        ),
                         readOnly: true,
                       ),
                     ],
@@ -133,11 +161,21 @@ class _ToReportDialogState extends State<ToReportDialog> {
       items: widget.items,
       itemAsString: (MasterItem item) => item.description!,
       onChanged: (MasterItem? item) {
-        Log.d('Selected item: ${item?.toJson()}');
-        setState(() {
-          _filterUnitSet(item?.unitSetID);
-          _selectedItem = item;
-        });
+        _priceList = widget.priceList
+            .where((element) => element.itemID == item?.itemID)
+            .toList();
+        _topID.clear();
+        _listUnit.clear();
+        for (var i = 0; i < _priceList.length; i++) {
+          if (!_topID.contains(_priceList[i].topID!)) {
+            _topID.add(_priceList[i].topID!.trim());
+          }
+          if (!_listUnit.contains(_priceList[i].unitID)) {
+            _listUnit.add(_priceList[i].unitID!.trim());
+          }
+          Log.d('topID: ${_priceList[i].toJson()}');
+        }
+        setState(() {});
       },
       popupProps: PopupProps.menu(
         showSearchBox: true,
@@ -146,7 +184,7 @@ class _ToReportDialogState extends State<ToReportDialog> {
             hintText: 'Cari produk',
             contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4.0),
+              borderRadius: BorderRadius.circular(16.0),
             ),
           ),
         ),
@@ -154,44 +192,56 @@ class _ToReportDialogState extends State<ToReportDialog> {
     );
   }
 
-  Widget _buildQuantityRow() {
-    return Row(
+  Widget _buildUnitDropdown() {
+    if (_listUnit.isEmpty) {
+      return const SizedBox();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: AppTextField(
-            controller: _quantityController,
-            label: 'Jumlah',
-            onChanged: (_) => _calculateTotal(),
-          ),
+        const SizedBox(height: 16.0),
+        const Text('Pilih Unit Produk'),
+        DropdownSearch<String>(
+          items: _listUnit,
+          onChanged: (String? value) {
+            setState(() {
+              selectedUnit = value!;
+            });
+          },
         ),
-        const SizedBox(width: 16.0),
-        if (_filteredUnitSet.isNotEmpty)
-          DropdownButton<UnitSet>(
-            value: _selectedUnit,
-            items: _filteredUnitSet
-                .map((unit) => DropdownMenuItem(
-              value: unit,
-              child: Text(unit.unitID!),
-            ))
-                .toList(),
-            onChanged: (value) {
-              Log.d('Selected unit: ${value?.toJson()}');
-              setState(() {
-                _selectedUnit = value;
-              });
-            },
-          ),
       ],
     );
   }
 
-  Widget _buildUnitField() {
-    return AppTextField(
-      controller: _unitController,
-      label: 'Satuan',
-      keyboardType: TextInputType.number,
-      onChanged: (_) => _calculateTotal(),
+  Widget _buildTopIDDropdown() {
+    if (_topID.isEmpty) {
+      return const SizedBox();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16.0),
+        const Text('Pilih Term of Payment (TOP)'),
+        DropdownSearch<String>(
+          items: _topID,
+          onChanged: (String? value) {
+            selectedTopID = value!;
+            for (var i = 0; i < _priceList.length; i++) {
+              if (_priceList[i].topID == selectedTopID &&
+                  _priceList[i].unitID == selectedUnit) {
+                var unitPrice = _priceList[i].unitPrice.toString();
+                unitPrice = unitPrice.contains('.00')
+                    ? unitPrice.substring(0, unitPrice.length - 3)
+                    : unitPrice;
+                _unitController.text = unitPrice.replaceAllMapped(
+                    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                    (Match m) => '${m[1]}.');
+                break;
+              }
+            }
+          },
+        ),
+      ],
     );
   }
 }
-

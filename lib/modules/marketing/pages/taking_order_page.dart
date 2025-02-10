@@ -153,6 +153,7 @@ class TakingOrderPage extends StatelessWidget {
           ToReportDialog(
             items: ctx.items,
             idMA: ctx.idMarketingActivity!,
+            priceList: ctx.priceList,
           ),
         );
         if (data != null) {

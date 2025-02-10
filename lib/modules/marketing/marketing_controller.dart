@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
+import 'package:uapp/core/hive/hive_service.dart';
 import 'package:uapp/core/utils/date_utils.dart' as du;
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/models/customer.dart';
@@ -17,6 +18,7 @@ import 'package:uapp/modules/marketing/model/competitor_model.dart';
 import 'package:uapp/modules/marketing/model/cust_top.dart';
 import 'package:uapp/modules/marketing/model/invoice_model.dart';
 import 'package:uapp/modules/marketing/model/master_item.dart';
+import 'package:uapp/modules/marketing/model/price_list.dart';
 import 'package:uapp/modules/marketing/model/stock_model.dart';
 import 'package:uapp/modules/marketing/model/to_model.dart';
 
@@ -41,6 +43,7 @@ class MarketingController extends GetxController {
   ];
   List<String> finishFotoCi = [];
   List<CustTop> listCustTop = [];
+  List<PriceList> priceList = [];
 
   CustTop? selectedCustTop;
   Position? userPosition;
@@ -65,8 +68,12 @@ class MarketingController extends GetxController {
   int selectedOffRoute = -1;
   String? idMarketingActivity;
   int selectedStatusPayment = -1;
-
   final MarketingApiClient apiClient = MarketingApiClient();
+
+  void getPriceList() async {
+    priceList = await HiveService.getPriceList();
+    update();
+  }
 
   void setCustTop(CustTop? value) async {
     await db.update(
@@ -86,7 +93,8 @@ class MarketingController extends GetxController {
     if (data.isNotEmpty) {
       final topId = data[0]['top_id'] as String?;
       if (topId != null) {
-        selectedCustTop = listCustTop.firstWhere((element) => element.topID == topId);
+        selectedCustTop =
+            listCustTop.firstWhere((element) => element.topID == topId);
       }
     }
     update();
@@ -296,7 +304,6 @@ class MarketingController extends GetxController {
         return value.map((e) => BelumInvoice.fromJson(e)).toList();
       },
     );
-    print(listInvoice.length);
     update();
   }
 
@@ -515,6 +522,7 @@ class MarketingController extends GetxController {
     super.onReady();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Utils.showLoadingDialog(Get.context!);
+      getPriceList();
       Future.wait([
         isUserCheckedIn(),
       ]).then((value) {

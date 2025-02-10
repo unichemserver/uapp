@@ -5,6 +5,8 @@ class ToModel {
   int? quantity;
   String? unit;
   int? price;
+  String? topID;
+  String? unitID;
 
   ToModel({
     this.idMA,
@@ -13,6 +15,8 @@ class ToModel {
     this.quantity,
     this.unit,
     this.price,
+    this.topID,
+    this.unitID,
   });
 
   factory ToModel.fromJson(Map<String, dynamic> json) {
@@ -23,6 +27,8 @@ class ToModel {
       quantity: json['quantity'],
       unit: json['unit'],
       price: json['price'],
+      topID: json['top'],
+      unitID: json['unit_id'],
     );
   }
 
@@ -34,13 +40,8 @@ class ToModel {
     data['quantity'] = quantity;
     data['unit'] = unit;
     data['price'] = price;
+    data['top'] = topID;
+    data['unit_id'] = unitID;
     return data;
   }
 }
-
-// idMA INTEGER,
-//     itemid TEXT,
-// description TEXT,
-//     quantity DECIMAL(10, 2),
-// unit TEXT,
-// price DECIMAL(10, 2)

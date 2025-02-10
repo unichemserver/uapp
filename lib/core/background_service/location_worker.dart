@@ -1,3 +1,4 @@
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:uapp/core/hive/hive_service.dart';
 import 'package:uapp/core/notification/notif_id.dart';
@@ -21,6 +22,7 @@ class LocationWorker {
         'Aplikasi Berjalan',
         'Aplikasi sedang berjalan di latar belakang',
         ongoing: true,
+        importance: Importance.min,
       );
     } catch(e) {
       Log.d('Terjadi kesalahan saat mengambil lokasi: $e');
