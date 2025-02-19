@@ -1,13 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hand_signature/signature.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/modules/marketing/marketing_controller.dart';
-import 'package:uapp/modules/marketing/model/cust_top.dart';
 import 'package:uapp/modules/marketing/model/to_model.dart';
 import 'package:uapp/modules/marketing/widget/to_report_dialog.dart';
 
@@ -62,26 +60,6 @@ class TakingOrderPage extends StatelessWidget {
           const Divider(),
           _buildSignatureSection(context, ctx),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTopCustSection(MarketingController ctx) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-      ),
-      child: DropdownSearch<CustTop>(
-        items: ctx.listCustTop.where((element) => element.custID == ctx.customerId).toList(),
-        itemAsString: (item) => item.topID,
-        selectedItem: ctx.selectedCustTop,
-        onChanged: (CustTop? value) {
-          if (value != null) {
-            ctx.selectedCustTop = value;
-            ctx.setCustTop(value);
-            ctx.update();
-          }
-        },
       ),
     );
   }

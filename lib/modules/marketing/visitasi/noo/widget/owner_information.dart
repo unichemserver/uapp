@@ -46,14 +46,6 @@ class OwnerInformation extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          'Umur/ Jenis Kelamin:',
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
-        AppTextField(
-          controller: ageGenderCtrl,
-        ),
-        const SizedBox(height: 16),
-        Text(
           'No. Telepon/ Handphone:',
           style: Theme.of(context).textTheme.titleSmall,
         ),

@@ -82,7 +82,7 @@ class _NooPageState extends State<NooPage> {
           },
           child: Scaffold(
             appBar: AppBar(
-              title: const Text('KIL'),
+              title: const Text('PDL'),
               leading: IconButton(
                 onPressed: () {
                   showConfirmationDialog(ctx,context);
@@ -143,7 +143,7 @@ class _NooPageState extends State<NooPage> {
                         children: [
                           const TabBar(
                             tabs: [
-                              Tab(text: 'KIL'),
+                              Tab(text: 'PDL'),
                               Tab(text: 'Document'),
                               Tab(text: 'Spesimen')
                             ],

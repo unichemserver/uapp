@@ -59,11 +59,19 @@ class _ToReportDialogState extends State<ToReportDialog> {
         description: _selectedItem!.description!,
         quantity: int.parse(_quantityController.text),
         unit: _unitController.text,
-        price: int.parse(_totalController.text),
+        price: int.parse(_totalController.text.replaceAll('.', '')),
         topID: selectedTopID,
         unitID: selectedUnit,
       );
       Navigator.of(context).pop(data);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_formKey.currentState?.validate() == true
+              ? 'Pilih produk terlebih dahulu'
+              : 'Isi semua field'),
+        ),
+      );
     }
   }
 
@@ -175,6 +183,7 @@ class _ToReportDialogState extends State<ToReportDialog> {
           }
           Log.d('topID: ${_priceList[i].toJson()}');
         }
+        _selectedItem = item;
         setState(() {});
       },
       popupProps: PopupProps.menu(

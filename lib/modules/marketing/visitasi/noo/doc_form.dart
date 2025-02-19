@@ -97,7 +97,7 @@ class DocForm extends StatelessWidget {
                 ],
               ),
               ExpansionTile(
-                title: const Text('Foto/Scan SIUP'),
+                title: const Text('Foto/Scan SIUP/NIB'),
                 children: [
                   ImagePickerWidget(
                     imagePath: ctx.siupPath,
@@ -114,24 +114,7 @@ class DocForm extends StatelessWidget {
                   ),
                 ],
               ),
-              ExpansionTile(
-                title: const Text('Foto/Scan TDP/NIB'),
-                children: [
-                  ImagePickerWidget(
-                    imagePath: ctx.tdpPath,
-                    onImagePicked: (path) {
-                      ctx.tdpPath = path;
-                      ctx.updateDocument({'tdp': path});
-                      ctx.update();
-                    },
-                    onImageRemoved: () {
-                      ctx.tdpPath = '';
-                      ctx.deleteDocument('tdp');
-                      ctx.update();
-                    },
-                  ),
-                ],
-              ),
+              
               ExpansionTile(
                 title: const Text('Surat Perjanjian Kerjasama'),
                 children: [
@@ -150,117 +133,117 @@ class DocForm extends StatelessWidget {
                   ),
                 ],
               ),
-              ExpansionTile(
-                title: const Text('Surat Penunjukan Distributor'),
-                children: [
-                  ImagePickerWidget(
-                    imagePath: ctx.suratDistributorPath,
-                    onImagePicked: (path) {
-                      ctx.suratDistributorPath = path;
-                      ctx.updateDocument(
-                          {'surat_penunjukan_distributor': path});
-                      ctx.update();
-                    },
-                    onImageRemoved: () {
-                      ctx.suratDistributorPath = '';
-                      ctx.deleteDocument('surat_penunjukan_distributor');
-                      ctx.update();
-                    },
-                  ),
-                ],
-              ),
-              ExpansionTile(
-                title: const Text('Surat Domisili Usaha'),
-                children: [
-                  ImagePickerWidget(
-                    imagePath: ctx.suratDomisiliUsahaPath,
-                    onImagePicked: (path) {
-                      ctx.suratDomisiliUsahaPath = path;
-                      ctx.updateDocument({'surat_domisili_usaha': path});
-                      ctx.update();
-                    },
-                    onImageRemoved: () {
-                      ctx.suratDomisiliUsahaPath = '';
-                      ctx.deleteDocument('surat_domisili_usaha');
-                      ctx.update();
-                    },
-                  ),
-                ],
-              ),
-              ExpansionTile(
-                title: const Text(
-                  'Surat Pengantar Penerbitan Bank Garansi (BF)',
-                ),
-                children: [
-                  ImagePickerWidget(
-                    imagePath: ctx.suratPenerbitanBankPath,
-                    onImagePicked: (path) {
-                      ctx.suratPenerbitanBankPath = path;
-                      ctx.updateDocument({'surat_penerbitan_bank': path});
-                      ctx.update();
-                    },
-                    onImageRemoved: () {
-                      ctx.suratPenerbitanBankPath = '';
-                      ctx.deleteDocument('surat_penerbitan_bank');
-                      ctx.update();
-                    },
-                  ),
-                ],
-              ),
-              ExpansionTile(
-                title: const Text('Bank Garansi (Asli)'),
-                children: [
-                  ImagePickerWidget(
-                    imagePath: ctx.suratBankGaransiPath,
-                    onImagePicked: (path) {
-                      ctx.suratBankGaransiPath = path;
-                      ctx.updateDocument({'surat_bank_garansi': path});
-                      ctx.update();
-                    },
-                    onImageRemoved: () {
-                      ctx.suratBankGaransiPath = '';
-                      ctx.deleteDocument('surat_bank_garansi');
-                      ctx.update();
-                    },
-                  ),
-                ],
-              ),
-              ExpansionTile(
-                title: const Text('Akta Pendirian'),
-                children: [
-                  ImagePickerWidget(
-                    imagePath: ctx.aktaPendirianPath,
-                    onImagePicked: (path) {
-                      ctx.aktaPendirianPath = path;
-                      ctx.updateDocument({'akta_pendirian': path});
-                      ctx.update();
-                    },
-                    onImageRemoved: () {
-                      ctx.aktaPendirianPath = '';
-                      ctx.deleteDocument('akta_pendirian');
-                      ctx.update();
-                    },
-                  ),
-                ],
-              ),
-              ExpansionTile(
-                title: const Text('Company Profile'),
-                children: [
-                  ImagePickerWidget(
-                    imagePath: ctx.companyProfilePath,
-                    onImagePicked: (path) {
-                      ctx.companyProfilePath = path;
-                      ctx.updateDocument({'company_profile': path});
-                      ctx.update();
-                    },
-                    onImageRemoved: () {
-                      ctx.companyProfilePath = '';
-                      ctx.deleteDocument('company_profile');
-                      ctx.update();
-                    },
-                  ),
-                ],
-              ),
+              // ExpansionTile(
+              //   title: const Text('Surat Penunjukan Distributor'),
+              //   children: [
+              //     ImagePickerWidget(
+              //       imagePath: ctx.suratDistributorPath,
+              //       onImagePicked: (path) {
+              //         ctx.suratDistributorPath = path;
+              //         ctx.updateDocument(
+              //             {'surat_penunjukan_distributor': path});
+              //         ctx.update();
+              //       },
+              //       onImageRemoved: () {
+              //         ctx.suratDistributorPath = '';
+              //         ctx.deleteDocument('surat_penunjukan_distributor');
+              //         ctx.update();
+              //       },
+              //     ),
+              //   ],
+              // ),
+              // ExpansionTile(
+              //   title: const Text('Surat Domisili Usaha'),
+              //   children: [
+              //     ImagePickerWidget(
+              //       imagePath: ctx.suratDomisiliUsahaPath,
+              //       onImagePicked: (path) {
+              //         ctx.suratDomisiliUsahaPath = path;
+              //         ctx.updateDocument({'surat_domisili_usaha': path});
+              //         ctx.update();
+              //       },
+              //       onImageRemoved: () {
+              //         ctx.suratDomisiliUsahaPath = '';
+              //         ctx.deleteDocument('surat_domisili_usaha');
+              //         ctx.update();
+              //       },
+              //     ),
+              //   ],
+              // ),
+              // ExpansionTile(
+              //   title: const Text(
+              //     'Surat Pengantar Penerbitan Bank Garansi (BF)',
+              //   ),
+              //   children: [
+              //     ImagePickerWidget(
+              //       imagePath: ctx.suratPenerbitanBankPath,
+              //       onImagePicked: (path) {
+              //         ctx.suratPenerbitanBankPath = path;
+              //         ctx.updateDocument({'surat_penerbitan_bank': path});
+              //         ctx.update();
+              //       },
+              //       onImageRemoved: () {
+              //         ctx.suratPenerbitanBankPath = '';
+              //         ctx.deleteDocument('surat_penerbitan_bank');
+              //         ctx.update();
+              //       },
+              //     ),
+              //   ],
+              // ),
+              // ExpansionTile(
+              //   title: const Text('Bank Garansi (Asli)'),
+              //   children: [
+              //     ImagePickerWidget(
+              //       imagePath: ctx.suratBankGaransiPath,
+              //       onImagePicked: (path) {
+              //         ctx.suratBankGaransiPath = path;
+              //         ctx.updateDocument({'surat_bank_garansi': path});
+              //         ctx.update();
+              //       },
+              //       onImageRemoved: () {
+              //         ctx.suratBankGaransiPath = '';
+              //         ctx.deleteDocument('surat_bank_garansi');
+              //         ctx.update();
+              //       },
+              //     ),
+              //   ],
+              // ),
+              // ExpansionTile(
+              //   title: const Text('Akta Pendirian'),
+              //   children: [
+              //     ImagePickerWidget(
+              //       imagePath: ctx.aktaPendirianPath,
+              //       onImagePicked: (path) {
+              //         ctx.aktaPendirianPath = path;
+              //         ctx.updateDocument({'akta_pendirian': path});
+              //         ctx.update();
+              //       },
+              //       onImageRemoved: () {
+              //         ctx.aktaPendirianPath = '';
+              //         ctx.deleteDocument('akta_pendirian');
+              //         ctx.update();
+              //       },
+              //     ),
+              //   ],
+              // ),
+              // ExpansionTile(
+              //   title: const Text('Company Profile'),
+              //   children: [
+              //     ImagePickerWidget(
+              //       imagePath: ctx.companyProfilePath,
+              //       onImagePicked: (path) {
+              //         ctx.companyProfilePath = path;
+              //         ctx.updateDocument({'company_profile': path});
+              //         ctx.update();
+              //       },
+              //       onImageRemoved: () {
+              //         ctx.companyProfilePath = '';
+              //         ctx.deleteDocument('company_profile');
+              //         ctx.update();
+              //       },
+              //     ),
+              //   ],
+              // ),
             ],
           );
         });
