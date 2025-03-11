@@ -97,9 +97,9 @@ class _NooPageState extends State<NooPage> {
                       data = data as NooModel;
                       Get.dialog(
                         AlertDialog(
-                          title: const Text('Data KIL'),
+                          title: const Text('Data PDL'),
                           content: const Text(
-                            'Apakah anda yakin ingin melanjutkan data KIL ini?',
+                            'Apakah anda yakin ingin melanjutkan data PDL ini?',
                           ),
                           actions: [
                             TextButton(

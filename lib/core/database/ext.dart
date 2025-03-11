@@ -157,6 +157,19 @@ CREATE TABLE IF NOT EXISTS canvasing (
 )
 ''';
 
+const mastergroupTable = '''
+CREATE TABLE IF NOT EXISTS mastergroup (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cluster_kelompok TEXT NOT NULL,
+  type TEXT NOT NULL,
+  kode TEXT NOT NULL,
+  nama_desc TEXT NOT NULL,
+  singkatan TEXT NOT NULL,
+  definisi TEXT NOT NULL,
+  active INTEGER DEFAULT 1
+)
+''';
+
 const deleteSevenDaysMarketingActivity = '''
 DELETE FROM marketing_activity WHERE created_at < datetime('now', '-7 day') AND status_sync = 1;
 ''';

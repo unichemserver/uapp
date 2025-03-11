@@ -18,6 +18,9 @@ class NooController extends GetxController {
   String gudangOwnership = '';
   String rumahOwnership = '';
   String statusPajak = '';
+  var customerGroups = <String, List<String>>{}.obs;
+  var selectedCluster = ''.obs;
+  var selectedNamaDesc = ''.obs;
   NooAddressModel ownerAddress = NooAddressModel();
   NooAddressModel companyAddress = NooAddressModel();
   NooAddressModel warehouseAddress = NooAddressModel();
@@ -43,8 +46,14 @@ class NooController extends GetxController {
     if (idNOO == null) {
       await getIDNOO();
     }
+
+    String formattedGroupCust = selectedNamaDesc.isNotEmpty
+        ? '${selectedNamaDesc.value}[${selectedCluster.value}]'
+        : selectedNamaDesc.value;
+
     Map<String, dynamic> additionalData = {
-      'group_cust': groupPelanggan,
+      'group_cust': formattedGroupCust,
+      // 'group_cust': groupPelanggan,
       'payment_method': paymentMethod,
       'jaminan': jaminan,
       'ownership_toko': kantorOwnership,
@@ -133,6 +142,26 @@ class NooController extends GetxController {
     update();
   }
 
+  Future<void> fetchCustomerGroup() async {
+    List<Map<String, dynamic>> result = await db.rawQuery('''
+      SELECT cluster_kelompok, nama_desc FROM mastergroup
+    ''');
+
+    Map<String, List<String>> groups = {};
+    for (var row in result) {
+      String cluster = row['cluster_kelompok'];
+      String namaDesc = row['nama_desc'];
+
+      if (!groups.containsKey(cluster)) {
+        groups[cluster] = [];
+      }
+      groups[cluster]!.add(namaDesc);
+    }
+
+    customerGroups.assignAll(groups);
+    update();
+  }
+
   Future<String> generateNooID(String table) async {
     var userId = Utils.getUserData().id;
     String pattern = 'NOO$userId';
@@ -189,6 +218,17 @@ class NooController extends GetxController {
     gudangOwnership = data.ownershipGudang ?? '';
     rumahOwnership = data.ownershipRumah ?? '';
     statusPajak = data.statusPajak ?? '';
+  }
+
+  void setSelectedCluster(String cluster) {
+  selectedCluster.value = cluster;
+  selectedNamaDesc.value = '';
+  update();
+}
+
+  void setSelectedNamaDesc(String namaDesc) {
+    selectedNamaDesc.value = namaDesc;
+    update();
   }
 
   setNooDocument() async {

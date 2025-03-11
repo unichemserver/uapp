@@ -107,6 +107,20 @@ class MarketingDatabase {
       )
     ''');
 
+    await db.execute('''
+    CREATE TABLE IF NOT EXISTS mastergroup (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cluster_kelompok TEXT NOT NULL,
+        type TEXT NOT NULL,
+        kode TEXT NOT NULL,
+        nama_desc TEXT NOT NULL,
+        singkatan TEXT NOT NULL,
+        definisi TEXT NOT NULL,
+        active INTEGER DEFAULT 1
+    )
+    ''');
+
+    await db.execute(mastergroupTable);
     await db.execute(invoiceTable);
     await db.execute(masterNooTable);
     await db.execute(ttdNooTable);

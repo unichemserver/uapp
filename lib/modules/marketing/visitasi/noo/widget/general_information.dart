@@ -44,31 +44,92 @@ class GeneralInformation extends StatelessWidget {
               'Group Pelanggan:',
               style: Theme.of(context).textTheme.titleSmall,
             ),
+
+            
+            // Wrap(
+            //   spacing: 8,
+            //   runSpacing: 0,
+            //   children: List.generate(
+            //     NooOptions.custGroup.length,
+            //     (index) {
+            //       return ChoiceChip(
+            //         label: SizedBox(
+            //           width: MediaQuery.of(context).size.width * 0.3,
+            //           child: Text(
+            //             NooOptions.custGroup[index],
+            //             textAlign: TextAlign.center,
+            //           ),
+            //         ),
+            //         selected: ctx.groupPelanggan == NooOptions.custGroup[index],
+            //         onSelected: (value) {
+            //           if (value) {
+            //             ctx.groupPelanggan = NooOptions.custGroup[index];
+            //             ctx.update();
+            //           }
+            //         },
+            //       );
+            //     },
+            //   ),
+            // ),
+            // if (ctx.groupPelanggan.isNotEmpty)
+            //   DropdownButtonFormField<String>(
+            //     decoration: InputDecoration(labelText: 'Pilih Pelanggan'),
+            //     items: NooOptions.custGroup
+            //         .map((cluster) => DropdownMenuItem(
+            //               value: cluster,
+            //               child: Text(cluster),
+            //             ))
+            //         .toList(),
+            //     onChanged: (value) {
+            //       ctx.groupPelanggan = value!;
+                  
+            //     },
+            //   ),
+
+
             Wrap(
               spacing: 8,
-              runSpacing: 0,
-              children: List.generate(
-                NooOptions.custGroup.length,
-                (index) {
-                  return ChoiceChip(
-                    label: SizedBox(
+              children: ctx.customerGroups.keys.map((cluster) {
+                return ChoiceChip(
+                  label: SizedBox(
                       width: MediaQuery.of(context).size.width * 0.3,
                       child: Text(
-                        NooOptions.custGroup[index],
+                        cluster,
                         textAlign: TextAlign.center,
                       ),
                     ),
-                    selected: ctx.groupPelanggan == NooOptions.custGroup[index],
-                    onSelected: (value) {
-                      if (value) {
-                        ctx.groupPelanggan = NooOptions.custGroup[index];
-                        ctx.update();
-                      }
-                    },
-                  );
+                  selected: ctx.selectedCluster.value == cluster,
+                  onSelected: (value) {
+                    if (value) ctx.setSelectedCluster(cluster);
+                  },
+                );
+              }).toList(),
+            ),
+            if (ctx.selectedCluster.isNotEmpty)
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(labelText: 'Pilih Nama Desc'),
+                value: ctx.selectedNamaDesc.value,
+                items: ctx.customerGroups[ctx.selectedCluster]!
+                    .map((namaDesc) => DropdownMenuItem(
+                          value: namaDesc,
+                          child: Text(namaDesc),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  ctx.setSelectedNamaDesc(value!);
                 },
               ),
-            ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     if (ctx.selectedNamaDesc.value.isNotEmpty) {
+            //       ctx.saveData(Value()); // Langsung simpan ke DB
+            //     } else {
+            //       Get.snackbar('Error', 'Silakan pilih Nama Desc sebelum menyimpan.');
+            //     }
+            //   },
+            //   child: const Text('Simpan Data')
+            // ),
+          
             const SizedBox(height: 16),
             Text(
               'Credit Limit (Secara Total dalam Rupiah):',
