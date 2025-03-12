@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_controller.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_options.dart';
@@ -43,9 +44,7 @@ class GeneralInformation extends StatelessWidget {
             Text(
               'Group Pelanggan:',
               style: Theme.of(context).textTheme.titleSmall,
-            ),
-
-            
+            ),            
             // Wrap(
             //   spacing: 8,
             //   runSpacing: 0,
@@ -89,27 +88,35 @@ class GeneralInformation extends StatelessWidget {
 
             Wrap(
               spacing: 8,
+              runSpacing: 0,
               children: ctx.customerGroups.keys.map((cluster) {
                 return ChoiceChip(
                   label: SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.3,
-                      child: Text(
-                        cluster,
-                        textAlign: TextAlign.center,
-                      ),
+                    width: MediaQuery.of(context).size.width * 0.3,
+                    child: Text(
+                      cluster,
+                      textAlign: TextAlign.center,
                     ),
+                  ),
                   selected: ctx.selectedCluster.value == cluster,
                   onSelected: (value) {
-                    if (value) ctx.setSelectedCluster(cluster);
+                    if (value) {
+                      ctx.setSelectedCluster(cluster);
+                      ctx.setSelectedNamaDesc('');
+                    }
                   },
                 );
               }).toList(),
             ),
-            if (ctx.selectedCluster.isNotEmpty)
+
+            if (ctx.selectedCluster.value.isNotEmpty) 
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(labelText: 'Pilih Nama Desc'),
-                value: ctx.selectedNamaDesc.value,
-                items: ctx.customerGroups[ctx.selectedCluster]!
+                value: ctx.customerGroups[ctx.selectedCluster.value]!.contains(ctx.selectedNamaDesc.value) == true 
+                    ? ctx.selectedNamaDesc.value 
+                    : null,
+                items: ctx.customerGroups[ctx.selectedCluster.value]!
+                    .toSet()
                     .map((namaDesc) => DropdownMenuItem(
                           value: namaDesc,
                           child: Text(namaDesc),
@@ -117,8 +124,10 @@ class GeneralInformation extends StatelessWidget {
                     .toList(),
                 onChanged: (value) {
                   ctx.setSelectedNamaDesc(value!);
+                  Log.d('Selected Nama Desc: ${ctx.selectedNamaDesc.value}');
                 },
               ),
+
             // ElevatedButton(
             //   onPressed: () {
             //     if (ctx.selectedNamaDesc.value.isNotEmpty) {

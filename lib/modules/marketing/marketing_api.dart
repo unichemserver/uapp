@@ -70,4 +70,27 @@ class MarketingApiService {
       return [];
     }
   }
+
+  Future<List<dynamic>> getMasterGroup() async {
+    try {
+      final body = {
+        'action': 'sync',
+        'method': 'mastergroup',
+      };
+      final response = await http.post(
+        Uri.parse(baseUrl),
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      Log.d('Error getMasterGroup: $e');
+      return [];
+    }
+  }
 }

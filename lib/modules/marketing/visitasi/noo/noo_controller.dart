@@ -1,8 +1,11 @@
+// import 'package:http/http.dart' as http;
+// import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/utils/date_utils.dart';
 import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/utils.dart';
+import 'package:uapp/modules/marketing/marketing_api.dart';
 import 'package:uapp/modules/marketing/model/noo_model.dart';
 import 'package:uapp/modules/marketing/model/spesimen_model.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_address_model.dart';
@@ -10,8 +13,10 @@ import 'package:uapp/modules/marketing/visitasi/noo/noo_text_controller.dart';
 
 class NooController extends GetxController {
   final db = MarketingDatabase();
+  final api = MarketingApiService();
   String? idNOO;
-  String groupPelanggan = '';
+  String clusterKelompok = '';
+  // String groupPelanggan = ''; 
   String paymentMethod = '';
   String jaminan = '';
   String kantorOwnership = '';
@@ -40,6 +45,9 @@ class NooController extends GetxController {
   String suratBankGaransiPath = '';
   String aktaPendirianPath = '';
   String companyProfilePath = '';
+  String get formatGroupCust => selectedNamaDesc.isNotEmpty
+    ? '${selectedNamaDesc.value}[${selectedCluster.value}]'
+    : selectedNamaDesc.value;
   List<SpesimenModel> spesimen = [];
 
   saveData(NooTextController nooDatas) async {
@@ -47,12 +55,8 @@ class NooController extends GetxController {
       await getIDNOO();
     }
 
-    String formattedGroupCust = selectedNamaDesc.isNotEmpty
-        ? '${selectedNamaDesc.value}[${selectedCluster.value}]'
-        : selectedNamaDesc.value;
-
     Map<String, dynamic> additionalData = {
-      'group_cust': formattedGroupCust,
+      'group_cust': formatGroupCust,
       // 'group_cust': groupPelanggan,
       'payment_method': paymentMethod,
       'jaminan': jaminan,
@@ -142,13 +146,39 @@ class NooController extends GetxController {
     update();
   }
 
-  Future<void> fetchCustomerGroup() async {
-    List<Map<String, dynamic>> result = await db.rawQuery('''
-      SELECT cluster_kelompok, nama_desc FROM mastergroup
-    ''');
+Future<void> fetchCustomerGroup() async {
+   try {
+      List<dynamic> result = await api.getMasterGroup();
+      Log.d('Customer Group: $result');
 
+      await db.delete('mastergroup', '1 = 1', []); // Hapus data lama sebelum menyimpan
+
+      for (var row in result) {
+      await db.insert('mastergroup', {
+        'id': row['id'] == 0 ? null : row['id'],
+        'cluster_kelompok': row['cluster_kelompok'] ?? '',
+        'type': row['type'] ?? 'UNKNOWN', // Pastikan kolom type memiliki nilai
+        'kode': row['kode'] ?? '',
+        'nama_desc': row['nama_desc'] ?? '',
+        'singkatan': row['singkatan'] ?? '',
+        'definisi': row['definisi'] ?? '',
+        'active': row['active'] ?? 1,
+      });
+    }
+
+      await loadCustomerGroupsFromDB(); // Ambil data dari DB untuk UI
+    } catch (e) {
+      Log.d('Error fetching customer groups: $e');
+    }
+}
+
+Future<void> loadCustomerGroupsFromDB() async {
+    List<Map<String, dynamic>> results = await db.query('mastergroup');
     Map<String, List<String>> groups = {};
-    for (var row in result) {
+
+    Log.d('Customer Groups NGAMBIL: $results');
+    
+    for (var row in results) {
       String cluster = row['cluster_kelompok'];
       String namaDesc = row['nama_desc'];
 
@@ -161,6 +191,21 @@ class NooController extends GetxController {
     customerGroups.assignAll(groups);
     update();
   }
+
+// Future<void> saveCustomerGroupsToDB(List<dynamic> groups) async {
+//   await db.delete(
+//     'mastergroup',
+//     'cluster_kelompok = ?',
+//     [clusterKelompok],
+//   );
+
+//   for (var group in groups) {
+//     await db.insert('mastergroup', {
+//       'cluster_kelompok': group['cluster_kelompok'],
+//       'nama_desc': group['nama_desc'],
+//     });
+//   }
+// }
 
   Future<String> generateNooID(String table) async {
     var userId = Utils.getUserData().id;
@@ -211,7 +256,14 @@ class NooController extends GetxController {
   }
 
   setNooData(NooModel data) {
-    groupPelanggan = data.groupCust ?? '';
+    var match = RegExp(r'^(.*?)\[(.*?)\]$').firstMatch(data.groupCust ?? '');
+    if (match != null) {
+      selectedNamaDesc.value = match.group(1) ?? '';
+      selectedCluster.value = match.group(2) ?? '';
+    } else {
+      selectedNamaDesc.value = data.groupCust ?? '';
+      selectedCluster.value = '';
+    }
     paymentMethod = data.paymentMethod ?? '';
     jaminan = data.jaminan ?? '';
     kantorOwnership = data.ownershipToko ?? '';
@@ -378,9 +430,17 @@ class NooController extends GetxController {
     );
   }
 
+  Future<void> checkTables() async {
+    final tables = await db.rawQuery(
+        "SELECT * FROM masternoo");
+    Log.d("Tables in Database: $tables");
+  }
+
   @override
   void onInit() {
     super.onInit();
     getIDNOO();
+    fetchCustomerGroup();
+    checkTables();
   }
 }

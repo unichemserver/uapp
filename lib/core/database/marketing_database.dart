@@ -1,11 +1,13 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:uapp/core/database/ext.dart';
+import 'package:uapp/core/utils/log.dart';
+import 'package:path/path.dart';
 
 class MarketingDatabase {
   static final MarketingDatabase _instance =
       MarketingDatabase._privateConstructor();
   static Database? _database;
-  final int marketingDbVersion = 1;
+  final int marketingDbVersion = 3;
 
   MarketingDatabase._privateConstructor();
 
@@ -22,14 +24,18 @@ class MarketingDatabase {
   }
 
   Future<Database> _initDatabase() async {
+    String path = join(await getDatabasesPath(), 'marketing.db');
     return await openDatabase(
-      'marketing.db',
+      path,
       version: marketingDbVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
   Future<void> _onCreate(Database db, int version) async {
+    Log.d('creating database...');
+
     await db.execute('''
       CREATE TABLE IF NOT EXISTS marketing_activity (
         id TEXT PRIMARY KEY,
@@ -131,6 +137,28 @@ class MarketingDatabase {
     await db.execute(deleteSevenDaysMarketingActivity);
   }
 
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+  if (oldVersion < 3) {
+    Log.d('upgrading database...');
+
+    await db.execute('''
+    CREATE TABLE IF NOT EXISTS mastergroup (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cluster_kelompok TEXT NOT NULL,
+        type TEXT NOT NULL,
+        kode TEXT NOT NULL,
+        nama_desc TEXT NOT NULL,
+        singkatan TEXT NOT NULL,
+        definisi TEXT NOT NULL,
+        active INTEGER DEFAULT 1
+    )
+    ''');
+
+    await db.execute(mastergroupTable);
+  }
+}
+
+
   Future<int> insert(String table, Map<String, dynamic> data,
       {String? nullColumnHack}) async {
     final db = await database;
@@ -194,6 +222,7 @@ class MarketingDatabase {
     await db.delete('noodocument');
     await db.delete('noospesimen');
     await db.delete('canvasing');
+    await db.delete('mastergroup');
   }
 
   Future<Map<String, dynamic>> getAllData() async {
@@ -210,7 +239,8 @@ class MarketingDatabase {
       'nooaddress',
       'noodocument',
       'noospesimen',
-      'canvasing'
+      'canvasing',
+      'mastergroup'
     ];
     final Map<String, dynamic> result = {};
     for (String table in tables) {

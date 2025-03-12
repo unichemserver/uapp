@@ -165,7 +165,7 @@ class _NooPageState extends State<NooPage> {
                     padding: const EdgeInsets.all(8.0),
                     child: ElevatedButton(
                       onPressed: () async {
-                        if (ctx.groupPelanggan.isEmpty) {
+                        if (ctx.selectedNamaDesc.value.isEmpty) {
                           Utils.showErrorSnackBar(
                             context,
                             'Pilih Group Pelanggan terlebih dahulu',
@@ -179,8 +179,8 @@ class _NooPageState extends State<NooPage> {
                           );
                           return;
                         }
-                        if (ctx.jaminan.isEmpty &&
-                            ctx.groupPelanggan == NooOptions.custGroup[1]) {
+                        // && ctx.groupPelanggan 
+                        if (ctx.jaminan.isEmpty) {
                           Utils.showErrorSnackBar(
                             context,
                             'Pilih Jenis Jaminan terlebih dahulu',
