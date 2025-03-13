@@ -149,15 +149,15 @@ class NooController extends GetxController {
 Future<void> fetchCustomerGroup() async {
    try {
       List<dynamic> result = await api.getMasterGroup();
-      Log.d('Customer Group: $result');
+      // Log.d('Customer Group: $result');
 
-      await db.delete('mastergroup', '1 = 1', []); // Hapus data lama sebelum menyimpan
+      await db.delete('mastergroup', '1 = 1', []); 
 
       for (var row in result) {
       await db.insert('mastergroup', {
         'id': row['id'] == 0 ? null : row['id'],
         'cluster_kelompok': row['cluster_kelompok'] ?? '',
-        'type': row['type'] ?? 'UNKNOWN', // Pastikan kolom type memiliki nilai
+        'type': row['type'] ?? 'UNKNOWN', 
         'kode': row['kode'] ?? '',
         'nama_desc': row['nama_desc'] ?? '',
         'singkatan': row['singkatan'] ?? '',
@@ -166,7 +166,7 @@ Future<void> fetchCustomerGroup() async {
       });
     }
 
-      await loadCustomerGroupsFromDB(); // Ambil data dari DB untuk UI
+      await loadCustomerGroupsFromDB(); 
     } catch (e) {
       Log.d('Error fetching customer groups: $e');
     }
@@ -175,8 +175,6 @@ Future<void> fetchCustomerGroup() async {
 Future<void> loadCustomerGroupsFromDB() async {
     List<Map<String, dynamic>> results = await db.query('mastergroup');
     Map<String, List<String>> groups = {};
-
-    Log.d('Customer Groups NGAMBIL: $results');
     
     for (var row in results) {
       String cluster = row['cluster_kelompok'];
@@ -432,14 +430,14 @@ Future<void> loadCustomerGroupsFromDB() async {
 
   Future<void> checkTables() async {
     final tables = await db.rawQuery(
-        "SELECT * FROM masternoo");
+        "SELECT cust_id FROM marketing_activity");
     Log.d("Tables in Database: $tables");
   }
 
   @override
   void onInit() {
     super.onInit();
-    getIDNOO();
+    // getIDNOO();
     fetchCustomerGroup();
     checkTables();
   }

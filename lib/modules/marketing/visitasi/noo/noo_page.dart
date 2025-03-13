@@ -7,7 +7,7 @@ import 'package:uapp/modules/marketing/model/noo_model.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/doc_form.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/kil_form.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_controller.dart';
-import 'package:uapp/modules/marketing/visitasi/noo/noo_options.dart';
+// import 'package:uapp/modules/marketing/visitasi/noo/noo_options.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_text_controller.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/spesimen_form.dart';
 
@@ -30,32 +30,24 @@ class _NooPageState extends State<NooPage> {
       AlertDialog(
         title: const Text('Konfirmasi'),
         content: const Text(
-          'Apakah anda ingin menyimpan data ini?',
+          'Apakah anda ingin kembali ke halaman utama?',
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Utils.showLoadingDialog(context);
-              ctx.deleteData().then((value) {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              });
-            },
-            child: const Text('Tidak'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Utils.showLoadingDialog(context);
-              ctx.saveData(nooCtrl).then((value) {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              });
-            },
-            child: const Text('Ya'),
-          ),
-        ],
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); // Tutup dialog, tetap di halaman NOO
+          },
+          child: const Text('Tidak'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); // Tutup dialog
+            _formKey.currentState!.reset();
+            Get.offNamed(Routes.HOME); // Kembali ke home
+          },
+          child: const Text('Ya'),
+        ),
+      ],
       ),
     );
   }
@@ -194,11 +186,13 @@ class _NooPageState extends State<NooPage> {
                         ctx.saveData(nooCtrl).then((value) {
                           Navigator.pop(context);
                           _formKey.currentState!.reset();
-                          Get.toNamed(Routes.MARKETING, arguments: {
-                            'id': ctx.idNOO,
-                            'type': Call.noo,
-                            'name': nooCtrl.namaPerusahaanCtrl.text,
-                          });
+                          Get.offNamed(Routes.HOME);
+
+                          // Get.toNamed(Routes.MARKETING, arguments: {
+                          //   'id': ctx.idNOO,
+                          //   'type': Call.noo,
+                          //   'name': nooCtrl.namaPerusahaanCtrl.text,
+                          // });
                         });
                       },
                       style: ElevatedButton.styleFrom(

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/core/database/marketing_database.dart';
+import 'package:uapp/core/utils/jenis_call.dart';
+import 'package:uapp/core/utils/log.dart';
+import 'package:uapp/modules/marketing/api/api_client.dart';
+import 'package:uapp/modules/marketing/api/sync_marketing_activity_api.dart';
+// import 'package:uapp/modules/marketing/api/sync_marketing_activity_api.dart';
 import 'package:uapp/modules/marketing/model/noo_model.dart';
+import 'package:uapp/modules/marketing/model/marketing_activity.dart';
 
 class NooSaved extends StatefulWidget {
   const NooSaved({super.key});
@@ -12,7 +18,10 @@ class NooSaved extends StatefulWidget {
 
 class _NooSavedState extends State<NooSaved> {
   final db = MarketingDatabase();
+  final apiClient = MarketingApiClient();
   List<NooModel> nooData = [];
+  List<MarketingActivity> newOpeningOutlet = [];
+  late SyncMarketingActivityApi syncApi;
 
   void getNooData() async {
     final data = await db.query('masternoo');
@@ -29,9 +38,37 @@ class _NooSavedState extends State<NooSaved> {
     getNooData();
   }
 
+ Future<void> syncNooById(String id) async {
+  // 1. Ambil data dari tabel marketing_activity berdasarkan custId
+  final List<Map<String, dynamic>> marketingData = await db.query(
+    'marketing_activity',
+    where: 'cust_id = ? AND jenis = ?',
+    whereArgs: [id, Call.noo],
+  );
+
+  if (marketingData.isEmpty) {
+    Log.d("Tidak ada data marketing_activity dengan custId: $id");
+    return;
+  }
+
+  // 2. Looping data yang ditemukan
+  for (var record in marketingData) {
+    int syncStatus = record['status_sync']; // Ambil statusSync
+
+    if (syncStatus == 0) {
+      // 3. Jika statusSync masih 0, panggil fungsi sinkronisasi utama
+      await syncApi.syncMarketingActivity();
+      Log.d("Sinkronisasi dijalankan untuk custId: $id");
+    } else {
+      Log.d("custId $id sudah tersinkronisasi.");
+    }
+  }
+}
+
   @override
   void initState() {
     super.initState();
+    syncApi = SyncMarketingActivityApi(api: apiClient, db: db);
     getNooData();
   }
 
@@ -66,6 +103,13 @@ class _NooSavedState extends State<NooSaved> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              IconButton(
+                icon: const Icon(Icons.sync),
+                onPressed: () {
+                  Log.d('View Data');
+                  syncNooById(data.id!);
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.delete),
                 onPressed: () {
