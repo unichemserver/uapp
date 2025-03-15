@@ -93,4 +93,52 @@ class MarketingApiService {
       return [];
     }
   }
+
+  Future<dynamic> checkApprovalStatus(String idnoo) async {
+    try {
+      final body = {
+        'action': 'marketing',
+        'method': 'approve_noo',
+        'idnoo': idnoo,
+      };
+      final response = await http.post(
+        Uri.parse(baseUrl),
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      Log.d('Error checkApprovalStatus: $e');
+      return null;
+    }
+  }
+
+  Future<dynamic> getUserApproval(String idnoo) async {
+    try {
+      final body = {
+        'action': 'noo',
+        'method': 'get_user_approval',
+        'idnoo': idnoo,
+      };
+      final response = await http.post(
+        Uri.parse(baseUrl),
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      Log.d('Error getUserApproval: $e');
+      return null;
+    }
+  }
 }

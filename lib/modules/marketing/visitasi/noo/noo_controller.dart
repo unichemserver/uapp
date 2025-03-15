@@ -99,6 +99,17 @@ class NooController extends GetxController {
       },
       nullColumnHack: 'group_cust',
     );
+
+    // Insert into noo_activity
+    await db.insert(
+      'noo_activity',
+      {
+        'idnoo': idNOO,
+        'statussync': 0,
+        'approved': 0,
+      },
+    );
+
     var idDocNoo = await generateNooID('noodocument');
     await db.insert(
       'noodocument',
@@ -405,6 +416,7 @@ Future<void> loadCustomerGroupsFromDB() async {
       await db.delete('noodocument', 'id_noo = ?', [idNOO]);
       await db.delete('noospesimen', 'id_noo = ?', [idNOO]);
       await db.delete('nooaddress', 'id_noo = ?', [idNOO]);
+      await db.delete('noo_activity', 'idnoo = ?', [idNOO]);
       idNOO = null;
       update();
     }
@@ -430,7 +442,7 @@ Future<void> loadCustomerGroupsFromDB() async {
 
   Future<void> checkTables() async {
     final tables = await db.rawQuery(
-        "SELECT cust_id FROM marketing_activity");
+        "SELECT * FROM noo_activity");
     Log.d("Tables in Database: $tables");
   }
 

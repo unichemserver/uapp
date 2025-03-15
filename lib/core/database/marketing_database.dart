@@ -7,7 +7,7 @@ class MarketingDatabase {
   static final MarketingDatabase _instance =
       MarketingDatabase._privateConstructor();
   static Database? _database;
-  final int marketingDbVersion = 3;
+  final int marketingDbVersion = 4;
 
   MarketingDatabase._privateConstructor();
 
@@ -126,6 +126,17 @@ class MarketingDatabase {
     )
     ''');
 
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS noo_activity (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        idnoo TEXT,
+        statussync INTEGER DEFAULT 0,
+        status TEXT,
+        approved INTEGER DEFAULT 0,
+        idCustOrlan TEXT
+      )
+    ''');
+
     await db.execute(mastergroupTable);
     await db.execute(invoiceTable);
     await db.execute(masterNooTable);
@@ -138,7 +149,7 @@ class MarketingDatabase {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-  if (oldVersion < 3) {
+  if (oldVersion < 4) {
     Log.d('upgrading database...');
 
     await db.execute('''
@@ -152,6 +163,17 @@ class MarketingDatabase {
         definisi TEXT NOT NULL,
         active INTEGER DEFAULT 1
     )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS noo_activity (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        idnoo TEXT,
+        statussync INTEGER DEFAULT 0,
+        status TEXT,
+        approved INTEGER DEFAULT 0,
+        idCustOrlan TEXT
+      )
     ''');
 
     await db.execute(mastergroupTable);
