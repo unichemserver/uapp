@@ -141,4 +141,27 @@ class MarketingApiService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>> getTopOptions() async {
+    try {
+      final body = {
+        'action': 'noo',
+        'method': 'get_pxtop',
+      };
+      final response = await http.post(
+        Uri.parse(baseUrl),
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception('Failed to load TOP options');
+      }
+    } catch (e) {
+      Log.d('Error fetching TOP options: $e');
+      throw Exception('Error fetching TOP options');
+    }
+  }
 }

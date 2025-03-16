@@ -23,6 +23,8 @@ class NooController extends GetxController {
   String gudangOwnership = '';
   String rumahOwnership = '';
   String statusPajak = '';
+  var topOptionsError = ''.obs;
+  var topOptions = <Map<String, dynamic>>[].obs;
   var customerGroups = <String, List<String>>{}.obs;
   var selectedCluster = ''.obs;
   var selectedNamaDesc = ''.obs;
@@ -49,11 +51,13 @@ class NooController extends GetxController {
     ? '${selectedNamaDesc.value}[${selectedCluster.value}]'
     : selectedNamaDesc.value;
   List<SpesimenModel> spesimen = [];
+ 
 
   saveData(NooTextController nooDatas) async {
     if (idNOO == null) {
       await getIDNOO();
     }
+    Log.d('Payment Method: $paymentMethod');
 
     Map<String, dynamic> additionalData = {
       'group_cust': formatGroupCust,
@@ -177,13 +181,13 @@ Future<void> fetchCustomerGroup() async {
       });
     }
 
-      await loadCustomerGroupsFromDB(); 
+      await loadCustomerGroups(); 
     } catch (e) {
       Log.d('Error fetching customer groups: $e');
     }
 }
 
-Future<void> loadCustomerGroupsFromDB() async {
+Future<void> loadCustomerGroups() async {
     List<Map<String, dynamic>> results = await db.query('mastergroup');
     Map<String, List<String>> groups = {};
     
@@ -442,15 +446,50 @@ Future<void> loadCustomerGroupsFromDB() async {
 
   Future<void> checkTables() async {
     final tables = await db.rawQuery(
-        "SELECT * FROM noo_activity");
+        "SELECT * FROM masternoo");
     Log.d("Tables in Database: $tables");
   }
+
+  Future<void> fetchTopOptions() async {
+    topOptionsError.value = '';
+    try {
+      var response = await api.getTopOptions();
+      List<dynamic> result = response['data'];
+
+      await db.delete('top_options', '1 = 1', []);
+
+      for (var row in result) {
+        await db.insert('top_options', {
+          'TOP_ID': row['TOP_ID'],
+          'Description': row['Description'],
+        });
+      }
+      topOptions.assignAll(result.map((item) => {
+        'TOP_ID': item['TOP_ID'],
+        'Description': item['Description'],
+      }).toList());
+
+      await loadTopOptions();
+    } catch (e) {
+      topOptionsError.value = 'Error fetching TOP options: $e';
+    }
+  }
+
+  Future<void> loadTopOptions() async {
+    List<Map<String, dynamic>> results = await db.query('top_options');
+    topOptions.assignAll(results);
+    update();
+  }
+
+  
 
   @override
   void onInit() {
     super.onInit();
-    // getIDNOO();
     fetchCustomerGroup();
+    fetchTopOptions();
+    loadTopOptions();
+    loadCustomerGroups();
     checkTables();
   }
 }

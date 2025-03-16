@@ -37,8 +37,8 @@ class SyncNooActivityApi {
       NotifId.MKT_SYNC_CH_ID,
       NotifId.MKT_SYNC_CH_NAME,
       NotifId.MKT_SYNC_ID,
-      'NOO Terbaru',
-      'Ada data NOO terbaru, segera Approve',
+      'NOO berhasil dibuat',
+      'Data NOO telah berhasil dibuat dan menunggu persetujuan',
     );
   }
 

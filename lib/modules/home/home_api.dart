@@ -544,4 +544,85 @@ class HomeApi {
       return null;
     }
   }
+
+  static Future<List<String>?> getApprovalData(String userId) async {
+    try {
+      final baseUrl = Uri.parse('https://unichem.co.id/api/');
+      final bodyRequest = {
+        'action': 'noo',
+        'method': 'get_data_approval',
+        'userid': userId,
+      };
+      final response = await http.post(
+        baseUrl,
+        body: bodyRequest,
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['message'] == 'Data Found') {
+          return List<String>.from(data['data'].map((item) => item['nonoo']));
+        } else {
+          return [];
+        }
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching approval data: $e');
+      return null;
+    }
+  }
+
+  static Future<List<String>?> getUserApproval() async {
+    try {
+      final baseUrl = Uri.parse('https://unichem.co.id/api/');
+      final bodyRequest = {
+        'action': 'noo',
+        'method': 'get_user_approval',
+      };
+      final response = await http.post(
+        baseUrl,
+        body: bodyRequest,
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['message'] == 'Data Found') {
+          return List<String>.from(data['data'].map((item) => item['nik']));
+        } else {
+          return [];
+        }
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching user approval data: $e');
+      return null;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>?> getAllApprovalData() async {
+    try {
+      final userApprovalList = await getUserApproval();
+      if (userApprovalList == null || userApprovalList.isEmpty) {
+        return null;
+      }
+
+      List<Map<String, dynamic>> allApprovalData = [];
+      for (String userId in userApprovalList) {
+        final approvalData = await getApprovalData(userId);
+        if (approvalData != null) {
+          allApprovalData.addAll(approvalData.map((item) => {'userId': userId, 'data': item}));
+        }
+      }
+      return allApprovalData;
+    } catch (e) {
+      print('Error fetching all approval data: $e');
+      return null;
+    }
+  }
 }
+
+
+
+
+

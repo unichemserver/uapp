@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:uapp/core/database/marketing_database.dart';
+import 'package:uapp/core/utils/log.dart';
+import 'package:uapp/modules/home/home_api.dart';
+// import 'package:http/http.dart' as http;
+// import 'dart:convert';
 
 class ApprovalScreen extends StatefulWidget {
   const ApprovalScreen({Key? key}) : super(key: key);
@@ -10,7 +13,8 @@ class ApprovalScreen extends StatefulWidget {
 }
 
 class _ApprovalScreenState extends State<ApprovalScreen> {
-  List<String> approvalData = [];
+  List<Map<String, dynamic>> approvalData = [];
+  final db = MarketingDatabase();
 
   @override
   void initState() {
@@ -19,22 +23,11 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
   }
 
   Future<void> fetchApprovalData() async {
-    final response = await http.post(
-      Uri.parse('https://unichem.co.id/api/'),
-      body: {
-        'action': 'noo',
-        'method': 'get_data_approval',
-        'userid': '1580',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['message'] == 'Data Found') {
-        setState(() {
-          approvalData = List<String>.from(data['data'].map((item) => item['nonoo']));
-        });
-      }
+    final allApprovalData = await HomeApi.getAllApprovalData();
+    if (allApprovalData != null) {
+      setState(() {
+        approvalData = allApprovalData;
+      });
     } else {
       // Handle error
     }
@@ -58,7 +51,8 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Approval ID: ${approvalData[index]}'),
+                        Text('User ID: ${approvalData[index]['userId']}'),
+                        Text('Approval ID: ${approvalData[index]['data']}'),
                         const SizedBox(height: 8.0),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,

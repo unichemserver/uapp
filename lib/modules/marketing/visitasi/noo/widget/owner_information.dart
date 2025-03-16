@@ -34,6 +34,7 @@ class OwnerInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Nama Pemilik Usaha',
           controller: ownerNameCtrl,
         ),
         const SizedBox(height: 16),
@@ -42,6 +43,7 @@ class OwnerInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan nomor KTP/SIM',
           controller: idNoCtrl,
         ),
         const SizedBox(height: 16),
@@ -50,6 +52,7 @@ class OwnerInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan nomor telepon',
           controller: phoneCtrl,
         ),
         const SizedBox(height: 16),
@@ -58,6 +61,7 @@ class OwnerInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan email',
           controller: emailCtrl,
         ),
         const SizedBox(height: 16),

@@ -26,7 +26,7 @@ class Utils {
     final box = Hive.box(HiveKeys.appBox);
     final user = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
     final bagian = user.department;
-    return bagian == 'MKT' || user.nama == "FERDI FIRMANSYAH";
+    return bagian == 'MKT' || user.nama == "MICKAEL RENALDY";
   }
 
   static Uint8List? fotoKaryawan() {

@@ -45,47 +45,6 @@ class GeneralInformation extends StatelessWidget {
               'Group Pelanggan:',
               style: Theme.of(context).textTheme.titleSmall,
             ),            
-            // Wrap(
-            //   spacing: 8,
-            //   runSpacing: 0,
-            //   children: List.generate(
-            //     NooOptions.custGroup.length,
-            //     (index) {
-            //       return ChoiceChip(
-            //         label: SizedBox(
-            //           width: MediaQuery.of(context).size.width * 0.3,
-            //           child: Text(
-            //             NooOptions.custGroup[index],
-            //             textAlign: TextAlign.center,
-            //           ),
-            //         ),
-            //         selected: ctx.groupPelanggan == NooOptions.custGroup[index],
-            //         onSelected: (value) {
-            //           if (value) {
-            //             ctx.groupPelanggan = NooOptions.custGroup[index];
-            //             ctx.update();
-            //           }
-            //         },
-            //       );
-            //     },
-            //   ),
-            // ),
-            // if (ctx.groupPelanggan.isNotEmpty)
-            //   DropdownButtonFormField<String>(
-            //     decoration: InputDecoration(labelText: 'Pilih Pelanggan'),
-            //     items: NooOptions.custGroup
-            //         .map((cluster) => DropdownMenuItem(
-            //               value: cluster,
-            //               child: Text(cluster),
-            //             ))
-            //         .toList(),
-            //     onChanged: (value) {
-            //       ctx.groupPelanggan = value!;
-                  
-            //     },
-            //   ),
-
-
             Wrap(
               spacing: 8,
               runSpacing: 0,
@@ -111,7 +70,7 @@ class GeneralInformation extends StatelessWidget {
 
             if (ctx.selectedCluster.value.isNotEmpty) 
               DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Pilih Nama Desc'),
+                decoration: const InputDecoration(labelText: 'Pilih Nama Desc'),
                 value: ctx.customerGroups[ctx.selectedCluster.value]!.contains(ctx.selectedNamaDesc.value) == true 
                     ? ctx.selectedNamaDesc.value 
                     : null,
@@ -127,30 +86,19 @@ class GeneralInformation extends StatelessWidget {
                   Log.d('Selected Nama Desc: ${ctx.selectedNamaDesc.value}');
                 },
               ),
-
-            // ElevatedButton(
-            //   onPressed: () {
-            //     if (ctx.selectedNamaDesc.value.isNotEmpty) {
-            //       ctx.saveData(Value()); // Langsung simpan ke DB
-            //     } else {
-            //       Get.snackbar('Error', 'Silakan pilih Nama Desc sebelum menyimpan.');
-            //     }
-            //   },
-            //   child: const Text('Simpan Data')
-            // ),
-          
             const SizedBox(height: 16),
             Text(
               'Credit Limit (Secara Total dalam Rupiah):',
               style: Theme.of(context).textTheme.titleSmall,
             ),
             AppTextField(
+              hintText: 'Masukan Credit Limit',
               controller: creditLimitCtrl,
               prefixIcon: Container(
                 padding: const EdgeInsets.all(8),
                 child: const Text(
                   'Rp',
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(fontSize: 18),
                 ),
               ),
               onChanged: (value) {
@@ -168,62 +116,28 @@ class GeneralInformation extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Metode Pembayaran Pelanggan:',
+              'Termin Pembayaran (TOP) Pelanggan:',
               style: Theme.of(context).textTheme.titleSmall,
             ),
-            Wrap(
-              spacing: 8,
-              runSpacing: 0,
-              children: List.generate(
-                NooOptions.paymentMethod.length,
-                (index) {
-                  return ChoiceChip(
-                    label: Row(
-                      children: [
-                        Text(
-                          NooOptions.paymentMethod[index],
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                    selected:
-                        ctx.paymentMethod == NooOptions.paymentMethod[index],
-                    onSelected: (value) {
-                      if (value) {
-                        ctx.paymentMethod = NooOptions.paymentMethod[index];
-                        ctx.update();
-                      }
-                    },
-                  );
+            Obx(() {
+              var items = ctx.topOptions
+                  .map((item) => DropdownMenuItem<String>(
+                        value: item['TOP_ID'],
+                        child: Text(item['TOP_ID']),
+                      ))
+                  .toList();
+              return DropdownButtonFormField<String>(
+                value: ctx.paymentMethod,
+                items: items, 
+                onChanged: (value) {
+                  if (value != null) {
+                    Log.d('Selected TOP: $value');
+                    ctx.paymentMethod = value;
+                    ctx.update(); // Add this line to update the controller
+                  }
                 },
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Termin Pembayaran (TOP) dari Tanggal Surat Jalan:',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: AppTextField(
-                    controller: topDateCtrl,
-                    prefixIcon: const Icon(Icons.calendar_today),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Termin pembayaran tidak boleh kosong';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  'Hari',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-              ],
-            ),
+              );
+            }),
             const SizedBox(height: 16),
             Text(
               'Jaminan (Khusus Distributor):',
@@ -258,12 +172,13 @@ class GeneralInformation extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             AppTextField(
+              hintText: 'Masukan Nilai Jaminan',
               controller: jaminanCtrl,
               prefixIcon: Container(
                 padding: const EdgeInsets.all(8),
                 child: const Text(
                   'Rp',
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(fontSize: 18),
                 ),
               ),
               validator: (value) {
@@ -279,6 +194,7 @@ class GeneralInformation extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             AppTextField(
+              hintText: 'Masukan Nama Perusahaan',
               controller: namaPerusahaanCtrl,
               validator: (value) {
                 if (value!.isEmpty) {
@@ -293,6 +209,7 @@ class GeneralInformation extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             AppTextField(
+              hintText: 'Masukan ID Pelanggan',
               controller: idPelangganCtrl,
               validator: (value) {
                 if (value!.isEmpty) {
@@ -307,6 +224,7 @@ class GeneralInformation extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             AppTextField(
+              hintText: 'Masukan Area Pemasaran',
               controller: areaPemasaranCtrl,
               validator: (value) {
                 if (value!.isEmpty) {
@@ -321,6 +239,7 @@ class GeneralInformation extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             AppTextField(
+              hintText: 'Pilih Tanggal',
               controller: tglJoinCtrl,
               readOnly: true,
               onTap: () {
@@ -347,6 +266,7 @@ class GeneralInformation extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             AppTextField(
+              hintText: 'Masukan Nama Supervisor',
               controller: supervisorNameCtrl,
               validator: (value) {
                 if (value!.isEmpty) {
@@ -361,6 +281,7 @@ class GeneralInformation extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             AppTextField(
+              hintText: 'Masukan Nama ASM',
               controller: asmNameCtrl,
               validator: (value) {
                 if (value!.isEmpty) {
