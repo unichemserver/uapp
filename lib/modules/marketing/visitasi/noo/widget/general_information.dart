@@ -120,21 +120,37 @@ class GeneralInformation extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             Obx(() {
+              var descriptionToTopIdMap = {
+                for (var item in ctx.topOptions) item['Description']: item['TOP_ID']
+              };
+
               var items = ctx.topOptions
                   .map((item) => DropdownMenuItem<String>(
-                        value: item['TOP_ID'],
+                        value: item['Description'],
                         child: Text(item['TOP_ID']),
                       ))
                   .toList();
+
+              var selectedValue = items.any((element) => element.value == ctx.paymentMethod)
+                  ? ctx.paymentMethod
+                  : null;
+
               return DropdownButtonFormField<String>(
-                value: ctx.paymentMethod,
-                items: items, 
+                value: selectedValue,
+                items: items,
                 onChanged: (value) {
                   if (value != null) {
                     Log.d('Selected TOP: $value');
                     ctx.paymentMethod = value;
                     ctx.update(); // Add this line to update the controller
                   }
+                },
+                hint: const Text('Pilih Termin Pembayaran'),
+                icon: const Icon(Icons.calendar_today),
+                selectedItemBuilder: (BuildContext context) {
+                  return items.map((DropdownMenuItem<String> item) {
+                    return Text(descriptionToTopIdMap[item.value] ?? '');
+                  }).toList();
                 },
               );
             }),

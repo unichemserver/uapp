@@ -143,13 +143,13 @@ class HomeDrawer extends StatelessWidget {
                   Get.toNamed(Routes.PROFILE);
                 },
               ),
-              ListTile(
-                title: const Text('Approval'),
-                leading: const Icon(Icons.approval),
-                onTap: () {
-                  Get.toNamed(Routes.APPROVAL);
-                },
-              ),
+              // ListTile(
+              //   title: const Text('Approval'),
+              //   leading: const Icon(Icons.approval),
+              //   onTap: () {
+              //     Get.toNamed(Routes.APPROVAL);
+              //   },
+              // ),
             ],
           ),
         ),

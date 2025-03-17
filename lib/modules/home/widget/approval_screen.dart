@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uapp/core/database/marketing_database.dart';
-import 'package:uapp/core/utils/log.dart';
+// import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/modules/home/home_api.dart';
 // import 'package:http/http.dart' as http;
 // import 'dart:convert';
