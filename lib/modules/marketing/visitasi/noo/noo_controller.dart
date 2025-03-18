@@ -57,7 +57,6 @@ class NooController extends GetxController {
     if (idNOO == null) {
       await getIDNOO();
     }
-    Log.d('Payment Method: $paymentMethod');
 
     Map<String, dynamic> additionalData = {
       'group_cust': formatGroupCust,
@@ -92,6 +91,30 @@ class NooController extends GetxController {
         [addressObject.id],
       );
     }
+    // Save document data
+    Map<String, dynamic> documentData = {
+      'ktp': ktpPath,
+      'npwp': npwpPath,
+      'owner_pic': ownerPicPath,
+      'outlet': outletPath,
+      'warehouse': warehousePath,
+      'siup': siupPath,
+      'tdp': tdpPath,
+      'surat_kerjasama': suratKerjasamaPath,
+      'surat_penunjukan_distributor': suratDistributorPath,
+      'surat_domisili_usaha': suratDomisiliUsahaPath,
+      'surat_penerbitan_bank': suratPenerbitanBankPath,
+      'surat_bank_garansi': suratBankGaransiPath,
+      'akta_pendirian': aktaPendirianPath,
+      'company_profile': companyProfilePath,
+    };
+    documentData.removeWhere((key, value) => value == null || value.isEmpty);
+    await db.update(
+      'noodocument',
+      documentData,
+      'id_noo = ?',
+      [idNOO],
+    );
   }
 
   getIDNOO() async {

@@ -63,6 +63,7 @@ class OutletInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan nama PIC',
           controller: namaPicCtrl,
         ),
         const SizedBox(height: 16),
@@ -71,6 +72,7 @@ class OutletInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan nomor telepon',
           controller: noTelpCtrl,
         ),
       ],

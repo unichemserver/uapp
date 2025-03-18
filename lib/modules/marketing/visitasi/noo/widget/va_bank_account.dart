@@ -28,6 +28,7 @@ class VaBankAccount extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan nama bank',
           controller: namaBankCtrl,
         ),
         const SizedBox(height: 16),
@@ -36,6 +37,7 @@ class VaBankAccount extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan nomor rekening VA',
           controller: nomorVaCtrl,
         ),
         const SizedBox(height: 16),
@@ -44,6 +46,7 @@ class VaBankAccount extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan nama pemilik rekening',
           controller: namaPemilikCtrl,
         ),
         const SizedBox(height: 16),
@@ -52,6 +55,7 @@ class VaBankAccount extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan cabang bank',
           controller: cabangBankCtrl,
         ),
       ],

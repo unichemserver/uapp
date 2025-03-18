@@ -32,6 +32,7 @@ class CompanyProfileInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan bidang usaha',
           controller: bidangUsahaCtrl,
         ),
         const SizedBox(height: 16),
@@ -40,6 +41,7 @@ class CompanyProfileInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan tanggal mulai usaha',
           controller: tglMulaiUsahaCtrl,
         ),
         const SizedBox(height: 16),
@@ -48,6 +50,7 @@ class CompanyProfileInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan produk utama',
           controller: produkUtamaCtrl,
         ),
         const SizedBox(height: 16),
@@ -56,6 +59,7 @@ class CompanyProfileInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan produk lainnya',	
           controller: produkLainCtrl,
         ),
         const SizedBox(height: 16),
@@ -73,6 +77,7 @@ class CompanyProfileInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan perkiraan omset per bulan',
           controller: estOmsetMonthCtrl,
         ),
       ],
