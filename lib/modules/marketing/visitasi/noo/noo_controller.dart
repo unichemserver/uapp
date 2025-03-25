@@ -51,7 +51,7 @@ class NooController extends GetxController {
     ? '${selectedNamaDesc.value}[${selectedCluster.value}]'
     : selectedNamaDesc.value;
   List<SpesimenModel> spesimen = [];
- 
+  var isCreditLimitAndJaminanVisible = false.obs; // Initialize as false
 
   saveData(NooTextController nooDatas) async {
     if (idNOO == null) {
@@ -91,30 +91,32 @@ class NooController extends GetxController {
         [addressObject.id],
       );
     }
-    // Save document data
+    // Save document data only if provided
     Map<String, dynamic> documentData = {
-      'ktp': ktpPath,
-      'npwp': npwpPath,
-      'owner_pic': ownerPicPath,
-      'outlet': outletPath,
-      'warehouse': warehousePath,
-      'siup': siupPath,
-      'tdp': tdpPath,
-      'surat_kerjasama': suratKerjasamaPath,
-      'surat_penunjukan_distributor': suratDistributorPath,
-      'surat_domisili_usaha': suratDomisiliUsahaPath,
-      'surat_penerbitan_bank': suratPenerbitanBankPath,
-      'surat_bank_garansi': suratBankGaransiPath,
-      'akta_pendirian': aktaPendirianPath,
-      'company_profile': companyProfilePath,
+      if (ktpPath.isNotEmpty) 'ktp': ktpPath,
+      if (npwpPath.isNotEmpty) 'npwp': npwpPath,
+      if (ownerPicPath.isNotEmpty) 'owner_pic': ownerPicPath,
+      if (outletPath.isNotEmpty) 'outlet': outletPath,
+      if (warehousePath.isNotEmpty) 'warehouse': warehousePath,
+      if (siupPath.isNotEmpty) 'siup': siupPath,
+      if (tdpPath.isNotEmpty) 'tdp': tdpPath,
+      if (suratKerjasamaPath.isNotEmpty) 'surat_kerjasama': suratKerjasamaPath,
+      if (suratDistributorPath.isNotEmpty) 'surat_penunjukan_distributor': suratDistributorPath,
+      if (suratDomisiliUsahaPath.isNotEmpty) 'surat_domisili_usaha': suratDomisiliUsahaPath,
+      if (suratPenerbitanBankPath.isNotEmpty) 'surat_penerbitan_bank': suratPenerbitanBankPath,
+      if (suratBankGaransiPath.isNotEmpty) 'surat_bank_garansi': suratBankGaransiPath,
+      if (aktaPendirianPath.isNotEmpty) 'akta_pendirian': aktaPendirianPath,
+      if (companyProfilePath.isNotEmpty) 'company_profile': companyProfilePath,
     };
-    documentData.removeWhere((key, value) => value == null || value.isEmpty);
-    await db.update(
-      'noodocument',
-      documentData,
-      'id_noo = ?',
-      [idNOO],
-    );
+
+    if (documentData.isNotEmpty) {
+      await db.update(
+        'noodocument',
+        documentData,
+        'id_noo = ?',
+        [idNOO],
+      );
+    }
   }
 
   getIDNOO() async {
@@ -469,7 +471,7 @@ Future<void> loadCustomerGroups() async {
 
   Future<void> checkTables() async {
     final tables = await db.rawQuery(
-        "SELECT * FROM masternoo");
+        "SELECT * FROM canvasing");
     Log.d("Tables in Database: $tables");
   }
 
@@ -504,7 +506,10 @@ Future<void> loadCustomerGroups() async {
     update();
   }
 
-  
+  void showCreditLimitAndJaminan(bool isVisible) {
+    isCreditLimitAndJaminanVisible.value = isVisible;
+    update();
+  }
 
   @override
   void onInit() {

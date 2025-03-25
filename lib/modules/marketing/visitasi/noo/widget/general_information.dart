@@ -88,34 +88,6 @@ class GeneralInformation extends StatelessWidget {
               ),
             const SizedBox(height: 16),
             Text(
-              'Credit Limit (Secara Total dalam Rupiah):',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            AppTextField(
-              hintText: 'Masukan Credit Limit',
-              controller: creditLimitCtrl,
-              prefixIcon: Container(
-                padding: const EdgeInsets.all(8),
-                child: const Text(
-                  'Rp',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
-              onChanged: (value) {
-                var credit = int.tryParse(value.replaceAll(RegExp(r'\D'), ''));
-                if (credit != null) {
-                  jaminanCtrl.text = (credit * 1.1).toInt().toString();
-                }
-              },
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'Credit limit tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
               'Termin Pembayaran (TOP) Pelanggan:',
               style: Theme.of(context).textTheme.titleSmall,
             ),
@@ -142,7 +114,17 @@ class GeneralInformation extends StatelessWidget {
                   if (value != null) {
                     Log.d('Selected TOP: $value');
                     ctx.paymentMethod = value;
-                    ctx.update(); // Add this line to update the controller
+                    ctx.update();
+
+                    // Hide or show inputs based on selected TOP
+                    if (value == '0 hari setelah penyerahan tanda terima' || value == 'Cash on Delivery' || value == 'Cash in Advance') {
+                      ctx.showCreditLimitAndJaminan(false);
+                    } else {
+                      ctx.showCreditLimitAndJaminan(true);
+                    }
+                  } else {
+                    // Hide inputs if no TOP is selected
+                    ctx.showCreditLimitAndJaminan(false);
                   }
                 },
                 hint: const Text('Pilih Termin Pembayaran'),
@@ -152,6 +134,72 @@ class GeneralInformation extends StatelessWidget {
                     return Text(descriptionToTopIdMap[item.value] ?? '');
                   }).toList();
                 },
+              );
+            }),
+            Obx(() {
+              if (!ctx.isCreditLimitAndJaminanVisible.value) {
+                return const SizedBox.shrink();
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  Text(
+                    'Credit Limit (Secara Total dalam Rupiah):',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  AppTextField(
+                    hintText: 'Masukan Credit Limit',
+                    controller: creditLimitCtrl,
+                    prefixIcon: Container(
+                      padding: const EdgeInsets.all(8),
+                      child: const Text(
+                        'Rp',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontFamily: 'OpenSans',	                        
+                        ),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      var credit = int.tryParse(value.replaceAll(RegExp(r'\D'), ''));
+                      if (credit != null) {
+                        jaminanCtrl.text = (credit * 1.1).toInt().toString();
+                      }
+                    },
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Credit limit tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Nilai Jaminan (Rp) : 110% dari Nominal Credit Limit:',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  AppTextField(
+                    hintText: 'Masukan Nilai Jaminan',
+                    controller: jaminanCtrl,
+                    prefixIcon: Container(
+                      padding: const EdgeInsets.all(8),
+                      child: const Text(
+                        'Rp',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontFamily: 'OpenSans',	                        
+                        )
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Nilai jaminan tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
               );
             }),
             const SizedBox(height: 16),
@@ -181,28 +229,6 @@ class GeneralInformation extends StatelessWidget {
                   );
                 },
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Nilai Jaminan (Rp) : 110% dari Nominal Credit Limit:',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            AppTextField(
-              hintText: 'Masukan Nilai Jaminan',
-              controller: jaminanCtrl,
-              prefixIcon: Container(
-                padding: const EdgeInsets.all(8),
-                child: const Text(
-                  'Rp',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'Nilai jaminan tidak boleh kosong';
-                }
-                return null;
-              },
             ),
             const SizedBox(height: 16),
             Text(

@@ -29,7 +29,7 @@ class SplashScreen extends StatelessWidget {
                           Strings.appTitle,
                           style: TextStyle(
                             color: Theme.of(context).primaryColor,
-                            fontFamily: Fonts.rubik,
+                            fontFamily: Fonts.openSans,
                             fontWeight: FontWeight.bold,
                             fontSize: width / 5,
                           ),

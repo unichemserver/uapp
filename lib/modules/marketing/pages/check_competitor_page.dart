@@ -26,7 +26,7 @@ class CheckCompetitorPage extends StatelessWidget {
       title: const Text(
         'Cek Kompetitor',
         style: TextStyle(
-          fontFamily: 'Rubik',
+          fontFamily: 'OpenSans',
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -74,7 +74,7 @@ class CheckCompetitorPage extends StatelessWidget {
             'Belum ada data kompetitor yang anda masukkan',
             style: Theme.of(context).textTheme.titleMedium!.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Rubik',
+                  fontFamily: 'OpenSans',
                 ),
           ),
         ],

@@ -143,7 +143,7 @@ class CanvasingPage extends StatelessWidget {
               title: Text(
                 getCanvasingTitle(ctx.canvasingIndex),
                 style: const TextStyle(
-                  fontFamily: 'Rubik',
+                  fontFamily: 'OpenSans',
                   fontWeight: FontWeight.bold,
                 ),
               ),

@@ -45,7 +45,7 @@ class _HistoryCanvasingScreenState extends State<HistoryCanvasingScreen> {
         title: const Text(
           'History Canvasing',
           style: TextStyle(
-            fontFamily: 'Rubik',
+            fontFamily: 'OpenSans',
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -99,7 +99,13 @@ class _HistoryCanvasingScreenState extends State<HistoryCanvasingScreen> {
                         ? listColor[1]
                         : listColor[0],
                 title: Text('Nama Toko: ${canvasingList[index].namaOutlet}'),
-                subtitle: Text('Nama Owner: ${canvasingList[index].namaOwner}'),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Nama Owner: ${canvasingList[index].namaOwner}'),
+                    Text('Total Penjualan: Rp ${canvasingList[index].pembayaran}'),
+                  ],
+                ),
               ),
             );
           },

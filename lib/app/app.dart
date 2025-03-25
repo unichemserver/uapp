@@ -11,6 +11,7 @@ class UApp extends StatelessWidget {
     return GetMaterialApp(
       title: Strings.appTitle,
       theme: ThemeData(
+        fontFamily: 'OpenSans',
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blueAccent,
           secondary: Colors.lightBlue,

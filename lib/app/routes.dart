@@ -30,7 +30,8 @@ import 'package:uapp/modules/settings/setting_binding.dart';
 import 'package:uapp/modules/settings/setting_screen.dart';
 import 'package:uapp/modules/splash/splash_binding.dart';
 import 'package:uapp/modules/splash/splash_screen.dart';
-import 'package:uapp/modules/home/widget/approval_screen.dart';
+import 'package:uapp/modules/approval/approval_screen.dart';
+import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_customer.dart';
 
 class Routes {
   static const String INITIAL = '/';
@@ -52,6 +53,7 @@ class Routes {
   static const String SAVED_NOO = '/saved-noo';
   static const String SYNC_MARKETING = '/sync-marketing';
   static const String APPROVAL = '/approval';
+  static const String CANVASING_CUSTOMER = '/canvasing-customer';
 
   static List<GetPage> pages = [
     GetPage(
@@ -136,6 +138,10 @@ class Routes {
     GetPage(
       name: APPROVAL,
       page: () => const ApprovalScreen(),
+    ),
+    GetPage(
+      name: CANVASING_CUSTOMER,
+      page: () => CanvasingCustomerPage(),
     ),
     ...createdMemoList.map((e) => GetPage(
           name: '/${e.name.replaceAll(' ', '_').toLowerCase()}',

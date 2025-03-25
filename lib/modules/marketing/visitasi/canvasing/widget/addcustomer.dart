@@ -111,6 +111,7 @@ class AddCustomerWidget extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 AppTextField(
+                  hintText: 'Masukan Nama Outlet',
                   readOnly: ctx.isToComplete,
                   prefixIcon: const Icon(Icons.store),
                   controller: ctx.namaController,
@@ -130,6 +131,7 @@ class AddCustomerWidget extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 AppTextField(
+                  hintText: 'Masukan Nama Pemilik',
                   readOnly: ctx.isToComplete,
                   prefixIcon: const Icon(Icons.person),
                   controller: ctx.pemilikController,
@@ -149,6 +151,7 @@ class AddCustomerWidget extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 AppTextField(
+                  hintText: 'Masukan Nomer Telepon',
                   readOnly: ctx.isToComplete,
                   prefixIcon: const Icon(Icons.phone),
                   controller: ctx.telpController,

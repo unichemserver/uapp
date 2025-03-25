@@ -109,7 +109,7 @@ Future<void> sendLocationToAPI(Position position) async {
     );
 
     if (response.statusCode == 200) {
-      Log.d("Lokasi berhasil dikirim");
+      Log.d("Lokasi berhasil dikirimb");
     } else {
       Log.d("Gagal mengirim lokasi: ${response.statusCode} - ${response.body}");
     }

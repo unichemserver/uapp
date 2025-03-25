@@ -54,6 +54,28 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   String selectedUnit = '';
   Timer? checkMockTimer;
 
+  var isLoading = false.obs;
+  var canvasingCustomers = [].obs;
+  var filteredCustomers = [].obs;
+
+  void searchCustomer(String query) {
+    if (query.isEmpty) {
+      filteredCustomers.value = canvasingCustomers;
+    } else {
+      filteredCustomers.value = canvasingCustomers
+          .where((customer) => customer.name.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
+  }
+
+  void fetchCustomers() async {
+    isLoading.value = true;
+    await Future.delayed(const Duration(seconds: 2)); // Placeholder for API call
+    canvasingCustomers.value = []; // Replace with fetched data
+    filteredCustomers.value = canvasingCustomers;
+    isLoading.value = false;
+  }
+
   void checkingMockLocation() {
     checkMockTimer?.cancel();
     checkMockTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
@@ -127,6 +149,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       'latitude': latitude,
       'longitude': longitude,
       'image_path': outletImagePath,
+      'pembayaran': totalPayment,
     };
     Map<String, dynamic> maData = {'cust_name': namaOutlet};
     await db.insert("canvasing", canvasingData);
@@ -326,6 +349,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       "no_hp": telpController.text,
       "alamat": alamatController.text,
       "image_path": outletImagePath,
+      'pembayaran': totalPayment,
     };
     await db.update('marketing_activity', dataMA, 'id = ?', [idMA]);
     await db.update('canvasing', dataCanvasing, 'CustID = ?', [customerId]);
@@ -462,6 +486,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     getListItem();
     getPriceList();
     isLocationServiceEnabled();
+    fetchCustomers();
   }
 
   @override

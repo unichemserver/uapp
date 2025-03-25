@@ -177,6 +177,11 @@ class NooTextController {
     };
   }
 
+  @override
+  String toString() {
+    return toJson().toString();
+  }
+
   void mapModelToCtrl(NooModel data) {
     creditLimitCtrl.text = data.creditLimit ?? '';
     topDateCtrl.text = data.termin ?? '';

@@ -545,13 +545,12 @@ class HomeApi {
     }
   }
 
-  static Future<List<String>?> getApprovalData(String userId) async {
+  static Future<List<Map<String, dynamic>>?> getDataNoo() async {
     try {
       final baseUrl = Uri.parse('https://unichem.co.id/api/');
       final bodyRequest = {
         'action': 'noo',
-        'method': 'get_data_approval',
-        'userid': userId,
+        'method': 'get_data',
       };
       final response = await http.post(
         baseUrl,
@@ -560,7 +559,7 @@ class HomeApi {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['message'] == 'Data Found') {
-          return List<String>.from(data['data'].map((item) => item['nonoo']));
+          return List<Map<String, dynamic>>.from(data['data']);
         } else {
           return [];
         }
@@ -568,17 +567,17 @@ class HomeApi {
         return null;
       }
     } catch (e) {
-      print('Error fetching approval data: $e');
+      print('Error fetching NOO data: $e');
       return null;
     }
   }
-
-  static Future<List<String>?> getUserApproval() async {
+  static Future<List<Map<String, dynamic>>?> getDocumentNoo(String nonoo) async {
     try {
       final baseUrl = Uri.parse('https://unichem.co.id/api/');
       final bodyRequest = {
         'action': 'noo',
-        'method': 'get_user_approval',
+        'method': 'get_document',
+        'nonoo' : nonoo,
       };
       final response = await http.post(
         baseUrl,
@@ -587,7 +586,7 @@ class HomeApi {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['message'] == 'Data Found') {
-          return List<String>.from(data['data'].map((item) => item['nik']));
+          return List<Map<String, dynamic>>.from(data['data']);
         } else {
           return [];
         }
@@ -595,28 +594,7 @@ class HomeApi {
         return null;
       }
     } catch (e) {
-      print('Error fetching user approval data: $e');
-      return null;
-    }
-  }
-
-  static Future<List<Map<String, dynamic>>?> getAllApprovalData() async {
-    try {
-      final userApprovalList = await getUserApproval();
-      if (userApprovalList == null || userApprovalList.isEmpty) {
-        return null;
-      }
-
-      List<Map<String, dynamic>> allApprovalData = [];
-      for (String userId in userApprovalList) {
-        final approvalData = await getApprovalData(userId);
-        if (approvalData != null) {
-          allApprovalData.addAll(approvalData.map((item) => {'userId': userId, 'data': item}));
-        }
-      }
-      return allApprovalData;
-    } catch (e) {
-      print('Error fetching all approval data: $e');
+      print('Error fetching NOO data: $e');
       return null;
     }
   }

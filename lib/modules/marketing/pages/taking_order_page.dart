@@ -40,7 +40,7 @@ class TakingOrderPage extends StatelessWidget {
       title: const Text(
         'Taking Order',
         style: TextStyle(
-          fontFamily: 'Rubik',
+          fontFamily: 'OpenSans',
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -152,7 +152,7 @@ class TakingOrderPage extends StatelessWidget {
               'Tanda Tangan Customer',
               textAlign: TextAlign.end,
               style: TextStyle(
-                fontFamily: 'Rubik',
+                fontFamily: 'OpenSans',
                 fontWeight: FontWeight.bold,
               ),
             ),

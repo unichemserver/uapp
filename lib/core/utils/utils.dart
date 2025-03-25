@@ -183,8 +183,37 @@ class Utils {
       title,
       message,
       snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.blue,
-      colorText: Colors.white,
+      backgroundColor: Colors.transparent,
+      margin: const EdgeInsets.all(10),
+      borderRadius: 10,
+      snackStyle: SnackStyle.FLOATING,
+      boxShadows: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.2),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
+      titleText: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+          color: Colors.black87,
+        ),
+      ),
+      messageText: Text(
+        message,
+        style: const TextStyle(
+          fontSize: 14,
+          color: Colors.black87,
+        ),
+      ),
+      backgroundGradient: const LinearGradient(
+        colors: [Color(0xFF4CAF50), Color(0xFF81C784)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
     );
   }
 

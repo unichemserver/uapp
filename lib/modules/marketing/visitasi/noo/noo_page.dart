@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/utils/jenis_call.dart';
+import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/modules/marketing/model/noo_model.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/doc_form.dart';
@@ -171,7 +172,6 @@ class _NooPageState extends State<NooPage> {
                           );
                           return;
                         }
-                        // && ctx.groupPelanggan 
                         if (ctx.jaminan.isEmpty) {
                           Utils.showErrorSnackBar(
                             context,
@@ -182,18 +182,28 @@ class _NooPageState extends State<NooPage> {
                         if (!_formKey.currentState!.validate()) {
                           return;
                         }
+
+                        // Cetak data relevan dari nooCtrl
+                        Log.d('Data NOO: ${nooCtrl.toJson()}');
+
                         Utils.showLoadingDialog(context);
                         ctx.saveData(nooCtrl).then((value) {
                           Navigator.pop(context);
                           _formKey.currentState!.reset();
                           Get.offNamed(Routes.HOME);
-
-                          // Get.toNamed(Routes.MARKETING, arguments: {
+                          Utils.showSuccessSnackBar(context, 'Data berhasil disimpan');
+                        }).catchError((error) {
+                          Navigator.pop(context);
+                          Utils.showErrorSnackBar(
+                            context,
+                            'Terjadi kesalahan saat menyimpan data: $error',
+                          );
+                        });
+                        // Get.toNamed(Routes.MARKETING, arguments: {
                           //   'id': ctx.idNOO,
                           //   'type': Call.noo,
                           //   'name': nooCtrl.namaPerusahaanCtrl.text,
                           // });
-                        });
                       },
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 48.0),

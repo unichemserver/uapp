@@ -7,7 +7,7 @@ class MarketingDatabase {
   static final MarketingDatabase _instance =
       MarketingDatabase._privateConstructor();
   static Database? _database;
-  final int marketingDbVersion = 5;
+  final int marketingDbVersion = 7;
 
   MarketingDatabase._privateConstructor();
 
@@ -156,7 +156,7 @@ class MarketingDatabase {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-  if (oldVersion < 5) {
+  if (oldVersion < 6) {
     Log.d('upgrading database...');
 
     await db.execute('''
@@ -191,6 +191,12 @@ class MarketingDatabase {
     ''');
 
     await db.execute(mastergroupTable);
+  }
+
+  if (oldVersion < 7) {
+    await db.execute('''
+      ALTER TABLE canvasing ADD COLUMN pembayaran INTEGER DEFAULT 0
+    ''');
   }
 }
 

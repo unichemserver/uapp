@@ -21,7 +21,7 @@ class CollectionPage extends StatelessWidget {
             title: const Text(
               'Collection',
               style: TextStyle(
-                fontFamily: 'Rubik',
+                fontFamily: 'OpenSans',
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -105,7 +105,7 @@ class CollectionPage extends StatelessWidget {
             Text(
               'Belum ada data collection',
               style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                fontFamily: 'Rubik',
+                fontFamily: 'OpenSans',
                 fontWeight: FontWeight.bold,
               ),
             ),

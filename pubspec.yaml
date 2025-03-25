@@ -70,6 +70,6 @@ flutter:
     - assets/
 
   fonts:
-    - family: Rubik
+    - family: OpenSans
       fonts:
-        - asset: fonts/Rubik-VariableFont_wght.ttf
+        - asset: fonts/OpenSans-VariableFont_wdth,wght.ttf

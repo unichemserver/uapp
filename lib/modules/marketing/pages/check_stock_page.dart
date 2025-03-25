@@ -28,7 +28,7 @@ class CheckStockPage extends StatelessWidget {
       title: const Text(
         'Cek Sisa Stok',
         style: TextStyle(
-          fontFamily: 'Rubik',
+          fontFamily: 'OpenSans',
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -77,7 +77,7 @@ class CheckStockPage extends StatelessWidget {
             'Belum ada data stok yang anda masukkan',
             style: Theme.of(context).textTheme.titleMedium!.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Rubik',
+                  fontFamily: 'OpenSans',
                 ),
           ),
         ],

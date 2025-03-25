@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  bool isHrApproval = Utils.allowedPosisi.contains(Utils.getUserData().posisi);
+  final bool isHrApproval = Utils.allowedPosisi.contains(Utils.getUserData().posisi);
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +57,7 @@ class HomeScreen extends StatelessWidget {
                   menus: ctx.menus,
                   jabatan: ctx.userData!.namaJabatan,
                   foto: ctx.foto,
-                  department: ctx.userData!.namaDepartment,
+                  department: ctx.userData!.department,
                   scaffoldKey: _scaffoldKey,
                 ),
               ),

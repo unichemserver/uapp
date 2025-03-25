@@ -16,6 +16,7 @@ import 'package:uapp/core/firebase/firebase_options.dart';
 import 'package:workmanager/workmanager.dart';
 import 'core/firebase/crashlytics_service.dart';
 import 'core/background_service/alarm_manager.dart';
+import 'core/utils/log.dart';
 
 void main() {
   runZonedGuarded(() async {
@@ -37,6 +38,8 @@ void main() {
     await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
     // FlutterForegroundTask.initCommunicationPort();
     Workmanager().initialize(callbackDispatcher);
+
+
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     runApp(const UApp());
   }, (error, stackTrace) {

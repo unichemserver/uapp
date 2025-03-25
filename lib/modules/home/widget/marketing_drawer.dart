@@ -14,7 +14,7 @@ class MarketingDrawer extends StatelessWidget {
           width: double.infinity,
           margin: const EdgeInsets.only(left: 16),
           child: Text(
-            'Marketing',
+            'Menu Devisi (Marketing)',
             textAlign: TextAlign.start,
             style: TextStyle(
               color: Theme.of(context).primaryColor,
@@ -23,25 +23,52 @@ class MarketingDrawer extends StatelessWidget {
             ),
           ),
         ),
+        ListTile(
+          title: const Text('New Opening Outlet'),
+          leading: const Icon(Icons.add_location_alt_outlined),
+          onTap: () async {
+            Get.toNamed(Routes.NOO);
+          },
+        ),
         ExpansionTile(
-          initiallyExpanded: true,
+          initiallyExpanded: false,
           title: const Text('Kunjungan'),
           leading: const Icon(Icons.location_on),
           children: [
             Container(
               margin: const EdgeInsets.only(left: 16),
-              child: ListTile(
+              child: ExpansionTile(
+                initiallyExpanded: true,
                 title: const Text('On Route'),
                 leading: const Icon(Icons.location_on),
-                onTap: () {
-                  Get.toNamed(Routes.MARKETING);
-                },
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(left: 16),
+                    child: ListTile(
+                      title: const Text('Call. Management'),
+                      leading: const Icon(Icons.group_outlined),
+                      onTap: () {
+                        Get.toNamed(Routes.CANVASING_CUSTOMER);
+                      },
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(left: 16),
+                    child: ListTile(
+                      title: const Text('Canvasing'),
+                      leading: const Icon(Icons.manage_search),
+                      onTap: () {
+                        Get.toNamed(Routes.CANVASING_CUSTOMER);
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
             Container(
               margin: const EdgeInsets.only(left: 16),
               child: ExpansionTile(
-                initiallyExpanded: true,
+                initiallyExpanded: false,
                 title: const Text('Off Route'),
                 leading: const Icon(Icons.location_off),
                 children: [
@@ -54,19 +81,7 @@ class MarketingDrawer extends StatelessWidget {
                         Get.toNamed(Routes.CUSTACTIVE);
                       },
                     ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(left: 16),
-                    child: ListTile(
-                      title: const Text('New Opening Outlet'),
-                      leading: const Icon(
-                        Icons.add_location_alt_outlined,
-                      ),
-                      onTap: () {
-                        Get.toNamed(Routes.NOO);
-                      },
-                    ),
-                  ),
+                  ),                  
                   Container(
                     margin: const EdgeInsets.only(left: 16),
                     child: ListTile(

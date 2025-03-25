@@ -153,6 +153,7 @@ CREATE TABLE IF NOT EXISTS canvasing (
   longitude DECIMAL(11,8),
   alamat TEXT,
   image_path TEXT,
+  pembayaran int,
   status_sync INTEGER DEFAULT 0
 )
 ''';

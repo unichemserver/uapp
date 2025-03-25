@@ -99,7 +99,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       style:
                           Theme.of(context).textTheme.headlineMedium!.copyWith(
                                 color: Theme.of(context).primaryColor,
-                                fontFamily: Fonts.rubik,
+                                fontFamily: Fonts.openSans,
                                 fontWeight: FontWeight.bold,
                               ),
                     ),
