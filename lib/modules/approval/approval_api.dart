@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-// import 'package:uapp/core/notification/notification.dart';
+import 'package:uapp/core/utils/log.dart';
 
 class ApprovalApi {
   static final StreamController<int> _approvalStreamController = StreamController<int>.broadcast();
@@ -35,7 +35,7 @@ class ApprovalApi {
         return null;
       }
     } catch (e) {
-      print('Error fetching approval data: $e');
+      Log.d('Error fetching approval data: $e');
       return null;
     }
   }
@@ -62,7 +62,7 @@ class ApprovalApi {
         return null;
       }
     } catch (e) {
-      print('Error fetching user approval data: $e');
+      Log.d('Error fetching user approval data: $e');
       return null;
     }
   }
@@ -85,7 +85,7 @@ class ApprovalApi {
 
       return allApprovalData;
     } catch (e) {
-      print('Error fetching all approval data: $e');
+      Log.d('Error fetching all approval data: $e');
       return null;
     }
   }
@@ -110,22 +110,45 @@ class ApprovalApi {
         return false;
       }
     } catch (e) {
-      print('Error approving data: $e');
+      Log.d('Error approving data: $e');
       return false;
     }
   }
-  
 
   static Future<void> checkForNewApprovalData(String userId) async {
     try {
       final approvalData = await getApprovalData(userId);
       if (approvalData != null && approvalData.isNotEmpty) {
-        print('New approval data found: $approvalData');
+        Log.d('New approval data found: $approvalData');
       } else {
-        print('No new approval data found.');
+        Log.d('No new approval data found.');
       }
     } catch (e) {
-      print('Error checking for new approval data: $e');
+      Log.d('Error checking for new approval data: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getTopOptions() async {
+    try {
+      final baseUrl = Uri.parse('https://unichem.co.id/api/');
+      final body = {
+        'action': 'noo',
+        'method': 'get_pxtop',
+      };
+      final response = await http.post(
+        baseUrl,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception('Failed to load TOP options');
+      }
+    } catch (e) {
+      Log.d('Error fetching TOP options: $e');
+      throw Exception('Error fetching TOP options');
     }
   }
 }

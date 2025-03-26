@@ -19,9 +19,21 @@ class _ApprovalDataScreenState extends State<ApprovalDataScreen> {
   @override
   void initState() {
     super.initState();
-    ctx.fetchMasterNooData(); // Fetch masternoo data using the controller
-    ctx.fetchDocumentNoo(); // Fetch documents from API
+    ctx.fetchMasterNooData(); 
+    ctx.fetchDocumentNoo(); 
   }
+
+  // Future<void> _saveField(String field, String value) async {
+  //   try {
+  //     Utils.showLoadingDialog(context); // Show loading indicator
+  //     await ctx.updateMasterNooField(field, value); // Save to database
+  //     Utils.showSuccessSnackBar(context, 'Field $field berhasil disimpan');
+  //   } catch (e) {
+  //     Utils.showErrorSnackBar(context, 'Gagal menyimpan $field: $e');
+  //   } finally {
+  //     Navigator.pop(context); // Hide loading indicator
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {

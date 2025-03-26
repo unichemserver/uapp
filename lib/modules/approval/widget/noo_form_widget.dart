@@ -26,7 +26,7 @@ class NooFormWidget extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           AppTextField(
-            controller: TextEditingController(text: masternoo['groupPelanggan']),
+            controller: TextEditingController(text: masternoo['group_cust']),
             label: 'Group Pelanggan',
             readOnly: true,
           ),

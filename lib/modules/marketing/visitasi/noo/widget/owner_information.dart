@@ -19,7 +19,7 @@ class OwnerInformation extends StatelessWidget {
   final TextEditingController ageGenderCtrl;
   final TextEditingController phoneCtrl;
   final TextEditingController emailCtrl;
-  NooAddressModel? ownerAddress;
+  final NooAddressModel? ownerAddress;
 
   @override
   Widget build(BuildContext context) {

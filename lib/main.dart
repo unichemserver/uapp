@@ -14,9 +14,11 @@ import 'package:uapp/core/hive/hive_service.dart';
 import 'package:uapp/core/notification/notification.dart';
 import 'package:uapp/core/firebase/firebase_options.dart';
 import 'package:workmanager/workmanager.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:uapp/core/notification/notification_handler.dart';
 import 'core/firebase/crashlytics_service.dart';
 import 'core/background_service/alarm_manager.dart';
-import 'core/utils/log.dart';
+// import 'core/utils/log.dart';
 
 void main() {
   runZonedGuarded(() async {
@@ -33,12 +35,12 @@ void main() {
 
     await initializeDateFormatting('id_ID', null);
     await AlarmManager.init();
+    AlarmManager.scheduleApprovalCheck(); // Pastikan hanya dipanggil sekali
     await initializeNotifications();
     await HiveService.init();
     await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
-    // FlutterForegroundTask.initCommunicationPort();
+    await NotificationHandler.initFirebaseMessaging();
     Workmanager().initialize(callbackDispatcher);
-
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     runApp(const UApp());

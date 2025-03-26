@@ -3,12 +3,14 @@ import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/app/strings.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 class UApp extends StatelessWidget {
   const UApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      navigatorKey: navigatorKey, // Use global navigatorKey
       title: Strings.appTitle,
       theme: ThemeData(
         fontFamily: 'OpenSans',
@@ -22,8 +24,8 @@ class UApp extends StatelessWidget {
       ),
       initialRoute: Routes.INITIAL,
       getPages: Routes.pages,
-      defaultTransition: Transition.cupertinoDialog,
-      debugShowCheckedModeBanner: false,
+      defaultTransition: Transition.cupertino, 
+      debugShowCheckedModeBanner: false, 
     );
   }
 }

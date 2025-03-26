@@ -31,6 +31,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   final TextEditingController alamatController = TextEditingController();
   final TextEditingController nominalController = TextEditingController();
   Canvasing? canvasing;
+  Canvasing? selectedCustomerId;
   List<ToModel> takingOrders = [];
   List<MasterItem> items = [];
   List<PriceList> priceList = [];
@@ -60,12 +61,18 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
 
   void searchCustomer(String query) {
     if (query.isEmpty) {
-      filteredCustomers.value = canvasingCustomers;
+      clearSearch();
     } else {
       filteredCustomers.value = canvasingCustomers
           .where((customer) => customer.name.toLowerCase().contains(query.toLowerCase()))
           .toList();
+      update();
     }
+  }
+
+  void clearSearch() {
+    filteredCustomers.value = canvasingCustomers;
+    update();
   }
 
   void fetchCustomers() async {
@@ -384,7 +391,8 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     var locPermission = await Geolocator.checkPermission();
     var isLocGranted = locPermission == LocationPermission.always ||
         locPermission == LocationPermission.whileInUse;
-    if (!isLocationEnabled || !isLocGranted) {
+
+    if (!isLocationEnabled || !isLocGranted) { // Ensure both are boolean
       showLocationServiceDisabledDialog();
     } else {
       var isMockLocation = await Utils.isUseMockLocation();
@@ -487,6 +495,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     getPriceList();
     isLocationServiceEnabled();
     fetchCustomers();
+    getCanvasingCustomers();
   }
 
   @override
@@ -535,5 +544,20 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
         );
       }
     }
+  }
+
+  void getCanvasingCustomers() {
+    // Placeholder: Fetch data from CustactiveController for now
+    
+  }
+
+  void updateCanvasingCustomers() async {
+    // Placeholder for syncing canvasing customers
+    
+  }
+  
+  void setSelectedCustomerId(Canvasing? customerId) {
+    selectedCustomerId = customerId;
+    update();
   }
 }

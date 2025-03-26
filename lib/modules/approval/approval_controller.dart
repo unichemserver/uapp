@@ -6,6 +6,7 @@ import 'package:uapp/core/database/marketing_database.dart';
 import 'package:hive/hive.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/models/user.dart';
+
 import 'dart:convert';
 
 class ApprovalController extends GetxController {
@@ -14,8 +15,11 @@ class ApprovalController extends GetxController {
   final db = MarketingDatabase(); // Local database instance
   final approvalDetail = {}.obs; 
   final selectedIdNoo = ''.obs;
+  final api = ApprovalApi();
   final masternoo = Rxn<Map<String, dynamic>>(); // Store masternoo data
   final documents = <Map<String, dynamic>>[].obs; // Store documents from API
+  var topOptions = <Map<String, dynamic>>[].obs;
+  final paymentMethod = ''.obs; // Observable for selected payment method
 
   @override
   void onInit() {
@@ -157,6 +161,61 @@ class ApprovalController extends GetxController {
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to fetch documents: $e');
+    }
+  }
+
+  Future<void> fetchTopOptions() async {
+    try {
+      var response = await api.getTopOptions();
+      List<dynamic> result = response['data'];
+
+      await db.delete('top_options', '1 = 1', []);
+
+      for (var row in result) {
+        await db.insert('top_options', {
+          'TOP_ID': row['TOP_ID'],
+          'Description': row['Description'],
+        });
+      }
+      topOptions.assignAll(result.map((item) => {
+        'TOP_ID': item['TOP_ID'],
+        'Description': item['Description'],
+      }).toList());
+
+      await loadTopOptions();
+    } catch (e) {
+      Log.d('Error fetching TOP options: $e');
+    }
+  }
+
+    Future<void> loadTopOptions() async {
+    List<Map<String, dynamic>> results = await db.query('top_options');
+    topOptions.assignAll(results);
+    update();
+  }
+
+
+  Future<void> updateMasterNooField(String field, String value) async {
+    try {
+      await db.update(
+        'masternoo',
+        {field: value},
+        'id = ?',
+        [selectedIdNoo.value],
+      );
+      await fetchMasterNooData(); // Refresh data
+    } catch (e) {
+      Log.d('Error updating $field: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updatePaymentMethod(String value) async {
+    try {
+      await updateMasterNooField('payment_method', value);
+      paymentMethod.value = value;
+    } catch (e) {
+      Log.d('Error updating payment method: $e');
     }
   }
 }
