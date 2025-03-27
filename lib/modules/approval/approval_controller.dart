@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/utils/log.dart';
 import 'approval_api.dart';
 import 'package:uapp/modules/home/home_api.dart';
@@ -19,7 +20,8 @@ class ApprovalController extends GetxController {
   final masternoo = Rxn<Map<String, dynamic>>(); // Store masternoo data
   final documents = <Map<String, dynamic>>[].obs; // Store documents from API
   var topOptions = <Map<String, dynamic>>[].obs;
-  final paymentMethod = ''.obs; // Observable for selected payment method
+  final creditLimit = ''.obs;
+  final paymentMethod = ''.obs;
 
   @override
   void onInit() {
@@ -210,12 +212,69 @@ class ApprovalController extends GetxController {
     }
   }
 
-  Future<void> updatePaymentMethod(String value) async {
+  void updateCreditLimit(String value) {
+    creditLimit.value = value;
+    updateMasterNooField('credit_limit', value); // Save to database
+  }
+
+  void updatePaymentMethod(String value) {
+    paymentMethod.value = value;
+    updateMasterNooField('payment_method', value); // Save to database
+  }
+
+  Future<void> approveData(String creditLimit, String paymentMethod) async {
     try {
-      await updateMasterNooField('payment_method', value);
-      paymentMethod.value = value;
+      final box = Hive.box(HiveKeys.appBox);
+      final user = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
+
+      final userId = user.id;
+      final nonoo = selectedIdNoo.value;
+
+      // Log untuk debugging
+      Log.d('User ID: $userId');
+      Log.d('Noo ID: $nonoo');
+      Log.d('Credit Limit: $creditLimit');
+      Log.d('Payment Method: $paymentMethod');
+
+      // Panggil API untuk approve data
+      final success = await ApprovalApi.approveData(userId, nonoo, creditLimit, paymentMethod);
+
+      if (success) {
+        Get.snackbar('Success', 'Data approved successfully');
+        await fetchAllApprovalData();
+         Get.toNamed(Routes.APPROVAL);
+      } else {
+        Get.snackbar('Error', 'Failed to approve data');
+      }
     } catch (e) {
-      Log.d('Error updating payment method: $e');
+      Get.snackbar('Error', 'Failed to approve data: $e');
+    }
+  }
+
+    Future<void> rejectData() async {
+    try {
+      final box = Hive.box(HiveKeys.appBox);
+      final user = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
+
+      final userId = user.id;
+      final nonoo = selectedIdNoo.value;
+
+      // Log untuk debugging
+      Log.d('User ID: $userId');
+      Log.d('Noo ID: $nonoo');
+
+      // Panggil API untuk approve data
+      final success = await ApprovalApi.rejectData(userId, nonoo);
+
+      if (success) {
+        Get.snackbar('Success', 'Data reject successfully');
+        await fetchAllApprovalData();
+         Get.toNamed(Routes.APPROVAL);
+      } else {
+        Get.snackbar('Error', 'Failed to reject data');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to reject data: $e');
     }
   }
 }

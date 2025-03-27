@@ -1,10 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
+// import 'package:intl/intl.dart';
 
 class NooFormWidget extends StatelessWidget {
   final Map<String, String> masternoo;
+  final List<Map<String, dynamic>> topOptions;
+  final String paymentMethod;
+  final TextEditingController creditLimitCtrl;
+  final TextEditingController jaminanCtrl;
+  final Function(String) onPaymentMethodChanged;
+  final Function(String) onCreditLimitChanged;
 
-  const NooFormWidget({Key? key, required this.masternoo}) : super(key: key);
+
+  const NooFormWidget({
+    Key? key,
+    required this.masternoo,
+    required this.topOptions,
+    required this.paymentMethod,
+    required this.creditLimitCtrl,
+    required this.jaminanCtrl,
+    required this.onPaymentMethodChanged,
+    required this.onCreditLimitChanged,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -13,190 +32,171 @@ class NooFormWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppTextField(
-            controller: TextEditingController(text: masternoo['id']),
-            label: 'ID Noo',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('ID Noo', masternoo['id']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['nama_perusahaan']),
-            label: 'Nama Outlet',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Nama Outlet', masternoo['nama_perusahaan']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['group_cust']),
-            label: 'Group Pelanggan',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Group Pelanggan', masternoo['group_cust']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['credit_limit']),
-            label: 'Credit Limit',
-            readOnly: true,
-          ),
+          _buildCreditLimitField(context),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['payment_method']),
-            label: 'Termin',
-            readOnly: true,
-            suffixIcon: const Icon(Icons.calendar_today),
-          ),
+          _buildPaymentTermDropdown(context),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['jaminan']),
-            label: 'Jaminan',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Nilai Jaminan', jaminanCtrl.text),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['nilai_jaminan']),
-            label: 'Nilai Jaminan',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Area Marketing', masternoo['area_marketing']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['area_marketing']),
-            label: 'Area Marketing',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Tanggal Join', masternoo['tgl_join'], suffixIcon: const Icon(Icons.calendar_today)),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['tgl_join']),
-            label: 'Tanggal Join',
-            readOnly: true,
-            suffixIcon: const Icon(Icons.calendar_today),
-          ),
+          _buildReadOnlyTextField('Supervisor UCI', masternoo['spv_uci']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['spv_uci']),
-            label: 'Supervisor UCI',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('ASM UCI', masternoo['asm_uci']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['asm_uci']),
-            label: 'ASM UCI',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Nama Owner', masternoo['nama_owner']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['nama_owner']),
-            label: 'Nama Owner',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('ID Owner', masternoo['id_owner']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['id_owner']),
-            label: 'ID Owner',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Age/Gender Owner', masternoo['age_gender_owner']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['age_gender_owner']),
-            label: 'Age/Gender Owner',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('No HP Owner', masternoo['nohp_owner']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['nohp_owner']),
-            label: 'No HP Owner',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Email Owner', masternoo['email_owner']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['email_owner']),
-            label: 'Email Owner',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Status Pajak', masternoo['status_pajak']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['status_pajak']),
-            label: 'Status Pajak',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Nama NPWP', masternoo['nama_npwp']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['nama_npwp']),
-            label: 'Nama NPWP',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('No NPWP', masternoo['no_npwp']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['no_npwp']),
-            label: 'No NPWP',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Alamat NPWP', masternoo['alamat_npwp']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['alamat_npwp']),
-            label: 'Alamat NPWP',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Nama Bank', masternoo['nama_bank']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['nama_bank']),
-            label: 'Nama Bank',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('No Rekening/VA', masternoo['no_rek_va']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['no_rek_va']),
-            label: 'No Rekening/VA',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Nama Rekening', masternoo['nama_rek']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['nama_rek']),
-            label: 'Nama Rekening',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Cabang Bank', masternoo['cabang_bank']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['cabang_bank']),
-            label: 'Cabang Bank',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Bidang Usaha', masternoo['bidang_usaha']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['bidang_usaha']),
-            label: 'Bidang Usaha',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Tanggal Mulai Usaha', masternoo['tgl_mulai_usaha'], suffixIcon: const Icon(Icons.calendar_today)),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['tgl_mulai_usaha']),
-            label: 'Tanggal Mulai Usaha',
-            readOnly: true,
-            suffixIcon: const Icon(Icons.calendar_today),
-          ),
+          _buildReadOnlyTextField('Produk Utama', masternoo['produk_utama']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['produk_utama']),
-            label: 'Produk Utama',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Produk Lain', masternoo['produk_lain']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['produk_lain']),
-            label: 'Produk Lain',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Lima Customer Utama', masternoo['lima_cust_utama']),
           const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['lima_cust_utama']),
-            label: 'Lima Customer Utama',
-            readOnly: true,
-          ),
-          const SizedBox(height: 16),
-          AppTextField(
-            controller: TextEditingController(text: masternoo['est_omset_month']),
-            label: 'Estimasi Omset Bulanan',
-            readOnly: true,
-          ),
+          _buildReadOnlyTextField('Estimasi Omset Bulanan', masternoo['est_omset_month']),
         ],
       ),
+    );
+  }
+
+  Widget _buildReadOnlyTextField(String label, String? value, {Widget? suffixIcon}) {
+    return AppTextField(
+      controller: TextEditingController(text: value),
+      label: label,
+      readOnly: true,
+      suffixIcon: suffixIcon,
+    );
+  }
+
+  Widget _buildCreditLimitField(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Credit Limit (Secara Total dalam Rupiah):',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        TextFormField(
+          controller: creditLimitCtrl,
+          decoration: InputDecoration(
+            hintText: 'Masukkan Credit Limit',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.blue, width: 2),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          ),
+          keyboardType: TextInputType.number,
+          onChanged: (value) {
+            var credit = int.tryParse(value.replaceAll(RegExp(r'\D'), ''));
+            if (credit != null) {
+              jaminanCtrl.text = (credit * 1.1).toInt().toString();
+            }
+            onCreditLimitChanged(value);
+          },
+          validator: (value) {
+            if (value!.isEmpty) {
+              return 'Credit limit tidak boleh kosong';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPaymentTermDropdown(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Termin Pembayaran (TOP) Pelanggan:',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        Obx(() {
+          var descriptionToTopIdMap = {
+            for (var item in topOptions) item['Description']: item['TOP_ID']
+          };
+
+          var items = topOptions
+              .map((item) => DropdownMenuItem<String>(
+                    value: item['Description'],
+                    child: Text(item['TOP_ID']),
+                  ))
+              .toList();
+          var selectedValue = items.any((element) => element.value == masternoo['payment_method'])
+              ? masternoo['payment_method']
+              : null;
+
+          return DropdownButtonFormField<String>(
+            value: selectedValue,
+            items: items,
+            onChanged: (value) {
+              if (value != null) {
+                Log.d('Selected TOP_ID: $value');
+                onPaymentMethodChanged(value); // Notify parent about the change
+              }
+            },
+            hint: const Text('Pilih Termin Pembayaran'),
+            icon: const Icon(Icons.calendar_today),
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.blue, width: 2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+            selectedItemBuilder: (BuildContext context) {
+              return items.map((DropdownMenuItem<String> item) {
+                return Text(descriptionToTopIdMap[item.value] ?? '');
+              }).toList();
+            },
+          );
+        }),
+      ],
     );
   }
 }

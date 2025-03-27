@@ -90,7 +90,7 @@ class ApprovalApi {
     }
   }
 
-  static Future<bool> approveData(String userId, String nonoo) async {
+  static Future<bool> approveData(String userId, String nonoo, String creditLimit, String paymentMethod) async {
     try {
       final baseUrl = Uri.parse('https://unichem.co.id/api/');
       final bodyRequest = {
@@ -98,14 +98,45 @@ class ApprovalApi {
         'method': 'approve',
         'userid': userId,
         'nonoo': nonoo,
+        'credit_limit': creditLimit,
+        'payment_method': paymentMethod,
       };
+
       final response = await http.post(
         baseUrl,
-        body: bodyRequest,
+        body: bodyRequest, // Mengirimkan body sebagai form-data
       );
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return data['message'] == 'Data NOO Approved';
+      } else {
+        return false;
+      }
+    } catch (e) {
+      Log.d('Error approving data: $e');
+      return false;
+    }
+  }
+
+    static Future<bool> rejectData(String userId, String nonoo) async {
+    try {
+      final baseUrl = Uri.parse('https://unichem.co.id/api/');
+      final bodyRequest = {
+        'action': 'noo',
+        'method': 'reject',
+        'userid': userId,
+        'nonoo': nonoo,
+      };
+
+      final response = await http.post(
+        baseUrl,
+        body: bodyRequest, // Mengirimkan body sebagai form-data
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['message'] == 'Data NOO Rejected';
       } else {
         return false;
       }

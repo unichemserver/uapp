@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
-import 'package:uapp/modules/marketing/visitasi/canvasing/history_canvasing_screen.dart';
 
 class MarketingDrawer extends StatelessWidget {
   const MarketingDrawer({super.key});

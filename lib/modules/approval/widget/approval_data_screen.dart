@@ -1,12 +1,13 @@
-// import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:uapp/core/utils/utils.dart';
-// import 'package:uapp/core/utils/log.dart';
-import 'package:uapp/modules/approval/widget/noo_form_widget.dart';
 // import '../../home/home_api.dart'; // Import HomeApi
+// import 'package:uapp/core/utils/log.dart';
+// import 'dart:io';
+import 'package:get/get.dart';
+import 'package:uapp/core/utils/log.dart';
 import '../approval_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:uapp/core/utils/utils.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:uapp/modules/approval/widget/noo_form_widget.dart';
 
 class ApprovalDataScreen extends StatefulWidget {
   @override
@@ -14,26 +15,20 @@ class ApprovalDataScreen extends StatefulWidget {
 }
 
 class _ApprovalDataScreenState extends State<ApprovalDataScreen> {
-  final ApprovalController ctx = Get.find(); // Initialize ctx with the controller
+  final ApprovalController ctx = Get.find();
+
 
   @override
   void initState() {
     super.initState();
     ctx.fetchMasterNooData(); 
-    ctx.fetchDocumentNoo(); 
+    ctx.fetchDocumentNoo();
+    ctx.fetchTopOptions(); 
   }
-
-  // Future<void> _saveField(String field, String value) async {
-  //   try {
-  //     Utils.showLoadingDialog(context); // Show loading indicator
-  //     await ctx.updateMasterNooField(field, value); // Save to database
-  //     Utils.showSuccessSnackBar(context, 'Field $field berhasil disimpan');
-  //   } catch (e) {
-  //     Utils.showErrorSnackBar(context, 'Gagal menyimpan $field: $e');
-  //   } finally {
-  //     Navigator.pop(context); // Hide loading indicator
-  //   }
-  // }
+  String safeValue(dynamic value) {
+  if (value == null || value == "null") return "-";
+  return value.toString();
+}
 
   @override
   Widget build(BuildContext context) {
@@ -56,93 +51,155 @@ class _ApprovalDataScreenState extends State<ApprovalDataScreen> {
               return const Center(child: Text('No data found for this ID'));
             }
 
-            return ListView(
-              padding: const EdgeInsets.all(16.0),
+            return Column(
               children: [
-                // Master Noo Data
-                ExpansionTile(
-                  title: const Text('Master Noo Details'),
-                  leading: const Icon(Icons.info),
-                  children: [
-                    NooFormWidget(
-                      masternoo: {
-                        'id': masternoo['id'] == "null" ? '-' : masternoo['id'] ?? '-',
-                        'nama_perusahaan': masternoo['nama_perusahaan'] == "null" ? '-' : masternoo['nama_perusahaan'] ?? '-',
-                        'group_cust': masternoo['group_cust'] == "null" ? '-' : masternoo['group_cust'] ?? '-',
-                        'credit_limit': masternoo['credit_limit'] == "null" ? '-' : masternoo['credit_limit'] ?? '-',
-                        'payment_method': masternoo['payment_method'] == "null" ? '-' : masternoo['payment_method'] ?? '-',
-                        'jaminan': masternoo['jaminan'] == "null" ? '-' : masternoo['jaminan'] ?? '-',
-                        'nilai_jaminan': masternoo['nilai_jaminan'] == "null" ? '-' : masternoo['nilai_jaminan'] ?? '-',
-                        'area_marketing': masternoo['area_marketing'] == "null" ? '-' : masternoo['area_marketing'] ?? '-',
-                        'tgl_join': masternoo['tgl_join'] == "null" ? '-' : masternoo['tgl_join'] ?? '-',
-                        'spv_uci': masternoo['spv_uci'] == "null" ? '-' : masternoo['spv_uci'] ?? '-',
-                        'asm_uci': masternoo['asm_uci'] == "null" ? '-' : masternoo['asm_uci'] ?? '-',
-                        'nama_owner': masternoo['nama_owner'] == "null" ? '-' : masternoo['nama_owner'] ?? '-',
-                        'id_owner': masternoo['id_owner'] == "null" ? '-' : masternoo['id_owner'] ?? '-',
-                        'age_gender_owner': masternoo['age_gender_owner'] == "null" ? '-' : masternoo['age_gender_owner'] ?? '-',
-                        'nohp_owner': masternoo['nohp_owner'] == "null" ? '-' : masternoo['nohp_owner'] ?? '-',
-                        'email_owner': masternoo['email_owner'] == "null" ? '-' : masternoo['email_owner'] ?? '-',
-                        'status_pajak': masternoo['status_pajak'] == "null" ? '-' : masternoo['status_pajak'] ?? '-',
-                        'nama_npwp': masternoo['nama_npwp'] == "null" ? '-' : masternoo['nama_npwp'] ?? '-',
-                        'no_npwp': masternoo['no_npwp'] == "null" ? '-' : masternoo['no_npwp'] ?? '-',
-                        'alamat_npwp': masternoo['alamat_npwp'] == "null" ? '-' : masternoo['alamat_npwp'] ?? '-',
-                        'nama_bank': masternoo['nama_bank'] == "null" ? '-' : masternoo['nama_bank'] ?? '-',
-                        'no_rek_va': masternoo['no_rek_va'] == "null" ? '-' : masternoo['no_rek_va'] ?? '-',
-                        'nama_rek': masternoo['nama_rek'] == "null" ? '-' : masternoo['nama_rek'] ?? '-',
-                        'cabang_bank': masternoo['cabang_bank'] == "null" ? '-' : masternoo['cabang_bank'] ?? '-',
-                        'bidang_usaha': masternoo['bidang_usaha'] == "null" ? '-' : masternoo['bidang_usaha'] ?? '-',
-                        'tgl_mulai_usaha': masternoo['tgl_mulai_usaha'] == "null" ? '-' : masternoo['tgl_mulai_usaha'] ?? '-',
-                        'produk_utama': masternoo['produk_utama'] == "null" ? '-' : masternoo['produk_utama'] ?? '-',
-                        'produk_lain': masternoo['produk_lain'] == "null" ? '-' : masternoo['produk_lain'] ?? '-',
-                        'lima_cust_utama': masternoo['lima_cust_utama'] == "null" ? '-' : masternoo['lima_cust_utama'] ?? '-',
-                        'est_omset_month': masternoo['est_omset_month'] == "null" ? '-' : masternoo['est_omset_month'] ?? '-',
-                      },
-                    ),
-                  ],
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.all(16.0),
+                    children: [
+                      
+                      ExpansionTile(
+                        title: const Text('Master Noo Details'),
+                        leading: const Icon(Icons.info),
+                        children: [
+                          NooFormWidget(
+                            masternoo: {
+                              'id': safeValue(masternoo['id']),
+                              'nama_perusahaan': safeValue(masternoo['nama_perusahaan']),
+                              'group_cust': safeValue(masternoo['group_cust']),
+                              'credit_limit': safeValue(masternoo['credit_limit']),
+                              'payment_method': safeValue(masternoo['payment_method']),
+                              'jaminan': safeValue(masternoo['jaminan']),
+                              'nilai_jaminan': safeValue(masternoo['nilai_jaminan']),
+                              'area_marketing': safeValue(masternoo['area_marketing']),
+                              'tgl_join': safeValue(masternoo['tgl_join']),
+                              'spv_uci': safeValue(masternoo['spv_uci']),
+                              'asm_uci': safeValue(masternoo['asm_uci']),
+                              'nama_owner': safeValue(masternoo['nama_owner']),
+                              'id_owner': safeValue(masternoo['id_owner']),
+                              'age_gender_owner': safeValue(masternoo['age_gender_owner']),
+                              'nohp_owner': safeValue(masternoo['nohp_owner']),
+                              'email_owner': safeValue(masternoo['email_owner']),
+                              'status_pajak': safeValue(masternoo['status_pajak']),
+                              'nama_npwp': safeValue(masternoo['nama_npwp']),
+                              'no_npwp': safeValue(masternoo['no_npwp']),
+                              'alamat_npwp': safeValue(masternoo['alamat_npwp']),
+                              'nama_bank': safeValue(masternoo['nama_bank']),
+                              'no_rek_va': safeValue(masternoo['no_rek_va']),
+                              'nama_rek': safeValue(masternoo['nama_rek']),
+                              'cabang_bank': safeValue(masternoo['cabang_bank']),
+                              'bidang_usaha': safeValue(masternoo['bidang_usaha']),
+                              'tgl_mulai_usaha': safeValue(masternoo['tgl_mulai_usaha']),
+                              'produk_utama': safeValue(masternoo['produk_utama']),
+                              'produk_lain': safeValue(masternoo['produk_lain']),
+                              'lima_cust_utama': safeValue(masternoo['lima_cust_utama']),
+                              'est_omset_month': safeValue(masternoo['est_omset_month']),
+                            },
+                            topOptions: ctx.topOptions,
+                            paymentMethod: ctx.paymentMethod.value,
+                            creditLimitCtrl: TextEditingController(text: safeValue(masternoo['credit_limit']),),
+                            jaminanCtrl: TextEditingController(text: safeValue(masternoo['nilai_jaminan']),),
+                            onPaymentMethodChanged: (value) {ctx.paymentMethod.value = value;},
+                            onCreditLimitChanged: (value) {ctx.creditLimit.value = value;},
+                          ),
+                        ],
+                      ),
+                      // Document Data
+                      ExpansionTile(
+                        title: const Text('Documents'),
+                        leading: const Icon(Icons.find_in_page),
+                        children: ctx.documents.isEmpty ||
+                                ctx.documents.every((doc) =>
+                                    doc.entries
+                                        .where((entry) => 
+                                            entry.key.toLowerCase() != 'id' && 
+                                            entry.key.toLowerCase() != 'id_noo')
+                                        .every((entry) => entry.value == null || entry.value == "null"))
+                            ? [_buildNoDataAvailable('No document data available')]
+                            : (() {
+                                final processedKeys = <String>{}; // Set untuk menyimpan kunci yang sudah diproses
+                                return ctx.documents.expand((doc) {
+                                  return doc.entries
+                                      .where((entry) =>
+                                          entry.value != null &&
+                                          entry.value != "null" &&
+                                          entry.key.toLowerCase() != 'id' &&
+                                          entry.key.toLowerCase() != 'id_noo' &&
+                                          processedKeys.add(entry.key)) // Memastikan hanya memproses kunci unik
+                                      .map((entry) => _buildApprovalItem(
+                                            entry.key.toUpperCase(),
+                                            entry.value,
+                                            isImage: true,
+                                          ));
+                                }).toList();
+                              })(),
+                      ),
+                      // Spesimen Data
+                      ExpansionTile(
+                        title: const Text('Spesimen Details'),
+                        leading: const Icon(Icons.system_update_alt_sharp),
+                        children: ctx.approvalDetail['spesimen'].isEmpty
+                            ? [_buildNoDataAvailable('No spesimen data available')]
+                            : ctx.approvalDetail['spesimen'].map((spec) {
+                                return _buildApprovalItem(
+                                  'Tanda Tangan',
+                                  spec['url_ttd'] ?? '',
+                                  isImage: true,
+                                );
+                              }).toList(),
+                      ),
+                    ],
+                  ),
                 ),
-                // Document Data
-                ExpansionTile(
-                  title: const Text('Documents'),
-                  leading: const Icon(Icons.find_in_page),
-                  children: ctx.documents.isEmpty ||
-                          ctx.documents.every((doc) =>
-                              doc.entries
-                                  .where((entry) => 
-                                      entry.key.toLowerCase() != 'id' && 
-                                      entry.key.toLowerCase() != 'id_noo')
-                                  .every((entry) => entry.value == null || entry.value == "null"))
-                      ? [_buildNoDataAvailable('No document data available')]
-                      : (() {
-                          final processedKeys = <String>{}; // Set untuk menyimpan kunci yang sudah diproses
-                          return ctx.documents.expand((doc) {
-                            return doc.entries
-                                .where((entry) =>
-                                    entry.value != null &&
-                                    entry.value != "null" &&
-                                    entry.key.toLowerCase() != 'id' &&
-                                    entry.key.toLowerCase() != 'id_noo' &&
-                                    processedKeys.add(entry.key)) // Memastikan hanya memproses kunci unik
-                                .map((entry) => _buildApprovalItem(
-                                      entry.key.toUpperCase(),
-                                      entry.value,
-                                      isImage: true,
-                                    ));
-                          }).toList();
-                        })(),
-                ),
-                // Spesimen Data
-                ExpansionTile(
-                  title: const Text('Spesimen Details'),
-                  leading: const Icon(Icons.system_update_alt_sharp),
-                  children: ctx.approvalDetail['spesimen'].isEmpty
-                      ? [_buildNoDataAvailable('No spesimen data available')]
-                      : ctx.approvalDetail['spesimen'].map((spec) {
-                          return _buildApprovalItem(
-                            'Tanda Tangan',
-                            spec['url_ttd'] ?? '',
-                            isImage: true,
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Approve Button (Primary Action)
+                      ElevatedButton(
+                        onPressed: () {
+                          _showConfirmationDialog(
+                            context,
+                            'approve',
                           );
-                        }).toList(),
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12.0, horizontal: 56.0),
+                        ),
+                        child: const Text(
+                          'Approve',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      // Reject Button (Secondary Action)
+                      OutlinedButton(
+                        onPressed: () {
+                          _showConfirmationDialog(
+                            context,
+                            'reject',
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.grey),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12.0, horizontal: 56.0),
+                        ),
+                        child: const Text(
+                          'Reject',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             );
@@ -226,6 +283,51 @@ class _ApprovalDataScreenState extends State<ApprovalDataScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showConfirmationDialog(BuildContext context, String action) {
+    final masternoo = ctx.masternoo.value;
+
+    String creditLimit = ctx.creditLimit.value.isNotEmpty 
+        ? ctx.creditLimit.value 
+        : safeValue(masternoo?['credit_limit']);
+
+    String paymentMethod = ctx.paymentMethod.value.isNotEmpty 
+        ? ctx.paymentMethod.value 
+        : safeValue(masternoo?['payment_method']);
+
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmation'),
+          content: Text('Are you sure you want to $action this data?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                if (action == 'approve') {
+                  Log.d('Credit Limit: $creditLimit (${creditLimit.runtimeType})');
+                  Log.d('Payment Method: $paymentMethod (${creditLimit.runtimeType})');
+                  await ctx.approveData(creditLimit, paymentMethod);
+
+                } else {
+                  await ctx.rejectData();
+                }
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
