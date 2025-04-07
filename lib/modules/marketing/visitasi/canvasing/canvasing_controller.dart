@@ -10,6 +10,7 @@ import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/hive/hive_service.dart';
 import 'package:uapp/core/utils/jenis_call.dart';
+import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/print_resi.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/models/canvasing.dart';
@@ -28,6 +29,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   final TextEditingController namaController = TextEditingController();
   final TextEditingController pemilikController = TextEditingController();
   final TextEditingController telpController = TextEditingController();
+  final TextEditingController lokasiController= TextEditingController();
   final TextEditingController alamatController = TextEditingController();
   final TextEditingController nominalController = TextEditingController();
   Canvasing? canvasing;
@@ -117,8 +119,8 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     var date = du.DateUtils.getCurrentDate();
     var year = date.substring(2, 4);
     var month = date.substring(5, 7);
-    var nomor = idMa.substring(idMa.length - 1);
-    return 'FP.$year$month$idUser$nomor';
+    var nomor = idMa.isNotEmpty ? idMa.substring(idMa.length - 1) : '0';
+    return 'FP.$year$month${idUser.padLeft(4, '0')}$nomor';
   }
 
   void selectJenisPembayaran(int index) {
@@ -147,6 +149,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     String noTelp,
     String alamat,
   ) async {
+    Log.d('updateCustomerData called with: $namaOutlet, $namaOwner, $noTelp, $alamat');
     Map<String, dynamic> canvasingData = {
       'CustID': customerId,
       'nama_outlet': namaOutlet,
@@ -158,6 +161,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       'image_path': outletImagePath,
       'pembayaran': totalPayment,
     };
+    Log.d('canvasingData: $canvasingData');
     Map<String, dynamic> maData = {'cust_name': namaOutlet};
     await db.insert("canvasing", canvasingData);
     await db.update("marketing_activity", maData, "id = ?", [idMA]);
@@ -187,7 +191,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   }
 
   deleteTakingOrder(String itemId) async {
-    await db.delete('taking_order', 'idMA = ? AND item_id = ?', [idMA, itemId]);
+    await db.delete('taking_order', 'idMA = ? AND itemid = ?', [idMA, itemId]); // Updated column name to 'itemID'
     await getTakingOrder();
     calculateTotalPayment();
   }
@@ -296,6 +300,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       'lat_ci': lat,
       'lon_ci': lon,
     };
+    Log.d(customerId);
     await db.insert("canvasing", dataOutlet);
     await db.insert("marketing_activity", dataMA);
   }
@@ -303,6 +308,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   Future<String> generateCanvasingID(String table) async {
     var userId = Utils.getUserData().id;
     String pattern = Call.canvasing + userId;
+    Log.d('generateCanvasingID pattern: $pattern');
     String query = '''
       SELECT CustID FROM $table
       WHERE CustID LIKE '$pattern%'
@@ -391,8 +397,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     var locPermission = await Geolocator.checkPermission();
     var isLocGranted = locPermission == LocationPermission.always ||
         locPermission == LocationPermission.whileInUse;
-
-    if (!isLocationEnabled || !isLocGranted) { // Ensure both are boolean
+    if (!isLocationEnabled || !isLocGranted) {
       showLocationServiceDisabledDialog();
     } else {
       var isMockLocation = await Utils.isUseMockLocation();
@@ -434,7 +439,11 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     var args = Get.arguments as Map<String, dynamic>?;
     if (args != null) {
       handleArguments(args);
+      Log.d('Arguments: $args');
     } else {
+      if (customerId.isEmpty) {
+        customerId = await generateCanvasingID('canvasing'); // Generate customerId if empty
+      }
       var position = await getCurrentLocation();
       if (position != null) {
         checkIn(position.latitude, position.longitude);
@@ -495,7 +504,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     getPriceList();
     isLocationServiceEnabled();
     fetchCustomers();
-    getCanvasingCustomers();
+    // getCanvasingCustomers();
   }
 
   @override
@@ -544,20 +553,5 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
         );
       }
     }
-  }
-
-  void getCanvasingCustomers() {
-    // Placeholder: Fetch data from CustactiveController for now
-    
-  }
-
-  void updateCanvasingCustomers() async {
-    // Placeholder for syncing canvasing customers
-    
-  }
-  
-  void setSelectedCustomerId(Canvasing? customerId) {
-    selectedCustomerId = customerId;
-    update();
   }
 }

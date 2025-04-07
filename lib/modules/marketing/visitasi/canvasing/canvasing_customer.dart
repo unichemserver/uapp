@@ -22,8 +22,9 @@ class CanvasingCustomerPage extends StatelessWidget {
       onContinue: (ctx) {
         Get.toNamed(Routes.CANVASING, arguments: {
           'type': Call.canvasing,
-          'id': ctx.selectedCustId!.id,
-          'name': ctx.selectedCustId!.name,
+          // 'id': ctx.selectedCustId!.id,
+          'name': ctx.selectedCustId!.name, // Add outlet name
+          'address': ctx.selectedCustId!.address,       // Add address
         });
       },
       actions: [

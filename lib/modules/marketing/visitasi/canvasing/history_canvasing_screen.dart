@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/utils/jenis_call.dart';
+import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/modules/marketing/model/canvasing_model.dart';
 
 class HistoryCanvasingScreen extends StatefulWidget {
@@ -27,9 +28,10 @@ class _HistoryCanvasingScreenState extends State<HistoryCanvasingScreen> {
       INNER JOIN canvasing c ON ma.cust_id = c.CustID
       WHERE ma.jenis = ? AND ma.status_sync = ?
     ''';
-    var data = await db.rawQuery(query, args: [Call.canvasing, 0]);
+    var data = await db.rawQuery(query, args: [Call.canvasing, 1]);
     canvasingList = data.map((e) => CanvasingModel.fromJson(e)).toList();
     setState(() {});
+    Log.d('Canvasing List: $canvasingList');
   }
 
   @override
@@ -59,14 +61,14 @@ class _HistoryCanvasingScreenState extends State<HistoryCanvasingScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Get.toNamed(Routes.CANVASING)?.then((value) {
-            getCanvasingList();
-          });
-        },
-        child: const Icon(Icons.add_business_outlined),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     Get.toNamed(Routes.CANVASING)?.then((value) {
+      //       getCanvasingList();
+      //     });
+      //   },
+      //   child: const Icon(Icons.add_business_outlined),
+      // ),
       body: RefreshIndicator(
         onRefresh: () async {
           getCanvasingList();

@@ -2,6 +2,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/rupiah_formatter.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/modules/marketing/model/master_item.dart';
@@ -247,32 +248,76 @@ class _ToDialogState extends State<ToDialog> {
                       onChanged: (value) {},
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: widget.toEdit != null
-                          ? null
-                          : () async {
-                              if (!formKey.currentState!.validate()) {
-                                return;
-                              }
-                              int jumlahProduct = int.parse(jumlah.text
-                                  .replaceAll(RegExp(r'[^0-9]'), ''));
-                              int satuanProduct = int.parse(satuan.text
-                                  .replaceAll(RegExp(r'[^0-9]'), ''));
-                              int totalPrice = jumlahProduct * satuanProduct;
-                              var data = ToModel(
-                                itemid: itemID.text,
-                                description: nama.text,
-                                quantity: jumlahProduct,
-                                unit: satuanProduct.toString(),
-                                price: totalPrice,
-                              );
-                              ctx.addTakingOrder(data);
-                              ctx.selectedUnit = '';
-                              ctx.update();
-                              Get.back();
-                            },
-                      child: const Text('Simpan'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          onPressed: widget.toEdit != null
+                              ? null
+                              : () async {
+                                  if (!formKey.currentState!.validate()) {
+                                    return;
+                                  }
+                                  int jumlahProduct = int.parse(jumlah.text
+                                      .replaceAll(RegExp(r'[^0-9]'), ''));
+                                  int satuanProduct = int.parse(satuan.text
+                                      .replaceAll(RegExp(r'[^0-9]'), ''));
+                                  int totalPrice = jumlahProduct * satuanProduct;
+                                  var data = ToModel(
+                                    itemid: itemID.text,
+                                    description: nama.text,
+                                    quantity: jumlahProduct,
+                                    unit: satuanProduct.toString(),
+                                    price: totalPrice,
+                                  );
+                                  ctx.addTakingOrder(data);
+                                  ctx.selectedUnit = '';
+                                  ctx.update();
+                                  Get.back();
+                                },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 56.0, vertical: 12.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            backgroundColor: Colors.blue,
+                          ),
+                          child: const Text(
+                            'Simpan',
+                            style: TextStyle(
+                              fontSize: 16.0,
+                              color: Colors.white
+                            ),
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: widget.toEdit != null
+                              ? () async {
+                                  Log.d('Delete ${widget.toEdit!.itemid!}');
+                                  ctx.deleteTakingOrder(widget.toEdit!.itemid!);
+                                  Get.back();
+                                }
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 56.0, vertical: 12.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                          child: const Text(
+                            'Hapus',
+                            style: TextStyle(
+                              fontSize: 16.0,
+                              color: Colors.white
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 16),
                   ],
                 );
               },

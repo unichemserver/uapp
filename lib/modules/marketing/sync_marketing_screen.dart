@@ -393,15 +393,22 @@ class _SyncMarketingScreenState extends State<SyncMarketingScreen> {
 
   Widget _buildTimerSync() {
     final int? syncTime = HiveService.getTimerSyncMkt();
-    if (syncTime != null) {
-      return Text(
-        'Terakhir sinkronisasi otomatis:\n$minutes menit $seconds detik yang lalu',
-        style: Theme.of(context).textTheme.bodySmall!.copyWith(
-              color: Colors.grey,
-            ),
-      );
-    } else {
-      return const SizedBox();
-    }
+    if (syncTime == null) return const SizedBox();
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+
+        Text(
+          'Terakhir sinkronisasi otomatis:',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '$minutes menit $seconds detik yang lalu',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+        ),
+      ],
+    );
   }
 }

@@ -471,7 +471,7 @@ Future<void> loadCustomerGroups() async {
 
   Future<void> checkTables() async {
     final tables = await db.rawQuery(
-        "SELECT * FROM canvasing");
+        "SELECT * FROM marketing_activity");
     Log.d("Tables in Database: $tables");
   }
 
