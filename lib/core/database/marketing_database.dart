@@ -156,50 +156,59 @@ class MarketingDatabase {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-  if (oldVersion < 6) {
-    Log.d('upgrading database...');
+    if (oldVersion < 6) {
+      Log.d('upgrading database...');
 
-    await db.execute('''
-    CREATE TABLE IF NOT EXISTS mastergroup (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        cluster_kelompok TEXT NOT NULL,
-        type TEXT NOT NULL,
-        kode TEXT NOT NULL,
-        nama_desc TEXT NOT NULL,
-        singkatan TEXT NOT NULL,
-        definisi TEXT NOT NULL,
-        active INTEGER DEFAULT 1
-    )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS noo_activity (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        idnoo TEXT,
-        statussync INTEGER DEFAULT 0,
-        status TEXT,
-        approved INTEGER DEFAULT 0,
-        idCustOrlan TEXT
+      await db.execute('''
+      CREATE TABLE IF NOT EXISTS mastergroup (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          cluster_kelompok TEXT NOT NULL,
+          type TEXT NOT NULL,
+          kode TEXT NOT NULL,
+          nama_desc TEXT NOT NULL,
+          singkatan TEXT NOT NULL,
+          definisi TEXT NOT NULL,
+          active INTEGER DEFAULT 1
       )
-    ''');
+      ''');
 
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS top_options (
-        TOP_ID TEXT PRIMARY KEY,
-        Description TEXT
-      )
-    ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS noo_activity (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          idnoo TEXT,
+          statussync INTEGER DEFAULT 0,
+          status TEXT,
+          approved INTEGER DEFAULT 0,
+          idCustOrlan TEXT
+        )
+      ''');
 
-    await db.execute(mastergroupTable);
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS top_options (
+          TOP_ID TEXT PRIMARY KEY,
+          Description TEXT
+        )
+      ''');
+
+      await db.execute(mastergroupTable);
+    }
+
+    if (oldVersion < 7) {
+      // Check if the 'pembayaran' column exists in the 'canvasing' table
+      var result = await db.rawQuery('PRAGMA table_info(canvasing)');
+      bool columnExists = result.any((column) => column['name'] == 'pembayaran');
+
+      if (!columnExists) {
+        // Add the 'pembayaran' column if it does not exist
+        await db.execute('''
+          ALTER TABLE canvasing ADD COLUMN pembayaran INTEGER DEFAULT 0
+        ''');
+        Log.d('Column "pembayaran" added to "canvasing" table.');
+      } else {
+        Log.d('Column "pembayaran" already exists in "canvasing" table.');
+      }
+    }
   }
-
-  if (oldVersion < 7) {
-    await db.execute('''
-      ALTER TABLE canvasing ADD COLUMN pembayaran INTEGER DEFAULT 0
-    ''');
-  }
-}
-
 
   Future<int> insert(String table, Map<String, dynamic> data,
       {String? nullColumnHack}) async {

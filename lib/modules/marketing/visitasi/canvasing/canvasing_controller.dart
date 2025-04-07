@@ -300,7 +300,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       'lat_ci': lat,
       'lon_ci': lon,
     };
-    Log.d(customerId);
+    Log.d("ID: $customerId");
     await db.insert("canvasing", dataOutlet);
     await db.insert("marketing_activity", dataMA);
   }
@@ -316,6 +316,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       LIMIT 1
     ''';
     List<Map> result = await db.rawQuery(query);
+    Log.d('generateCanvasingID result: $result');
     int newIncrement = 1;
     if (result.isNotEmpty) {
       String lastId = result.first['CustID'];
@@ -435,21 +436,29 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     );
   }
 
-  Future<void> handleArgumentsOrLocation() async {
-    var args = Get.arguments as Map<String, dynamic>?;
-    if (args != null) {
-      handleArguments(args);
-      Log.d('Arguments: $args');
-    } else {
-      if (customerId.isEmpty) {
-        customerId = await generateCanvasingID('canvasing'); // Generate customerId if empty
-      }
-      var position = await getCurrentLocation();
-      if (position != null) {
-        checkIn(position.latitude, position.longitude);
-      }
+Future<void> handleArgumentsOrLocation() async {
+  var args = Get.arguments as Map<String, dynamic>?;
+
+  bool isOnlyBasicArgs = args != null &&
+      args.length == 3 &&
+      args.containsKey('type') &&
+      args.containsKey('name') &&
+      args.containsKey('address');
+
+  // Jika args null atau hanya berisi type, name, address → langsung ambil lokasi
+  if (args == null || isOnlyBasicArgs) {
+    var position = await getCurrentLocation();
+    if (position != null) {
+      checkIn(position.latitude, position.longitude);
     }
+  } else {
+    // Kalau args punya data penting lainnya → jalankan handleArguments
+    handleArguments(args);
+    Log.d('Arguments: $args');
   }
+}
+
+
 
   void handleArguments(Map<String, dynamic> args) async {
     customerId = args['id'];
