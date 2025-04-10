@@ -7,7 +7,7 @@ class MarketingDatabase {
   static final MarketingDatabase _instance =
       MarketingDatabase._privateConstructor();
   static Database? _database;
-  final int marketingDbVersion = 7;
+  final int marketingDbVersion = 8;
 
   MarketingDatabase._privateConstructor();
 
@@ -97,7 +97,8 @@ class MarketingDatabase {
         unit TEXT,
         price DECIMAL(10, 2),
         top TEXT,
-        unit_id TEXT
+        unit_id TEXT,
+        ppn DECIMAL(10, 2) DEFAULT 0
       )
     ''');
 
@@ -206,6 +207,22 @@ class MarketingDatabase {
         Log.d('Column "pembayaran" added to "canvasing" table.');
       } else {
         Log.d('Column "pembayaran" already exists in "canvasing" table.');
+      }
+    }
+
+    if (oldVersion < 8) {
+            // Check if the 'ppn' column exists in the 'taking_order' table
+      var result = await db.rawQuery('PRAGMA table_info(taking_order)');
+      bool columnExists = result.any((column) => column['name'] == 'ppn');
+
+      if (!columnExists) {
+        // Add the 'ppn' column if it does not exist
+        await db.execute('''
+          ALTER TABLE taking_order ADD COLUMN ppn DECIMAL(10, 2) DEFAULT 0
+        ''');
+        Log.d('Column "ppn" added to "taking_order" table.');
+      } else {
+        Log.d('Column "ppn" already exists in "taking_order" table.');
       }
     }
   }

@@ -2,7 +2,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:uapp/core/utils/log.dart';
+// import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/rupiah_formatter.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/modules/marketing/model/master_item.dart';
@@ -25,6 +25,7 @@ class _ToDialogState extends State<ToDialog> {
   final TextEditingController jumlah = TextEditingController();
   final TextEditingController satuan = TextEditingController();
   final TextEditingController total = TextEditingController();
+  final TextEditingController ppnController = TextEditingController();
 
   void _initData() {
     if (widget.toEdit != null) {
@@ -33,6 +34,7 @@ class _ToDialogState extends State<ToDialog> {
       jumlah.text = widget.toEdit!.quantity.toString();
       satuan.text = Utils.formatCurrency(widget.toEdit!.unit!);
       total.text = Utils.formatCurrency(widget.toEdit!.price.toString());
+      ppnController.text = Utils.formatCurrency(widget.toEdit!.ppn.toString());
     }
   }
 
@@ -49,282 +51,289 @@ class _ToDialogState extends State<ToDialog> {
     jumlah.dispose();
     satuan.dispose();
     total.dispose();
+    ppnController.dispose();
     formKey.currentState?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tambah Produk'),
-      ),
-      body: Padding(
+    return Dialog.fullscreen(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Tambah Produk'),
+        ),
+        body: GetBuilder<CanvasingController>(
+  init: CanvasingController(),
+  builder: (ctx) {
+    return Form(
+      key: formKey,
+      child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: GetBuilder<CanvasingController>(
-              init: CanvasingController(),
-              initState: (_) {},
-              builder: (ctx) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    DropdownSearch<MasterItem>(
-                      items: ctx.items,
-                      itemAsString: (MasterItem item) => item.description!,
-                      selectedItem: widget.toEdit != null
-                          ? ctx.items.firstWhere(
-                              (element) =>
-                                  element.itemID == widget.toEdit!.itemid,
-                            )
-                          : null,
-                      onChanged: (MasterItem? item) {
-                        nama.text = item!.description!;
-                        itemID.text = item.itemID!;
-                        var selectedprice = ctx.priceList.where((element) {
-                          return element.itemID == item.itemID;
-                        }).toList();
-                        if (selectedprice.length > 1 &&
-                            (item.itemID != 'BP-904-0188640' ||
-                                item.itemID != 'BP-905-0219030')) {
-                          selectedprice = selectedprice
-                              .where((element) => element.topID == 'COD')
-                              .toList();
-                        }
-                        var price = selectedprice.first.unitPrice
-                            .toString()
-                            .replaceAll(RegExp(r'\.00$'), '');
-                        satuan.text = int.parse(price).toString();
-                        ctx.unitItem.clear();
-                        for (var element in selectedprice) {
-                          ctx.unitItem.add(element.unitID!);
-                        }
-                        if (nama.text.contains('MANGKOK') ||
-                            nama.text.contains('BASKOM')) {
-                          satuan.text = '0';
-                        }
-                        ctx.selectedUnit = '';
-                        ctx.update();
-                      },
-                      popupProps: PopupProps.menu(
-                        showSearchBox: true,
-                        disabledItemFn: widget.toEdit == null
-                            ? (MasterItem item) {
-                                return ctx.takingOrders
-                                    .map((e) => e.description)
-                                    .contains(item.description);
-                              }
-                            : null,
-                        searchFieldProps: TextFieldProps(
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                children: [
+                  const Text('Pilih Produk'),
+                  _buildItemDropdown(ctx),
+                  _buildUnitDropdown(ctx),
+                  const SizedBox(height: 16.0),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: TextFormField(
+                          controller: jumlah,
                           decoration: InputDecoration(
-                            hintText: 'Cari produk',
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4.0),
-                            ),
+                            labelText: 'Jumlah',
+                            suffix: Text(ctx.selectedUnit),
                           ),
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return 'Jumlah tidak boleh kosong';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            jumlah.text = value.replaceAll(RegExp(r'[^0-9]'), '');
+                            if (satuan.text.isNotEmpty && jumlah.text.isNotEmpty) {
+                              var basePrice = int.parse(satuan.text);
+                              var quantity = int.parse(jumlah.text);
+
+                              // Hitung total harga
+                              var totalPayment = basePrice * quantity;
+
+                              // Hitung PPN
+                              double ppnRate = (ctx.selectedPPNCode == 'PPN1108') ? 0.0 : 0.11;
+                              var ppnValue = (totalPayment * ppnRate).toInt();
+
+                              // Format nilai PPN dan total
+                              var rupiahFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp');
+                              ppnController.text = rupiahFormat.format(ppnValue).replaceAll(RegExp(r',00'), '');
+                              total.text = rupiahFormat.format(totalPayment + ppnValue).replaceAll(RegExp(r',00'), '');
+                            } else {
+                              ppnController.text = '';
+                              total.text = '';
+                            }
+                          },
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text('Satuan'),
-                      ],
-                    ),
-                    DropdownSearch<String>(
-                      items: ctx.unitItem,
-                      selectedItem: ctx.selectedUnit,
-                      onChanged: (String? item) {
-                        if (item != null) {
-                          var price = ctx.priceList
-                              .where((element) =>
-                                  element.itemID == itemID.text &&
-                                  element.unitID == item)
-                              .first
-                              .unitPrice
-                              .toString()
-                              .replaceAll(RegExp(r'\.00$'), '');
-                          satuan.text = int.parse(price).toString();
-                          ctx.selectedUnit = item;
-                          ctx.update();
-                        }
-                        if (nama.text.contains('MANGKOK') ||
-                            nama.text.contains('BASKOM')) {
-                          satuan.text = '0';
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      controller: jumlah,
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Jumlah tidak boleh kosong';
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Jumlah',
-                        suffix: Text(ctx.selectedUnit),
-                      ),
-                      keyboardType: TextInputType.number,
-                      onChanged: (value) {
-                        jumlah.text = value.replaceAll(RegExp(r'[^0-9]'), '');
-                        if (satuan.text.isNotEmpty && jumlah.text.isNotEmpty) {
-                          var totalPayment =
-                              (int.parse(satuan.text) * int.parse(jumlah.text))
-                                  .toString();
-                          var rupiahFormat = NumberFormat.currency(
-                            locale: 'id_ID',
-                            symbol: 'Rp',
-                          );
-                          total.text = rupiahFormat
-                              .format(int.parse(totalPayment))
-                              .replaceAll(RegExp(r',00'), '');
-                        } else {
-                          total.text = '';
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      controller: satuan,
-                      readOnly: true,
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Satuan tidak boleh kosong';
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Harga Satuan',
-                        prefix: const Text('Rp'),
-                        suffix: Text('/${ctx.selectedUnit}'),
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        RupiahInputFormatter(),
-                      ],
-                      onChanged: (value) {
-                        satuan.text = value.replaceAll(RegExp(r'[^0-9]'), '');
-                        if (satuan.text.isNotEmpty && jumlah.text.isNotEmpty) {
-                          total.text =
-                              (int.parse(satuan.text) * int.parse(jumlah.text))
-                                  .toString();
-                          var rupiahFormat = NumberFormat.currency(
-                            locale: 'id_ID',
-                            symbol: 'Rp',
-                          );
-                          total.text = rupiahFormat
-                              .format(int.parse(total.text))
-                              .replaceAll(RegExp(r',00'), '');
-                        } else {
-                          total.text = '';
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      readOnly: true,
-                      controller: total,
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Total tidak boleh kosong';
-                        }
-                        return null;
-                      },
-                      decoration: const InputDecoration(
-                        labelText: 'Total',
-                      ),
-                      onChanged: (value) {},
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                          onPressed: widget.toEdit != null
-                              ? null
-                              : () async {
-                                  if (!formKey.currentState!.validate()) {
-                                    return;
-                                  }
-                                  int jumlahProduct = int.parse(jumlah.text
-                                      .replaceAll(RegExp(r'[^0-9]'), ''));
-                                  int satuanProduct = int.parse(satuan.text
-                                      .replaceAll(RegExp(r'[^0-9]'), ''));
-                                  int totalPrice = jumlahProduct * satuanProduct;
-                                  var data = ToModel(
-                                    itemid: itemID.text,
-                                    description: nama.text,
-                                    quantity: jumlahProduct,
-                                    unit: satuanProduct.toString(),
-                                    price: totalPrice,
-                                  );
-                                  ctx.addTakingOrder(data);
-                                  ctx.selectedUnit = '';
-                                  ctx.update();
-                                  Get.back();
-                                },
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 56.0, vertical: 12.0),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            backgroundColor: Colors.blue,
+                      const SizedBox(width: 16.0),
+                      Expanded(
+                        flex: 3,
+                        child: TextFormField(
+                          controller: satuan,
+                          readOnly: true,
+                          inputFormatters: [
+                            RupiahInputFormatter(),
+                          ],
+                          decoration: InputDecoration(
+                            labelText: 'Harga Satuan',
+                            prefix: const Text('Rp'),
+                            suffix: Text('/${ctx.selectedUnit}'),
                           ),
-                          child: const Text(
-                            'Simpan',
-                            style: TextStyle(
-                              fontSize: 16.0,
-                              color: Colors.white
-                            ),
-                          ),
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return 'Satuan tidak boleh kosong';
+                            }
+                            return null;
+                          },
                         ),
-                        ElevatedButton(
-                          onPressed: widget.toEdit != null
-                              ? () async {
-                                  Log.d('Delete ${widget.toEdit!.itemid!}');
-                                  ctx.deleteTakingOrder(widget.toEdit!.itemid!);
-                                  Get.back();
-                                }
-                              : null,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 56.0, vertical: 12.0),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            backgroundColor: Colors.red,
-                          ),
-                          child: const Text(
-                            'Hapus',
-                            style: TextStyle(
-                              fontSize: 16.0,
-                              color: Colors.white
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextFormField(
+                    controller: ppnController,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      labelText: 'PPN',
                     ),
-                    const SizedBox(height: 16),
-                  ],
-                );
-              },
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextFormField(
+                    controller: total,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Total (Termasuk PPN)',
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Total tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (!formKey.currentState!.validate()) {
+                        return;
+                      }
+                      int jumlahProduct = int.parse(jumlah.text.replaceAll(RegExp(r'[^0-9]'), ''));
+                      int satuanProduct = int.parse(satuan.text.replaceAll(RegExp(r'[^0-9]'), ''));
+                      int ppnValue = int.parse(ppnController.text.replaceAll(RegExp(r'[^0-9]'), ''));
+                      int totalPrice = jumlahProduct * satuanProduct;
+                      var data = ToModel(
+                        itemid: itemID.text,
+                        description: nama.text,
+                        quantity: jumlahProduct,
+                        unit: satuanProduct.toString(),
+                        price: totalPrice,
+                        ppn: ppnValue,
+                      );
+                      ctx.addTakingOrder(data);
+                      ctx.selectedUnit = '';
+                      ctx.update();
+                      Get.back();
+                    },
+                    style: ElevatedButton.styleFrom(
+                       padding: const EdgeInsets.symmetric(horizontal: 36.0, vertical: 12.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    child: const Text('Simpan'),
+                  ),
+                ),
+                const SizedBox(width: 16.0),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: widget.toEdit != null
+                        ? () async {
+                            // Log.d('Delete ${widget.toEdit!.itemid!}');
+                            ctx.deleteTakingOrder(widget.toEdit!.itemid!);
+                            Get.back();
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 36.0, vertical: 12.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                    child: const Text(
+                      'Hapus',
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8.0),
+          ],
+        ),
+      ),
+    );
+  },
+),
+      ),
+    );
+  }
+
+  Widget _buildItemDropdown(CanvasingController ctx) {
+    return DropdownSearch<MasterItem>(
+      items: ctx.items,
+      itemAsString: (MasterItem item) => item.description!,
+      selectedItem: widget.toEdit != null
+          ? ctx.items.firstWhere((element) => element.itemID == widget.toEdit!.itemid)
+          : null,
+      onChanged: (MasterItem? item) {
+        nama.text = item!.description!;
+        itemID.text = item.itemID!;
+        var selectedprice = ctx.priceList.where((element) {
+          return element.itemID == item.itemID;
+        }).toList();
+
+        if (selectedprice.length > 1 &&
+            (item.itemID != 'BP-904-0188640' && item.itemID != 'BP-905-0219030')) {
+          selectedprice = selectedprice.where((element) => element.topID == 'COD').toList();
+        }
+
+        ctx.selectedPPNCode = item.taxGroupID!;
+
+        // Ambil harga satuan
+        var price = int.parse(selectedprice.first.unitPrice.toString().replaceAll(RegExp(r'\.00$'), ''));
+
+        // // Hitung harga dengan PPN berdasarkan taxGroupID
+        // double ppn = (item.taxGroupID == 'PPN1108') ? 0.0 : 0.11;
+        // var priceWithPpn = (price + (price * ppn)).toInt();
+
+        satuan.text = price.toString();
+        ctx.unitItem.clear();
+        for (var element in selectedprice) {
+          ctx.unitItem.add(element.unitID!);
+        }
+
+        if (nama.text.contains('MANGKOK') || nama.text.contains('BASKOM')) {
+          satuan.text = '0';
+        }
+
+        ctx.selectedUnit = '';
+        ctx.update();
+      },
+      popupProps: PopupProps.menu(
+        showSearchBox: true,
+        disabledItemFn: widget.toEdit == null
+            ? (MasterItem item) {
+                return ctx.takingOrders.map((e) => e.description).contains(item.description);
+              }
+            : null,
+        searchFieldProps: TextFieldProps(
+          decoration: InputDecoration(
+            hintText: 'Cari produk',
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16.0),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildUnitDropdown(CanvasingController ctx) {
+    if (ctx.unitItem.isEmpty) {
+      return const SizedBox();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16.0),
+        const Text('Pilih Unit Produk'),
+        DropdownSearch<String>(
+          items: ctx.unitItem,
+          selectedItem: ctx.selectedUnit,
+          onChanged: (String? item) {
+            if (item != null) {
+              var price = ctx.priceList
+                  .where((element) => element.itemID == itemID.text && element.unitID == item)
+                  .first
+                  .unitPrice
+                  .toString()
+                  .replaceAll(RegExp(r'\.00$'), '');
+              satuan.text = int.parse(price).toString();
+              ctx.selectedUnit = item;
+              ctx.update();
+            }
+            if (nama.text.contains('MANGKOK') || nama.text.contains('BASKOM')) {
+              satuan.text = '0';
+            }
+          },
+        ),
+      ],
     );
   }
 }

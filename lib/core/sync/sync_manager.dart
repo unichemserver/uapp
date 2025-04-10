@@ -42,6 +42,7 @@ class SyncManager {
           salesUnit: element.salesUnit,
           salesPrice: element.salesPrice,
           unitSetID: element.unitSetID,
+          taxGroupID: element.taxGroupID,
         ));
       }
     }

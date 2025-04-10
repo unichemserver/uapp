@@ -39,7 +39,7 @@ class OrderWidget extends StatelessWidget {
                       },
                 title: Text(item.description!),
                 subtitle: Text(
-                  '${item.quantity} * ${Utils.formatCurrency(item.unit!)}',
+                  '${item.quantity} * ${Utils.formatCurrency(item.unit!)}\nPPN: ${Utils.formatCurrency(item.ppn.toString())}',
                 ),
                 leading: Text('${index + 1}'),
                 trailing: Text(

@@ -54,7 +54,17 @@ class PrintResi {
     String receipt = '';
     var subtotal = resi.toItems.map((e) => e.price).reduce((value, element) => value! + element!);
     var subtotalFormatted = rp(subtotal.toString());
+    var subtotalppn = resi.toItems.map((e) => e.ppn).reduce((value, element) => value! + element!);
+    var subtotalppnFormatted = rp(subtotalppn.toString());
 
+    var total = (subtotal ?? 0) + (subtotalppn ?? 0);
+    var totalFormatted = rp(total.toString());
+
+    if (resi.activity == 'Canvasing') {
+      receipt += '${centerText('PENJUALAN', totalWidth)}\n';
+    } else {
+      receipt += '${centerText('TAKING ORDER', totalWidth)}\n';
+    }
     receipt += spacetwo;
     receipt += '${formatLabel('Tanggal')} : ${DateUtils.getFormattedDateOnly(DateTime.now())}\n';
     receipt += '${formatLabel('Nomor')} : ${resi.nomor}\n';
@@ -65,16 +75,22 @@ class PrintResi {
       String quantity = formatQuantity(item.quantity!);
       String unit = rp(formatUnit(item.unit!));
       String price = rp(item.price.toString());
+      String ppn = rp(item.ppn.toString());
       receipt += '${formatLabelValue('$quantity X $unit', price)}\n';
+      receipt += '${formatLabelValue('PPN', ppn)}\n';
     }
     receipt += spaceone;
     receipt += '${formatLabelValue('SUB TOTAL', subtotalFormatted)}\n';
     receipt += '${formatLabelValue('DISKON', '0')}\n';
-    // receipt += '${formatLabelValue('PPN (0%)', '0')}\n';
+    receipt += '${formatLabelValue('PPN', subtotalppnFormatted)}\n';
     receipt += spaceone;
-    receipt += '${formatLabelValue('TOTAL', subtotalFormatted)}\n';
+    receipt += '${formatLabelValue('TOTAL', totalFormatted)}\n';
     receipt += spacetwo;
     receipt += '${DateUtils.getCurrentDateTime()}-${resi.namaSales}\n';
+    receipt += '\n';
+    if (resi.activity == 'Canvasing') {
+      receipt += '${centerText('LUNAS', 52)}\n';
+    }
     receipt += '\n';
     receipt += '${centerText("Barang yang sudah dibeli", totalWidth)}\n';
     receipt += '${centerText("tidak bisa ditukar", totalWidth)}\n';

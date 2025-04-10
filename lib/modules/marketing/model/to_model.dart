@@ -5,6 +5,7 @@ class ToModel {
   int? quantity;
   String? unit;
   int? price;
+  int? ppn;
   String? topID;
   String? unitID;
 
@@ -15,6 +16,7 @@ class ToModel {
     this.quantity,
     this.unit,
     this.price,
+    this.ppn,
     this.topID,
     this.unitID,
   });
@@ -27,6 +29,7 @@ class ToModel {
       quantity: json['quantity'],
       unit: json['unit'],
       price: json['price'],
+      ppn: json['ppn'],
       topID: json['top'],
       unitID: json['unit_id'],
     );
@@ -40,8 +43,10 @@ class ToModel {
     data['quantity'] = quantity;
     data['unit'] = unit;
     data['price'] = price;
+    data['ppn'] = ppn;
     data['top'] = topID;
     data['unit_id'] = unitID;
     return data;
   }
 }
+

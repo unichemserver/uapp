@@ -22,13 +22,14 @@ class MasterItemAdapter extends TypeAdapter<MasterItem> {
       salesUnit: fields[2] as String?,
       salesPrice: fields[3] as String?,
       unitSetID: fields[4] as String?,
+      taxGroupID: fields[5] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, MasterItem obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.itemID)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class MasterItemAdapter extends TypeAdapter<MasterItem> {
       ..writeByte(3)
       ..write(obj.salesPrice)
       ..writeByte(4)
-      ..write(obj.unitSetID);
+      ..write(obj.unitSetID)
+      ..writeByte(5)
+      ..write(obj.taxGroupID);
   }
 
   @override

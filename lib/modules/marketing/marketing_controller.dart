@@ -8,8 +8,10 @@ import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/hive/hive_service.dart';
 import 'package:uapp/core/utils/date_utils.dart' as du;
+import 'package:uapp/core/utils/print_resi.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/models/customer.dart';
+import 'package:uapp/models/resi.dart';
 import 'package:uapp/models/route.dart' as rt;
 import 'package:uapp/modules/marketing/api/api_client.dart';
 import 'package:uapp/modules/marketing/marketing_api.dart';
@@ -246,6 +248,7 @@ class MarketingController extends GetxController {
           description: element.description,
           salesUnit: element.salesUnit,
           salesPrice: element.salesPrice,
+          
         ));
       }
       update();
@@ -475,6 +478,30 @@ class MarketingController extends GetxController {
       ],
     );
     getCollectionFromDatabase();
+  }
+
+    printResi() async {
+    var user = Utils.getUserData();
+    var userId = user.id;
+    var result = await db.query("taking_order",
+        where: "idMA = ?", whereArgs: [idMarketingActivity]);
+    var toItems = result.map((e) => ToModel.fromJson(e)).toList();
+    var printData = Resi(
+      activity: 'Taking Order',
+      nomor: getNomorResi(idMarketingActivity!, userId),
+      namaPelanngan: customerName ?? 'customer',
+      namaSales: user.namaPanggilan ?? 'sales',
+      toItems: toItems,
+    );
+    PrintResi().printText(printData);
+  }
+
+  String getNomorResi(String idMa, String idUser) {
+    var date = du.DateUtils.getCurrentDate();
+    var year = date.substring(2, 4);
+    var month = date.substring(5, 7);
+    var nomor = idMa.isNotEmpty ? idMa.substring(idMa.length - 1) : '0';
+    return 'FP.$year$month${idUser.padLeft(4, '0')}$nomor';
   }
 
   void rotateScreen(bool toPortrait) {

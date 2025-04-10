@@ -31,7 +31,7 @@ class _NooPageState extends State<NooPage> {
       AlertDialog(
         title: const Text('Konfirmasi'),
         content: const Text(
-          'Apakah anda ingin kembali ke halaman utama?',
+          'Apakah anda yakin ingin kembali?',
         ),
         actions: [
         TextButton(
@@ -44,7 +44,7 @@ class _NooPageState extends State<NooPage> {
           onPressed: () {
             Navigator.pop(context); // Tutup dialog
             _formKey.currentState!.reset();
-            Get.offNamed(Routes.HOME); // Kembali ke home
+            Get.back();
           },
           child: const Text('Ya'),
         ),

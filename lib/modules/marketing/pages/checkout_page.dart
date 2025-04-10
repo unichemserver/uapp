@@ -40,6 +40,7 @@ class CheckoutPage extends StatelessWidget {
               _buildCollectionSection(ctx),
               _buildSignatureSection(ctx),
               const SizedBox(height: 16),
+              _cetakStrukButton(ctx),
               _buildCheckoutButton(context, ctx),
             ],
           ),
@@ -186,6 +187,15 @@ class CheckoutPage extends StatelessWidget {
     return ElevatedButton(
       onPressed: () => _showCheckoutConfirmationDialog(context, ctx),
       child: const Text('Check-Out'),
+    );
+  }
+
+  Widget _cetakStrukButton(MarketingController ctx) {
+    return ElevatedButton(
+      onPressed: () async {
+        await ctx.printResi();
+      },
+      child: const Text('Cetak Struk'),
     );
   }
 

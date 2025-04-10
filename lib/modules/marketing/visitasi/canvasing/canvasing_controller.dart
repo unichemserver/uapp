@@ -56,10 +56,14 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   bool isToComplete = false;
   String selectedUnit = '';
   Timer? checkMockTimer;
+  String _selectedPPNCode = '';
+  String get selectedPPNCode => _selectedPPNCode;
 
   var isLoading = false.obs;
   var canvasingCustomers = [].obs;
   var filteredCustomers = [].obs;
+
+  get selectedItem => null;
 
   void searchCustomer(String query) {
     if (query.isEmpty) {
@@ -107,6 +111,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
         where: "idMA = ?", whereArgs: [idMarketingActivity]);
     var toItems = result.map((e) => ToModel.fromJson(e)).toList();
     var printData = Resi(
+      activity: 'Canvasing',
       nomor: getNomorResi(idMarketingActivity, userId),
       namaPelanngan: pemilikController.text,
       namaSales: user.namaPanggilan ?? 'sales',
@@ -190,6 +195,11 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     return '$street\n$subLocality, $locality';
   }
 
+  set selectedPPNCode(String value) {
+    _selectedPPNCode = value;
+    update(); // Notify listeners of the change
+  }
+
   deleteTakingOrder(String itemId) async {
     await db.delete('taking_order', 'idMA = ? AND itemid = ?', [idMA, itemId]); // Updated column name to 'itemID'
     await getTakingOrder();
@@ -216,7 +226,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   calculateTotalPayment() {
     totalPayment = 0;
     for (var item in takingOrders) {
-      totalPayment += item.price!;
+      totalPayment += item.price! + item.ppn!;
     }
     nominalController.text = Utils.formatCurrency(totalPayment.toString());
     update();
