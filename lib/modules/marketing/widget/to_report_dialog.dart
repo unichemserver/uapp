@@ -27,6 +27,7 @@ class _ToReportDialogState extends State<ToReportDialog> {
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _unitController = TextEditingController();
   final TextEditingController _totalController = TextEditingController();
+  final TextEditingController _ppnController = TextEditingController();
   final List<String> _topID = [];
   final List<String> _listUnit = [];
   List<PriceList> _priceList = [];
@@ -39,20 +40,66 @@ class _ToReportDialogState extends State<ToReportDialog> {
     _quantityController.dispose();
     _unitController.dispose();
     _totalController.dispose();
+    _ppnController.dispose();
     super.dispose();
   }
 
   void _calculateTotal(String value) {
-    if (value.isEmpty) return;
+    if (value.isEmpty) {
+      _ppnController.text = '';
+      _totalController.text = '';
+      return;
+    }
+
     final quantity = int.tryParse(value) ?? 0;
-    final unitValue =
-        int.tryParse(_unitController.text.replaceAll('.', '')) ?? 0;
-    _totalController.text = (quantity * unitValue).toString().replaceAllMapped(
+
+    // Update unit price based on quantity
+    if (_selectedItem != null && selectedTopID.isNotEmpty && selectedUnit.isNotEmpty) {
+      for (var i = 0; i < _priceList.length; i++) {
+        if (_priceList[i].topID == selectedTopID && _priceList[i].unitID == selectedUnit) {
+          var unitPrice = _priceList[i].unitPrice.toString();
+
+          if (quantity >= 10) {
+            var qty10Price = _priceList.firstWhere(
+              (element) =>
+                  element.topID == selectedTopID &&
+                  element.unitID == selectedUnit &&
+                  double.parse(element.qty.toString()) == 10.0,
+              orElse: () => _priceList[i],
+            );
+            unitPrice = qty10Price.unitPrice.toString();
+          }
+
+          unitPrice = unitPrice.contains('.00')
+              ? unitPrice.substring(0, unitPrice.length - 3)
+              : unitPrice;
+          _unitController.text = unitPrice.replaceAllMapped(
+              RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+              (Match m) => '${m[1]}.');
+          break;
+        }
+      }
+    }
+
+    final unitValue = int.tryParse(_unitController.text.replaceAll('.', '')) ?? 0;
+    final totalPayment = quantity * unitValue;
+
+    // Calculate PPN
+    final ppnRate = (_selectedItem?.taxGroupID == 'PPN') ? 0.11 : 0.0;
+    final ppnValue = (totalPayment * ppnRate).toInt();
+
+    // Format PPN and total
+    _ppnController.text = ppnValue.toString().replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+    _totalController.text = totalPayment
+        .toString()
+        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
   }
 
   void _onSave() {
     if (_formKey.currentState?.validate() == true && _selectedItem != null) {
+      final ppnValue =
+          int.parse(_ppnController.text.replaceAll('.', ''));
       final data = ToModel(
         idMA: widget.idMA,
         itemid: _selectedItem!.itemID!,
@@ -62,6 +109,7 @@ class _ToReportDialogState extends State<ToReportDialog> {
         price: int.parse(_totalController.text.replaceAll('.', '')),
         topID: selectedTopID,
         unitID: selectedUnit,
+        ppn: ppnValue,
       );
       Navigator.of(context).pop(data);
     } else {
@@ -133,6 +181,17 @@ class _ToReportDialogState extends State<ToReportDialog> {
                         ],
                       ),
                       const SizedBox(height: 16.0),
+                      AppTextField(
+                        controller: _ppnController,
+                        label: 'PPN',
+                        prefixIcon: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Rp'),
+                          ],
+                        ),
+                        readOnly: true,
+                      ),
                       const SizedBox(height: 16.0),
                       AppTextField(
                         controller: _totalController,
@@ -184,6 +243,8 @@ class _ToReportDialogState extends State<ToReportDialog> {
           Log.d('topID: ${_priceList[i].toJson()}');
         }
         _selectedItem = item;
+        _ppnController.text = ''; // Reset PPN when item changes
+        _totalController.text = ''; // Reset total when item changes
         setState(() {});
       },
       popupProps: PopupProps.menu(
@@ -239,6 +300,8 @@ class _ToReportDialogState extends State<ToReportDialog> {
               if (_priceList[i].topID == selectedTopID &&
                   _priceList[i].unitID == selectedUnit) {
                 var unitPrice = _priceList[i].unitPrice.toString();
+
+                // Default unit price for initial selection
                 unitPrice = unitPrice.contains('.00')
                     ? unitPrice.substring(0, unitPrice.length - 3)
                     : unitPrice;
@@ -248,6 +311,7 @@ class _ToReportDialogState extends State<ToReportDialog> {
                 break;
               }
             }
+            setState(() {});
           },
         ),
       ],

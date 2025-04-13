@@ -148,7 +148,12 @@ class CheckoutPage extends StatelessWidget {
           .map(
             (e) => ListTile(
               title: Text(e.description!),
-              subtitle: Text(e.price.toString()),
+              subtitle: Text(
+                  '${e.quantity} * ${Utils.formatCurrency(e.unit!)}\nPPN: ${Utils.formatCurrency(e.ppn.toString())}',
+                ),
+                trailing: Text(
+                  Utils.formatCurrency(e.price.toString()),
+                ),
             ),
           )
           .toList(),
@@ -190,12 +195,17 @@ class CheckoutPage extends StatelessWidget {
     );
   }
 
-  Widget _cetakStrukButton(MarketingController ctx) {
+Widget _cetakStrukButton(MarketingController ctx) {
     return ElevatedButton(
       onPressed: () async {
-        await ctx.printResi();
+        ctx.printResi().then((value) {
+          ctx.completeTo();
+        });
+        
       },
-      child: const Text('Cetak Struk'),
+      child: Text(
+        ctx.isToComplete ? 'Cetak Ulang Struk' : 'Cetak Struk',
+      ),
     );
   }
 

@@ -51,6 +51,8 @@ class KilForm extends StatelessWidget {
           namaDeptPenjualanCtrl: nooCtrl.namaJabatanPenjualanCtrl,
           noTelpDeptPenjualanCtrl: nooCtrl.nohpPenjualanCtrl,
           emailDeptPenjualanCtrl: nooCtrl.webEmailPenjualanCtrl,
+          officeAddress: ctx.companyAddress,
+          warehouseAddress: ctx.warehouseAddress,
         ),
         OutletStatus(
           luasKantorCtlr: nooCtrl.luasTokoCtrl,

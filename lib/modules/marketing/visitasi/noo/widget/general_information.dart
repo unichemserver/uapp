@@ -92,19 +92,15 @@ class GeneralInformation extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             Obx(() {
-              var descriptionToTopIdMap = {
-                for (var item in ctx.topOptions) item['Description']: item['TOP_ID']
-              };
-
               var items = ctx.topOptions
                   .map((item) => DropdownMenuItem<String>(
-                        value: item['Description'],
+                        value: item['TOP_ID'],
                         child: Text(item['TOP_ID']),
                       ))
                   .toList();
 
-              var selectedValue = items.any((element) => element.value == ctx.paymentMethod)
-                  ? ctx.paymentMethod
+              var selectedValue = items.any((element) => element.value == topDateCtrl.text)
+                  ? topDateCtrl.text
                   : null;
 
               return DropdownButtonFormField<String>(
@@ -113,11 +109,12 @@ class GeneralInformation extends StatelessWidget {
                 onChanged: (value) {
                   if (value != null) {
                     Log.d('Selected TOP: $value');
+                    topDateCtrl.text = value;
                     ctx.paymentMethod = value;
                     ctx.update();
 
                     // Hide or show inputs based on selected TOP
-                    if (value == '0 hari setelah penyerahan tanda terima' || value == 'Cash on Delivery' || value == 'Cash in Advance') {
+                    if (value == 'K00' || value == 'COD' || value == 'CIA') {
                       ctx.showCreditLimitAndJaminan(false);
                     } else {
                       ctx.showCreditLimitAndJaminan(true);
@@ -129,11 +126,6 @@ class GeneralInformation extends StatelessWidget {
                 },
                 hint: const Text('Pilih Termin Pembayaran'),
                 icon: const Icon(Icons.calendar_today),
-                selectedItemBuilder: (BuildContext context) {
-                  return items.map((DropdownMenuItem<String> item) {
-                    return Text(descriptionToTopIdMap[item.value] ?? '');
-                  }).toList();
-                },
               );
             }),
             Obx(() {

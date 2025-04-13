@@ -54,10 +54,10 @@ class PrintResi {
     String receipt = '';
     var subtotal = resi.toItems.map((e) => e.price).reduce((value, element) => value! + element!);
     var subtotalFormatted = rp(subtotal.toString());
-    var subtotalppn = resi.toItems.map((e) => e.ppn).reduce((value, element) => value! + element!);
+    var subtotalppn = resi.toItems.map((e) => e.ppn ?? 0).reduce((value, element) => value + element);
     var subtotalppnFormatted = rp(subtotalppn.toString());
 
-    var total = (subtotal ?? 0) + (subtotalppn ?? 0);
+    var total = (subtotal ?? 0) + (subtotalppn);
     var totalFormatted = rp(total.toString());
 
     if (resi.activity == 'Canvasing') {
@@ -75,7 +75,7 @@ class PrintResi {
       String quantity = formatQuantity(item.quantity!);
       String unit = rp(formatUnit(item.unit!));
       String price = rp(item.price.toString());
-      String ppn = rp(item.ppn.toString());
+      String ppn = rp((item.ppn ?? 0).toString());
       receipt += '${formatLabelValue('$quantity X $unit', price)}\n';
       receipt += '${formatLabelValue('PPN', ppn)}\n';
     }
@@ -89,7 +89,7 @@ class PrintResi {
     receipt += '${DateUtils.getCurrentDateTime()}-${resi.namaSales}\n';
     receipt += '\n';
     if (resi.activity == 'Canvasing') {
-      receipt += '${centerText('LUNAS', 52)}\n';
+      receipt += '${centerText('*** L U N A S ***', totalWidth)}\n';
     }
     receipt += '\n';
     receipt += '${centerText("Barang yang sudah dibeli", totalWidth)}\n';

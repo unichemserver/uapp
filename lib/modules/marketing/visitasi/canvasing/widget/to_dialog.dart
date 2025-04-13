@@ -64,181 +64,146 @@ class _ToDialogState extends State<ToDialog> {
           title: const Text('Tambah Produk'),
         ),
         body: GetBuilder<CanvasingController>(
-  init: CanvasingController(),
-  builder: (ctx) {
-    return Form(
-      key: formKey,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                children: [
-                  const Text('Pilih Produk'),
-                  _buildItemDropdown(ctx),
-                  _buildUnitDropdown(ctx),
-                  const SizedBox(height: 16.0),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: TextFormField(
-                          controller: jumlah,
-                          decoration: InputDecoration(
-                            labelText: 'Jumlah',
-                            suffix: Text(ctx.selectedUnit),
+          init: CanvasingController(),
+          builder: (ctx) {
+            return Form(
+              key: formKey,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          const Text('Pilih Produk'),
+                          _buildItemDropdown(ctx),
+                          _buildUnitDropdown(ctx),
+                          const SizedBox(height: 16.0),
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: _buildJumlahField(ctx),
+                              ),
+                              const SizedBox(width: 16.0),
+                              Expanded(
+                                flex: 3,
+                                child: TextFormField(
+                                  controller: satuan,
+                                  readOnly: true,
+                                  inputFormatters: [
+                                    RupiahInputFormatter(),
+                                  ],
+                                  decoration: InputDecoration(
+                                    labelText: 'Harga Satuan',
+                                    prefix: const Text('Rp'),
+                                    suffix: Text('/${ctx.selectedUnit}'),
+                                  ),
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return 'Satuan tidak boleh kosong';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Jumlah tidak boleh kosong';
-                            }
-                            return null;
-                          },
-                          onChanged: (value) {
-                            jumlah.text = value.replaceAll(RegExp(r'[^0-9]'), '');
-                            if (satuan.text.isNotEmpty && jumlah.text.isNotEmpty) {
-                              var basePrice = int.parse(satuan.text);
-                              var quantity = int.parse(jumlah.text);
-
-                              // Hitung total harga
-                              var totalPayment = basePrice * quantity;
-
-                              // Hitung PPN
-                              double ppnRate = (ctx.selectedPPNCode == 'PPN1108') ? 0.0 : 0.11;
-                              var ppnValue = (totalPayment * ppnRate).toInt();
-
-                              // Format nilai PPN dan total
-                              var rupiahFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp');
-                              ppnController.text = rupiahFormat.format(ppnValue).replaceAll(RegExp(r',00'), '');
-                              total.text = rupiahFormat.format(totalPayment + ppnValue).replaceAll(RegExp(r',00'), '');
-                            } else {
-                              ppnController.text = '';
-                              total.text = '';
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 16.0),
-                      Expanded(
-                        flex: 3,
-                        child: TextFormField(
-                          controller: satuan,
-                          readOnly: true,
-                          inputFormatters: [
-                            RupiahInputFormatter(),
-                          ],
-                          decoration: InputDecoration(
-                            labelText: 'Harga Satuan',
-                            prefix: const Text('Rp'),
-                            suffix: Text('/${ctx.selectedUnit}'),
+                          const SizedBox(height: 16.0),
+                          TextFormField(
+                            controller: ppnController,
+                            readOnly: true,
+                            decoration: const InputDecoration(
+                              labelText: 'PPN',
+                            ),
                           ),
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Satuan tidak boleh kosong';
-                            }
-                            return null;
-                          },
-                        ),
+                          const SizedBox(height: 16.0),
+                          TextFormField(
+                            controller: total,
+                            readOnly: true,
+                            decoration: const InputDecoration(
+                              labelText: 'Total (Termasuk PPN)',
+                            ),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Total tidak boleh kosong';
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16.0),
-                  TextFormField(
-                    controller: ppnController,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      labelText: 'PPN',
                     ),
-                  ),
-                  const SizedBox(height: 16.0),
-                  TextFormField(
-                    controller: total,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Total (Termasuk PPN)',
+                    const SizedBox(height: 16.0),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (!formKey.currentState!.validate()) {
+                                return;
+                              }
+                              int jumlahProduct = int.parse(jumlah.text.replaceAll(RegExp(r'[^0-9]'), ''));
+                              int satuanProduct = int.parse(satuan.text.replaceAll(RegExp(r'[^0-9]'), ''));
+                              int ppnValue = int.parse(ppnController.text.replaceAll(RegExp(r'[^0-9]'), ''));
+                              int totalPrice = jumlahProduct * satuanProduct;
+                              var data = ToModel(
+                                itemid: itemID.text,
+                                description: nama.text,
+                                quantity: jumlahProduct,
+                                unit: satuanProduct.toString(),
+                                price: totalPrice,
+                                ppn: ppnValue,
+                              );
+                              ctx.addTakingOrder(data);
+                              ctx.selectedUnit = '';
+                              ctx.update();
+                              Get.back();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 36.0, vertical: 12.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                            child: const Text('Simpan'),
+                          ),
+                        ),
+                        const SizedBox(width: 16.0),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: widget.toEdit != null
+                                ? () async {
+                                    // Log.d('Delete ${widget.toEdit!.itemid!}');
+                                    ctx.deleteTakingOrder(widget.toEdit!.itemid!);
+                                    Get.back();
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 36.0, vertical: 12.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                            child: const Text(
+                              'Hapus',
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Total tidak boleh kosong';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
+                    const SizedBox(height: 8.0),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16.0),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      if (!formKey.currentState!.validate()) {
-                        return;
-                      }
-                      int jumlahProduct = int.parse(jumlah.text.replaceAll(RegExp(r'[^0-9]'), ''));
-                      int satuanProduct = int.parse(satuan.text.replaceAll(RegExp(r'[^0-9]'), ''));
-                      int ppnValue = int.parse(ppnController.text.replaceAll(RegExp(r'[^0-9]'), ''));
-                      int totalPrice = jumlahProduct * satuanProduct;
-                      var data = ToModel(
-                        itemid: itemID.text,
-                        description: nama.text,
-                        quantity: jumlahProduct,
-                        unit: satuanProduct.toString(),
-                        price: totalPrice,
-                        ppn: ppnValue,
-                      );
-                      ctx.addTakingOrder(data);
-                      ctx.selectedUnit = '';
-                      ctx.update();
-                      Get.back();
-                    },
-                    style: ElevatedButton.styleFrom(
-                       padding: const EdgeInsets.symmetric(horizontal: 36.0, vertical: 12.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                    child: const Text('Simpan'),
-                  ),
-                ),
-                const SizedBox(width: 16.0),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: widget.toEdit != null
-                        ? () async {
-                            // Log.d('Delete ${widget.toEdit!.itemid!}');
-                            ctx.deleteTakingOrder(widget.toEdit!.itemid!);
-                            Get.back();
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 36.0, vertical: 12.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      backgroundColor: Colors.red,
-                    ),
-                    child: const Text(
-                      'Hapus',
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8.0),
-          ],
+            );
+          },
         ),
-      ),
-    );
-  },
-),
       ),
     );
   }
@@ -254,7 +219,7 @@ class _ToDialogState extends State<ToDialog> {
         nama.text = item!.description!;
         itemID.text = item.itemID!;
         var selectedprice = ctx.priceList.where((element) {
-          return element.itemID == item.itemID;
+          return element.itemID == item.itemID && element.topID == 'COD';
         }).toList();
 
         if (selectedprice.length > 1 &&
@@ -264,19 +229,17 @@ class _ToDialogState extends State<ToDialog> {
 
         ctx.selectedPPNCode = item.taxGroupID!;
 
-        // Ambil harga satuan
-        var price = int.parse(selectedprice.first.unitPrice.toString().replaceAll(RegExp(r'\.00$'), ''));
+        // Set initial unit price
+        var initialPrice = int.parse(selectedprice.first.unitPrice.toString().replaceAll(RegExp(r'\.00$'), ''));
+        satuan.text = initialPrice.toString();
 
-        // // Hitung harga dengan PPN berdasarkan taxGroupID
-        // double ppn = (item.taxGroupID == 'PPN1108') ? 0.0 : 0.11;
-        // var priceWithPpn = (price + (price * ppn)).toInt();
-
-        satuan.text = price.toString();
         ctx.unitItem.clear();
         for (var element in selectedprice) {
-          ctx.unitItem.add(element.unitID!);
+          if (!ctx.unitItem.contains(element.unitID)) {
+            ctx.unitItem.add(element.unitID!);
+          }
         }
-
+        ctx.unitItem = ctx.unitItem.toSet().toList(); // Remove duplicates
         if (nama.text.contains('MANGKOK') || nama.text.contains('BASKOM')) {
           satuan.text = '0';
         }
@@ -301,6 +264,56 @@ class _ToDialogState extends State<ToDialog> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildJumlahField(CanvasingController ctx) {
+    return TextFormField(
+      controller: jumlah,
+      decoration: InputDecoration(
+        labelText: 'Jumlah',
+        suffix: Text(ctx.selectedUnit),
+      ),
+      keyboardType: TextInputType.number,
+      validator: (value) {
+        if (value!.isEmpty) {
+          return 'Jumlah tidak boleh kosong';
+        }
+        return null;
+      },
+      onChanged: (value) {
+        jumlah.text = value.replaceAll(RegExp(r'[^0-9]'), '');
+        if (jumlah.text.isNotEmpty) {
+          var quantity = int.parse(jumlah.text);
+
+          // Adjust unit price based on quantity
+          var selectedprice = ctx.priceList.where((element) {
+            return element.itemID == itemID.text && element.topID == 'COD';
+          }).toList();
+
+          var price = int.parse(selectedprice.first.unitPrice.toString().replaceAll(RegExp(r'\.00$'), ''));
+          if (quantity >= 10) {
+            var qty10Price = selectedprice.firstWhere(
+              (element) => double.parse(element.qty.toString()) == 10.0,
+              orElse: () => selectedprice.first,
+            );
+            price = int.parse(qty10Price.unitPrice.toString().replaceAll(RegExp(r'\.00$'), ''));
+          }
+          satuan.text = price.toString();
+
+          // Calculate total and PPN
+          var totalPayment = price * quantity;
+          double ppnRate = (ctx.selectedPPNCode == 'PPN1108') ? 0.0 : 0.11;
+          var ppnValue = (totalPayment * ppnRate).toInt();
+
+          var rupiahFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp');
+          ppnController.text = rupiahFormat.format(ppnValue).replaceAll(RegExp(r',00'), '');
+          total.text = rupiahFormat.format(totalPayment + ppnValue).replaceAll(RegExp(r',00'), '');
+        } else {
+          ppnController.text = '';
+          total.text = '';
+        }
+      },
     );
   }
 

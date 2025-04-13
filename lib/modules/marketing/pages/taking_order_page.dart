@@ -72,6 +72,7 @@ class TakingOrderPage extends StatelessWidget {
         DataColumn(label: Text('Jumlah')),
         DataColumn(label: Text('Satuan')),
         DataColumn(label: Text('Total')),
+        DataColumn(label: Text('Ppn')),
       ],
       rows: ctx.takingOrders.map((order) => _buildOrderRow(ctx, order)).toList(),
     );
@@ -84,6 +85,7 @@ class TakingOrderPage extends StatelessWidget {
         DataCell(Text(order.quantity.toString())),
         DataCell(Text(order.unit.toString())),
         DataCell(Text(order.price.toString())),
+        DataCell(Text(order.ppn.toString())),
       ],
     );
   }

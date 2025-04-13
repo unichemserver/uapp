@@ -57,11 +57,10 @@ class NooController extends GetxController {
     if (idNOO == null) {
       await getIDNOO();
     }
-
     Map<String, dynamic> additionalData = {
       'group_cust': formatGroupCust,
       // 'group_cust': groupPelanggan,
-      'payment_method': paymentMethod,
+      // 'termin': paymentMethod,
       'jaminan': jaminan,
       'ownership_toko': kantorOwnership,
       'ownership_gudang': gudangOwnership,
@@ -302,7 +301,7 @@ Future<void> loadCustomerGroups() async {
       selectedNamaDesc.value = data.groupCust ?? '';
       selectedCluster.value = '';
     }
-    paymentMethod = data.paymentMethod ?? '';
+    // paymentMethod = data.termin ?? '';
     jaminan = data.jaminan ?? '';
     kantorOwnership = data.ownershipToko ?? '';
     gudangOwnership = data.ownershipGudang ?? '';
@@ -471,7 +470,7 @@ Future<void> loadCustomerGroups() async {
 
   Future<void> checkTables() async {
     final tables = await db.rawQuery(
-        "SELECT * FROM marketing_activity");
+        "SELECT * FROM nooaddress");
     Log.d("Tables in Database: $tables");
   }
 

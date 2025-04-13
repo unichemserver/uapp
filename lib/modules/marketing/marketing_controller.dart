@@ -70,6 +70,7 @@ class MarketingController extends GetxController {
   int selectedOffRoute = -1;
   String? idMarketingActivity;
   int selectedStatusPayment = -1;
+  bool isToComplete = false;
   final MarketingApiClient apiClient = MarketingApiClient();
 
   void getPriceList() async {
@@ -479,6 +480,11 @@ class MarketingController extends GetxController {
     );
     getCollectionFromDatabase();
   }
+
+    void completeTo() {
+      isToComplete = true;
+      update();
+    }
 
     printResi() async {
     var user = Utils.getUserData();

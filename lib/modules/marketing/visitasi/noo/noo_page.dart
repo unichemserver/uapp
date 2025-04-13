@@ -165,13 +165,13 @@ class _NooPageState extends State<NooPage> {
                           );
                           return;
                         }
-                        if (ctx.paymentMethod.isEmpty) {
-                          Utils.showErrorSnackBar(
-                            context,
-                            'Pilih Metode Pembayaran terlebih dahulu',
-                          );
-                          return;
-                        }
+                        // if (ctx.paymentMethod.isEmpty) {
+                        //   Utils.showErrorSnackBar(
+                        //     context,
+                        //     'Pilih Metode Pembayaran terlebih dahulu',
+                        //   );
+                        //   return;
+                        // }
                         if (ctx.jaminan.isEmpty) {
                           Utils.showErrorSnackBar(
                             context,
