@@ -163,6 +163,10 @@ class Utils {
     );
   }
 
+  static int getRandomDigit() {
+  return DateTime.now().millisecondsSinceEpoch % 10; // Generates a random digit
+}
+
   static void showSuccessSnackBar(BuildContext context, String message) {
     _showSnackBar(context, 'Berhasil', message, Colors.green);
   }

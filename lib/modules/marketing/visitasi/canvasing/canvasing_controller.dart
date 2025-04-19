@@ -117,6 +117,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       namaSales: user.namaPanggilan ?? 'sales',
       toItems: toItems,
     );
+    Log.d('printData.toItems: ${printData.toItems}');
     PrintResi().printText(printData);
   }
 

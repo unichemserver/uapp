@@ -5,8 +5,26 @@ import 'package:uapp/modules/marketing/visitasi/noo/noo_address_model.dart';
 class AddressInformation extends StatefulWidget {
   final String title;
   final NooAddressModel? addressModel;
+  final String? Function(String?)? addressValidator;
+  final String? Function(String?)? rtRwValidator;
+  final String? Function(String?)? propinsiValidator;
+  final String? Function(String?)? kabKotaValidator;
+  final String? Function(String?)? kecamatanValidator;
+  final String? Function(String?)? desaKelurahanValidator;
+  final String? Function(String?)? kodePosValidator;
 
-  const AddressInformation({super.key, required this.title, this.addressModel});
+  const AddressInformation({
+    super.key,
+    required this.title,
+    this.addressModel,
+    this.addressValidator,
+    this.rtRwValidator,
+    this.propinsiValidator,
+    this.kabKotaValidator,
+    this.kecamatanValidator,
+    this.desaKelurahanValidator,
+    this.kodePosValidator,
+  });
 
   @override
   _AddressInformationState createState() => _AddressInformationState();
@@ -63,6 +81,7 @@ class _AddressInformationState extends State<AddressInformation> {
         AppTextField(
           controller: addressController,
           hintText: 'Nama Jalan',
+          validator: widget.addressValidator,
           onChanged: (value) {
             setState(() {
               widget.addressModel?.address = value;
@@ -73,6 +92,7 @@ class _AddressInformationState extends State<AddressInformation> {
         AppTextField(
           controller: rtRwController,
           hintText: 'RT/RW',
+          validator: widget.rtRwValidator,
           onChanged: (value) {
             setState(() {
               widget.addressModel?.rtRw = value;
@@ -83,6 +103,7 @@ class _AddressInformationState extends State<AddressInformation> {
         AppTextField(
           controller: propinsiController,
           hintText: 'Provinsi',
+          validator: widget.propinsiValidator,
           onChanged: (value) {
             setState(() {
               widget.addressModel?.propinsi = value;
@@ -93,6 +114,7 @@ class _AddressInformationState extends State<AddressInformation> {
         AppTextField(
           controller: kabKotaController,
           hintText: 'Kabupaten',
+          validator: widget.kabKotaValidator,
           onChanged: (value) {
             setState(() {
               widget.addressModel?.kabKota = value;
@@ -103,6 +125,7 @@ class _AddressInformationState extends State<AddressInformation> {
         AppTextField(
           controller: kecamatanController,
           hintText: 'Kecamatan',
+          validator: widget.kecamatanValidator,
           onChanged: (value) {
             setState(() {
               widget.addressModel?.kecamatan = value;
@@ -113,6 +136,7 @@ class _AddressInformationState extends State<AddressInformation> {
         AppTextField(
           controller: desaKelurahanController,
           hintText: 'Desa/Kelurahan',
+          validator: widget.desaKelurahanValidator,
           onChanged: (value) {
             setState(() {
               widget.addressModel?.desaKelurahan = value;
@@ -123,6 +147,7 @@ class _AddressInformationState extends State<AddressInformation> {
         AppTextField(
           controller: kodePosController,
           hintText: 'Kode Pos',
+          validator: widget.kodePosValidator,
           onChanged: (value) {
             setState(() {
               widget.addressModel?.kodePos = value;

@@ -55,28 +55,18 @@ class _ToReportDialogState extends State<ToReportDialog> {
 
     // Update unit price based on quantity
     if (_selectedItem != null && selectedTopID.isNotEmpty && selectedUnit.isNotEmpty) {
-      for (var i = 0; i < _priceList.length; i++) {
-        if (_priceList[i].topID == selectedTopID && _priceList[i].unitID == selectedUnit) {
-          var unitPrice = _priceList[i].unitPrice.toString();
-
-          if (quantity >= 10) {
-            var qty10Price = _priceList.firstWhere(
-              (element) =>
-                  element.topID == selectedTopID &&
-                  element.unitID == selectedUnit &&
-                  double.parse(element.qty.toString()) == 10.0,
-              orElse: () => _priceList[i],
-            );
-            unitPrice = qty10Price.unitPrice.toString();
+      // Adjust unit price based on quantity thresholds
+      for (var priceData in _priceList) {
+        if (priceData.topID == selectedTopID && priceData.unitID == selectedUnit) {
+          if (quantity >= double.parse(priceData.qty.toString())) {
+            var unitPrice = priceData.unitPrice.toString();
+            unitPrice = unitPrice.contains('.00')
+                ? unitPrice.substring(0, unitPrice.length - 3)
+                : unitPrice;
+            _unitController.text = unitPrice.replaceAllMapped(
+                RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                (Match m) => '${m[1]}.');
           }
-
-          unitPrice = unitPrice.contains('.00')
-              ? unitPrice.substring(0, unitPrice.length - 3)
-              : unitPrice;
-          _unitController.text = unitPrice.replaceAllMapped(
-              RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-              (Match m) => '${m[1]}.');
-          break;
         }
       }
     }
@@ -84,13 +74,33 @@ class _ToReportDialogState extends State<ToReportDialog> {
     final unitValue = int.tryParse(_unitController.text.replaceAll('.', '')) ?? 0;
     final totalPayment = quantity * unitValue;
 
-    // Calculate PPN
-    final ppnRate = (_selectedItem?.taxGroupID == 'PPN') ? 0.11 : 0.0;
-    final ppnValue = (totalPayment * ppnRate).toInt();
+    // Hardcoded check for specific itemIDs
+    List<String> exemptedItemIDs = [
+      'BJD8-RP-0005K-RICET-DAU001',
+      'BJD8-RP-0012G-DEFLT-DAU001',
+      'BJD8-RP-0004G-DEFLT-DAU001',
+      'BJD8-RP-0007G-DEFLT-DAU001'
+    ];
 
-    // Format PPN and total
-    _ppnController.text = ppnValue.toString().replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+    int ppnValue;
+    if (['BJD8-RP-0012G-DEFLT-DAU001', 'BJD8-RP-0004G-DEFLT-DAU001', 'BJD8-RP-0007G-DEFLT-DAU001']
+        .contains(_selectedItem?.itemID)) {
+      // Calculate DPP and PPN for specific item IDs
+      var dpp = ((totalPayment) / 111) * 100;
+      ppnValue = (dpp * 0.11).toInt();
+      _ppnController.text = '0'; // Set PPN controller text to 0 for these item IDs
+    } else {
+      final ppnRate = (_selectedItem?.taxGroupID == 'PPN' && exemptedItemIDs.contains(_selectedItem?.itemID))
+          ? 0.0
+          : (_selectedItem?.taxGroupID == 'PPN')
+              ? 0.11
+              : 0.0;
+      ppnValue = (totalPayment * ppnRate).toInt();
+      _ppnController.text = ppnValue.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+    }
+
+    // Format total
     _totalController.text = totalPayment
         .toString()
         .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');

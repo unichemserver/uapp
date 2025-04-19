@@ -2,6 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/modules/marketing/model/cust_active.dart';
+import 'package:uapp/modules/marketing/model/call_management.dart';
 import 'package:uapp/modules/marketing/model/cust_top.dart';
 import 'package:uapp/modules/marketing/model/master_item.dart';
 import 'package:uapp/modules/marketing/model/price_list.dart';
@@ -14,6 +15,9 @@ class HiveService {
     await Hive.openBox(HiveKeys.appBox);
     if (!Hive.isAdapterRegistered(CustActiveAdapter().typeId)) {
       Hive.registerAdapter(CustActiveAdapter());
+    }
+    if (!Hive.isAdapterRegistered(CallManagementAdapter().typeId)) {
+      Hive.registerAdapter(CallManagementAdapter());
     }
     if (!Hive.isAdapterRegistered(MasterItemAdapter().typeId)) {
       Hive.registerAdapter(MasterItemAdapter());
@@ -66,5 +70,12 @@ class HiveService {
   static void setIdPeralatanIT(String id) {
     final box = Hive.box(HiveKeys.appBox);
     box.put(HiveKeys.idPeralatan, id);
+  }
+
+  static Future<Box<CallManagement>> getCallManagementBox() async {
+    if (!Hive.isBoxOpen(HiveKeys.callBox)) {
+      return await Hive.openBox<CallManagement>(HiveKeys.callBox);
+    }
+    return Hive.box<CallManagement>(HiveKeys.callBox);
   }
 }

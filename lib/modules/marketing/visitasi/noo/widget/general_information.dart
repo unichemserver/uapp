@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/core/utils/log.dart';
+import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_controller.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_options.dart';
@@ -33,7 +34,9 @@ class GeneralInformation extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<NooController>(
       init: NooController(),
-      initState: (state) {},
+      initState: (state) {
+        supervisorNameCtrl.text = Utils.getUserData().id;
+      },
       builder: (ctx) {
         return ExpansionTile(
           title: const Text('Informasi Umum'),
@@ -238,21 +241,21 @@ class GeneralInformation extends StatelessWidget {
               },
             ),
             const SizedBox(height: 16),
-            Text(
-              'No. ID Pelanggan (Diisi oleh HO PT. UCI):',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            AppTextField(
-              hintText: 'Masukan ID Pelanggan',
-              controller: idPelangganCtrl,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'ID Pelanggan tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
+            // Text(
+            //   'No. ID Pelanggan (Diisi oleh HO PT. UCI):',
+            //   style: Theme.of(context).textTheme.titleSmall,
+            // ),
+            // AppTextField(
+            //   hintText: 'Masukan ID Pelanggan',
+            //   controller: idPelangganCtrl,
+            //   validator: (value) {
+            //     if (value!.isEmpty) {
+            //       return 'ID Pelanggan tidak boleh kosong';
+            //     }
+            //     return null;
+            //   },
+            // ),
+            // const SizedBox(height: 16),
             Text(
               'Area Pemasaran:',
               style: Theme.of(context).textTheme.titleSmall,
@@ -294,36 +297,21 @@ class GeneralInformation extends StatelessWidget {
                 return null;
               },
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Nama Supervisor PT. UCI:',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            AppTextField(
-              hintText: 'Masukan Nama Supervisor',
-              controller: supervisorNameCtrl,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'Nama Supervisor tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Nama ASM PT. UCI:',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            AppTextField(
-              hintText: 'Masukan Nama ASM',
-              controller: asmNameCtrl,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'Nama ASM tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
+            // const SizedBox(height: 16),
+            // Text(
+            //   'Nama ASM PT. UCI:',
+            //   style: Theme.of(context).textTheme.titleSmall,
+            // ),
+            // AppTextField(
+            //   hintText: 'Masukan Nama ASM',
+            //   controller: asmNameCtrl,
+            //   validator: (value) {
+            //     if (value!.isEmpty) {
+            //       return 'Nama ASM tidak boleh kosong';
+            //     }
+            //     return null;
+            //   },
+            // ),
           ],
         );
       },

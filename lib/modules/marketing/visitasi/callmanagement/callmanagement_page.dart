@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/utils/jenis_call.dart';
-import 'package:uapp/modules/marketing/visitasi/shared/customer_page.dart';
-import 'package:uapp/modules/marketing/visitasi/custactive/custactive_controller.dart';
+import 'package:uapp/modules/marketing/visitasi/onroute/customer_page.dart';
+import 'package:uapp/modules/marketing/visitasi/callmanagement/callmanagement_controller.dart';
 
 class CallManagementPage extends StatelessWidget {
   const CallManagementPage({super.key});
@@ -15,8 +15,7 @@ class CallManagementPage extends StatelessWidget {
       fetchData: (ctx) async {
         if (!ctx.isLoading) {
           ctx.setSelectedCustId(null);
-          // Add logic to fetch Call Management-specific data here
-          ctx.getCustActive();
+          ctx.getCall();
         }
       },
       onContinue: (ctx) {
@@ -28,12 +27,12 @@ class CallManagementPage extends StatelessWidget {
       },
       actions: [
         IconButton(
-          onPressed: () => Get.find<CustactiveController>().updateCustomerActive(),
+          onPressed: () => Get.find<CallManagementController>().updateCustomerActive(),
           icon: const Icon(Icons.sync),
           tooltip: 'Sync Data Customer',
         ),
         IconButton(
-          onPressed: () => Get.toNamed(Routes.HISTORY_VISITASI),
+          onPressed: () => Get.toNamed(Routes.HISTORY_VISITASI, arguments: Call.custactive),  
           icon: const Icon(Icons.history),
           tooltip: 'History Visitasi Customer',
         ),

@@ -261,7 +261,7 @@ Future<void> loadCustomerGroups() async {
       newIncrement = lastIncrement + 1;
     }
     String incrementString = newIncrement.toString().padLeft(3, '0');
-    return '$pattern$incrementString';
+        return '$pattern$incrementString';
   }
 
   Future<String> generateNOOID() async {
@@ -284,7 +284,8 @@ Future<void> loadCustomerGroups() async {
     if (newIncrement > 9) {
       newIncrement = 1;
     }
-    return '$pattern$newIncrement';
+    int randomDigit = Utils.getRandomDigit(); // Generate a random digit
+    return '$pattern$newIncrement$randomDigit';
   }
 
   setNooId(String nooId) {
@@ -470,7 +471,7 @@ Future<void> loadCustomerGroups() async {
 
   Future<void> checkTables() async {
     final tables = await db.rawQuery(
-        "SELECT * FROM nooaddress");
+        "SELECT * FROM masternoo");
     Log.d("Tables in Database: $tables");
   }
 

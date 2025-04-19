@@ -130,41 +130,49 @@ class _HistoryVisitasiState extends State<HistoryVisitasi> {
       itemCount: listMarketingActivity.length,
       itemBuilder: (context, index) {
         final item = listMarketingActivity[index];
-        String? waktuCO = item.waktuCo ?? 'Belum Check Out';
+        String custName = item.custName ?? 'Nama tidak tersedia';
+        String waktuCi = item.waktuCi ?? 'Waktu Check-In tidak tersedia';
+        String waktuCo = item.waktuCo ?? 'Belum Check Out';
+        String fotoCi = item.fotoCi ?? '';
+
         return ExpansionTile(
-          title: Text(item.custName ?? ''),
+          title: Text(custName),
           leading: GestureDetector(
             onTap: () {
-              Get.dialog(
-                Dialog.fullscreen(
-                  child: InteractiveViewer(
-                    panEnabled: true,
-                    scaleEnabled: true,
-                    minScale: 0.5,
-                    maxScale: 5.0,
-                    child: Image.file(File(item.fotoCi!)),
+              if (fotoCi.isNotEmpty) {
+                Get.dialog(
+                  Dialog.fullscreen(
+                    child: InteractiveViewer(
+                      panEnabled: true,
+                      scaleEnabled: true,
+                      minScale: 0.5,
+                      maxScale: 5.0,
+                      child: Image.file(File(fotoCi)),
+                    ),
                   ),
-                ),
-              );
+                );
+              }
             },
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.file(
-                File(item.fotoCi!),
-                width: 50,
-                height: 50,
-              ),
+              child: fotoCi.isNotEmpty
+                  ? Image.file(
+                      File(fotoCi),
+                      width: 50,
+                      height: 50,
+                    )
+                  : const Icon(Icons.image_not_supported, size: 50),
             ),
           ),
           expandedAlignment: Alignment.centerLeft,
           expandedCrossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              title: Text(item.waktuCi!),
+              title: Text(waktuCi),
               leading: const Icon(Icons.login, color: Colors.green),
             ),
             ListTile(
-              title: Text(waktuCO),
+              title: Text(waktuCo),
               leading: const Icon(Icons.logout, color: Colors.red),
             ),
             Row(
@@ -187,9 +195,9 @@ class _HistoryVisitasiState extends State<HistoryVisitasi> {
                           showConfimationDialog('edit', () {
                             Get.toNamed(Routes.MARKETING, arguments: {
                               'type': getTypeVisitation(widget.type),
-                              'id': item.custId,
+                              'id': item.custId ?? '',
                               'ma': item.id,
-                              'name': item.custName,
+                              'name': custName,
                             });
                           });
                         }

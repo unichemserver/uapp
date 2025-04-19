@@ -2,6 +2,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:uapp/core/utils/log.dart';
 // import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/rupiah_formatter.dart';
 import 'package:uapp/core/utils/utils.dart';
@@ -25,7 +26,9 @@ class _ToDialogState extends State<ToDialog> {
   final TextEditingController jumlah = TextEditingController();
   final TextEditingController satuan = TextEditingController();
   final TextEditingController total = TextEditingController();
+  final TextEditingController unit = TextEditingController();
   final TextEditingController ppnController = TextEditingController();
+  final TextEditingController unitController = TextEditingController();
 
   void _initData() {
     if (widget.toEdit != null) {
@@ -146,11 +149,14 @@ class _ToDialogState extends State<ToDialog> {
                               int jumlahProduct = int.parse(jumlah.text.replaceAll(RegExp(r'[^0-9]'), ''));
                               int satuanProduct = int.parse(satuan.text.replaceAll(RegExp(r'[^0-9]'), ''));
                               int ppnValue = int.parse(ppnController.text.replaceAll(RegExp(r'[^0-9]'), ''));
+                              String unitId = unitController.text;
+                              Log.d('Unit ID: $unitId');
                               int totalPrice = jumlahProduct * satuanProduct;
                               var data = ToModel(
                                 itemid: itemID.text,
                                 description: nama.text,
                                 quantity: jumlahProduct,
+                                unitID: unitId,
                                 unit: satuanProduct.toString(),
                                 price: totalPrice,
                                 ppn: ppnValue,
@@ -228,6 +234,8 @@ class _ToDialogState extends State<ToDialog> {
         }
 
         ctx.selectedPPNCode = item.taxGroupID!;
+        unitController.text = selectedprice.first.unitID!;
+
 
         // Set initial unit price
         var initialPrice = int.parse(selectedprice.first.unitPrice.toString().replaceAll(RegExp(r'\.00$'), ''));
@@ -286,29 +294,64 @@ class _ToDialogState extends State<ToDialog> {
         if (jumlah.text.isNotEmpty) {
           var quantity = int.parse(jumlah.text);
 
-          // Adjust unit price based on quantity
-          var selectedprice = ctx.priceList.where((element) {
-            return element.itemID == itemID.text && element.topID == 'COD';
+          // Adjust unit price based on quantity thresholds and selected unit
+          var selectedPrices = ctx.priceList.where((element) {
+            return element.itemID == itemID.text && element.unitID == ctx.selectedUnit && element.topID == 'COD';
           }).toList();
 
-          var price = int.parse(selectedprice.first.unitPrice.toString().replaceAll(RegExp(r'\.00$'), ''));
-          if (quantity >= 10) {
-            var qty10Price = selectedprice.firstWhere(
-              (element) => double.parse(element.qty.toString()) == 10.0,
-              orElse: () => selectedprice.first,
-            );
-            price = int.parse(qty10Price.unitPrice.toString().replaceAll(RegExp(r'\.00$'), ''));
+          if (selectedPrices.isEmpty) {
+            satuan.text = '0';
+            return;
           }
+
+          var price = int.parse(selectedPrices.first.unitPrice.toString().replaceAll(RegExp(r'\.00$'), ''));
+
+          // Find the appropriate price based on quantity thresholds
+          for (var priceData in selectedPrices) {
+            if (quantity >= double.parse(priceData.qty.toString())) {
+              price = int.parse(priceData.unitPrice.toString().replaceAll(RegExp(r'\.00$'), ''));
+            }
+          }
+
           satuan.text = price.toString();
 
           // Calculate total and PPN
           var totalPayment = price * quantity;
-          double ppnRate = (ctx.selectedPPNCode == 'PPN1108') ? 0.0 : 0.11;
-          var ppnValue = (totalPayment * ppnRate).toInt();
+
+          // Hardcoded check for specific itemIDs
+          List<String> exemptedItemIDs = [
+            'BJD8-RP-0005K-RICET-DAU001',
+            'BJD8-RP-0012G-DEFLT-DAU001',
+            'BJD8-RP-0004G-DEFLT-DAU001',
+            'BJD8-RP-0007G-DEFLT-DAU001'
+          ];
+
+          double ppnRate = (ctx.selectedPPNCode == 'PPN1108')
+              ? 0.0
+              : (ctx.selectedPPNCode == 'PPN' && exemptedItemIDs.contains(itemID.text))
+                  ? 0.0
+                  : 0.11;
+
+          int ppnValue;
+          if (['BJD8-RP-0012G-DEFLT-DAU001', 'BJD8-RP-0004G-DEFLT-DAU001', 'BJD8-RP-0007G-DEFLT-DAU001']
+              .contains(itemID.text)) {
+            // Calculate DPP and PPN for specific item IDs
+            var dpp = ((price * quantity) / 111) * 100;
+            ppnValue = (dpp * 0.11 + 1).toInt();
+            totalPayment = dpp.toInt() + ppnValue;
+
+            // Set PPN controller text to 0 for these item IDs
+            ppnController.text = '0';
+          } else {
+            ppnValue = (totalPayment * ppnRate).toInt();
+            totalPayment += ppnValue;
+
+            var rupiahFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp');
+            ppnController.text = rupiahFormat.format(ppnValue).replaceAll(RegExp(r',00'), '');
+          }
 
           var rupiahFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp');
-          ppnController.text = rupiahFormat.format(ppnValue).replaceAll(RegExp(r',00'), '');
-          total.text = rupiahFormat.format(totalPayment + ppnValue).replaceAll(RegExp(r',00'), '');
+          total.text = rupiahFormat.format(totalPayment).replaceAll(RegExp(r',00'), '');
         } else {
           ppnController.text = '';
           total.text = '';
@@ -338,6 +381,7 @@ class _ToDialogState extends State<ToDialog> {
                   .toString()
                   .replaceAll(RegExp(r'\.00$'), '');
               satuan.text = int.parse(price).toString();
+              unitController.text = item; // Save the selected unitID
               ctx.selectedUnit = item;
               ctx.update();
             }

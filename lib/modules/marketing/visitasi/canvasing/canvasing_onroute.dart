@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/utils/jenis_call.dart';
-import 'package:uapp/modules/marketing/visitasi/shared/customer_page.dart';
+import 'package:uapp/modules/marketing/visitasi/onroute/customer_page.dart';
 import 'package:uapp/modules/marketing/visitasi/canvasing/history_canvasing_screen.dart';
 
 
-class CanvasingCustomerPage extends StatelessWidget {
-  const CanvasingCustomerPage({super.key});
+class CanvasingOnroute extends StatelessWidget {
+  const CanvasingOnroute({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class CanvasingCustomerPage extends StatelessWidget {
       fetchData: (ctx) async {
         if (!ctx.isLoading) {
           ctx.setSelectedCustId(null);
-          ctx.getCustActive(); // Replace with canvasing-specific data fetching if needed
+          ctx.getCall(); // Replace with canvasing-specific data fetching if needed
         }
       },
       onContinue: (ctx) {

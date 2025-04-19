@@ -53,36 +53,41 @@ class PrintResi {
   String getFormattedStringToPrint(Resi resi) {
     String receipt = '';
     var subtotal = resi.toItems.map((e) => e.price).reduce((value, element) => value! + element!);
-    var subtotalFormatted = rp(subtotal.toString());
+    // var subtotalFormatted = rp(subtotal.toString());
     var subtotalppn = resi.toItems.map((e) => e.ppn ?? 0).reduce((value, element) => value + element);
-    var subtotalppnFormatted = rp(subtotalppn.toString());
+    // var subtotalppnFormatted = rp(subtotalppn.toString());
 
     var total = (subtotal ?? 0) + (subtotalppn);
     var totalFormatted = rp(total.toString());
 
+    receipt += '\n';
+    receipt += '${centerText('PT.UCI', totalWidth)}\n';
+    receipt += spacetwo;
     if (resi.activity == 'Canvasing') {
-      receipt += '${centerText('PENJUALAN', totalWidth)}\n';
+      receipt += '${centerText('NOTA PENJUALAN', totalWidth)}\n';
     } else {
-      receipt += '${centerText('TAKING ORDER', totalWidth)}\n';
+      receipt += '${centerText('PEMESANAN', totalWidth)}\n';
     }
     receipt += spacetwo;
     receipt += '${formatLabel('Tanggal')} : ${DateUtils.getFormattedDateOnly(DateTime.now())}\n';
     receipt += '${formatLabel('Nomor')} : ${resi.nomor}\n';
     receipt += '${formatLabel('Pelanggan')} : ${resi.namaPelanngan}\n';
+    receipt += '${formatLabel('Pembayaran')} : Cash\n';
     receipt += spaceone;
     for (var item in resi.toItems) {
       receipt += '${item.description}\n';
+      String unitID = item.unitID ?? '';
       String quantity = formatQuantity(item.quantity!);
       String unit = rp(formatUnit(item.unit!));
       String price = rp(item.price.toString());
-      String ppn = rp((item.ppn ?? 0).toString());
-      receipt += '${formatLabelValue('$quantity X $unit', price)}\n';
-      receipt += '${formatLabelValue('PPN', ppn)}\n';
+      // String ppn = rp((item.ppn ?? 0).toString());
+      receipt += '${formatLabelValue('$quantity $unitID X $unit', price)}\n';
+      // receipt += '${formatLabelValue('PPN', ppn)}\n';
     }
-    receipt += spaceone;
-    receipt += '${formatLabelValue('SUB TOTAL', subtotalFormatted)}\n';
-    receipt += '${formatLabelValue('DISKON', '0')}\n';
-    receipt += '${formatLabelValue('PPN', subtotalppnFormatted)}\n';
+    // receipt += spaceone;
+    // receipt += '${formatLabelValue('SUB TOTAL', subtotalFormatted)}\n';
+    // receipt += '${formatLabelValue('DISKON', '0')}\n';
+    // receipt += '${formatLabelValue('PPN', subtotalppnFormatted)}\n';
     receipt += spaceone;
     receipt += '${formatLabelValue('TOTAL', totalFormatted)}\n';
     receipt += spacetwo;

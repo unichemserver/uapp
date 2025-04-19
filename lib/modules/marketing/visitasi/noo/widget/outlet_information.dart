@@ -39,8 +39,50 @@ class OutletInformation extends StatelessWidget {
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AddressInformation(
-          title: 'Alamat Kantor',
+          title: 'Alamat Usaha',
           addressModel: officeAddress,
+          addressValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Nama Jalan tidak boleh kosong';
+            }
+            return null;
+          },
+          rtRwValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'RT/RW tidak boleh kosong';
+            }
+            return null;
+          },
+          propinsiValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Kelurahan tidak boleh kosong';
+            }
+            return null;
+          },
+          kabKotaValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Kabupaten/Kota tidak boleh kosong';
+            }
+            return null;
+          },
+          kecamatanValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Kecamatan tidak boleh kosong';
+            }
+            return null;
+          },
+          desaKelurahanValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Desa/Kelurahan tidak boleh kosong';
+            }
+            return null;
+          },
+          kodePosValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Kode Pos tidak boleh kosong';
+            }
+            return null;
+          },
         ),
         DepartmentInformation(
           title: 'Departemen Keuangan',

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
-import 'package:uapp/core/utils/jenis_call.dart';
+// import 'package:uapp/core/utils/jenis_call.dart';
 import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/modules/marketing/model/noo_model.dart';
@@ -114,15 +114,15 @@ class _NooPageState extends State<NooPage> {
                   },
                   icon: const Icon(Icons.dataset),
                 ),
-                IconButton(
-                  onPressed: () {
-                    Get.toNamed(
-                      Routes.HISTORY_VISITASI,
-                      arguments: Call.noo,
-                    );
-                  },
-                  icon: const Icon(Icons.history),
-                ),
+                // IconButton(
+                //   onPressed: () {
+                //     Get.toNamed(
+                //       Routes.HISTORY_VISITASI,
+                //       arguments: Call.noo,
+                //     );
+                //   },
+                //   icon: const Icon(Icons.history),
+                // ),
               ],
             ),
             body: Form(

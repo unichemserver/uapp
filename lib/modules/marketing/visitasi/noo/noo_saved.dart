@@ -158,56 +158,73 @@ class _NooSavedState extends State<NooSaved> {
       itemBuilder: (context, index) {
         final data = nooData[index];
         final activity = nooActivity.firstWhere(
-        (item) => item.idnoo == data.id,
-        orElse: () => NooActivity(id: 0, idnoo: data.id!, statussync: 0, approved: 0, status: '', idCustOrlan: ''),
-      );
-        return ListTile(
-          title: Text(data.namaPerusahaan ?? ''),
-          subtitle: Text(data.groupCust ?? ''),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (activity.statussync == 0) ...[
-                IconButton(
-                  icon: const Icon(Icons.sync),
-                  onPressed: () {
-                    syncNooById(data.id!);
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    Get.dialog(
-                      AlertDialog(
-                        title: const Text('Konfirmasi'),
-                        content: const Text('Apakah Anda yakin ingin menghapus data ini?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Get.back();
-                            },
-                            child: const Text('Tidak'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              deleteNooData(data.id!);
-                              Get.back();
-                            },
-                            child: const Text('Ya'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    Get.back(result: data);
-                  },
-                ),
+          (item) => item.idnoo == data.id,
+          orElse: () => NooActivity(id: 0, idnoo: data.id!, statussync: 0, approved: 0, status: '', idCustOrlan: ''),
+        );
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(10),
+            title: Text(
+              data.namaPerusahaan ?? 'Nama Perusahaan Tidak Diketahui',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Group: ${data.groupCust ?? 'Tidak Diketahui'}'),
+                Text('ID: ${data.id}'),
               ],
-            ],
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (activity.statussync == 0) ...[
+                  IconButton(
+                    icon: const Icon(Icons.sync, color: Colors.blue),
+                    onPressed: () {
+                      syncNooById(data.id!);
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      Get.dialog(
+                        AlertDialog(
+                          title: const Text('Konfirmasi'),
+                          content: const Text('Apakah Anda yakin ingin menghapus data ini?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Get.back();
+                              },
+                              child: const Text('Tidak'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                deleteNooData(data.id!);
+                                Get.back();
+                              },
+                              child: const Text('Ya'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.green),
+                    onPressed: () {
+                      Get.back(result: data);
+                    },
+                  ),
+                ],
+              ],
+            ),
           ),
         );
       },

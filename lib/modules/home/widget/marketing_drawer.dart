@@ -57,7 +57,7 @@ class MarketingDrawer extends StatelessWidget {
                       title: const Text('Canvasing'),
                       leading: const Icon(Icons.manage_search),
                       onTap: () {
-                        Get.toNamed(Routes.CANVASING_CUSTOMER);
+                        Get.toNamed(Routes.CANVASING_ONROUTE);
                       },
                     ),
                   ),
@@ -87,7 +87,7 @@ class MarketingDrawer extends StatelessWidget {
                       title: const Text('Canvasing'),
                       leading: const Icon(Icons.manage_search),
                       onTap: () {
-                        Get.toNamed(Routes.CANVASING_CUSTOMER);
+                        Get.toNamed(Routes.CANVASING_OFFROUTE);
                       },
                     ),
                   ),

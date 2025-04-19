@@ -80,8 +80,8 @@ class CustomerPage extends StatelessWidget {
               : ListView.builder(
                   itemCount: ctx.custActiveFiltered.length,
                   itemBuilder: (_, index) => RadioListTile(
-                    title: Text(ctx.custActiveFiltered[index].name!),
-                    subtitle: Text(ctx.custActiveFiltered[index].address!),
+                    title: Text(ctx.custActiveFiltered[index].name ?? 'Unknown'),
+                    subtitle: Text(ctx.custActiveFiltered[index].address ?? 'No Address'),
                     value: ctx.custActiveFiltered[index],
                     groupValue: ctx.selectedCustId,
                     onChanged: (value) => ctx.setSelectedCustId(value),

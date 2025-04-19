@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/utils/jenis_call.dart';
-import 'package:uapp/modules/marketing/visitasi/shared/customer_page.dart';
+import 'package:uapp/modules/marketing/visitasi/offroute/customer_page.dart';
 
 import 'custactive_controller.dart';
 
@@ -33,7 +33,7 @@ class CustactivePage extends StatelessWidget {
           tooltip: 'Sync Data Customer',
         ),
         IconButton(
-          onPressed: () => Get.toNamed(Routes.HISTORY_VISITASI),
+          onPressed: () => Get.toNamed(Routes.HISTORY_VISITASI, arguments: Call.custactive),
           icon: const Icon(Icons.history),
           tooltip: 'History Visitasi Customer',
         ),

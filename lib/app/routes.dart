@@ -31,7 +31,8 @@ import 'package:uapp/modules/settings/setting_screen.dart';
 import 'package:uapp/modules/splash/splash_binding.dart';
 import 'package:uapp/modules/splash/splash_screen.dart';
 import 'package:uapp/modules/approval/approval_screen.dart';
-import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_customer.dart';
+import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_offroute.dart';
+import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_onroute.dart';
 import 'package:uapp/modules/marketing/visitasi/callmanagement/callmanagement_page.dart';
 
 class Routes {
@@ -54,7 +55,8 @@ class Routes {
   static const String SAVED_NOO = '/saved-noo';
   static const String SYNC_MARKETING = '/sync-marketing';
   static const String APPROVAL = '/approval';
-  static const String CANVASING_CUSTOMER = '/canvasing-customer';
+  static const String CANVASING_OFFROUTE = '/canvasing-offroute';
+  static const String CANVASING_ONROUTE = '/canvasing-onroute';
   static const String CALL_MANAGEMENT = '/call-management';
 
   static List<GetPage> pages = [
@@ -142,12 +144,16 @@ class Routes {
       page: () => const ApprovalScreen(),
     ),
     GetPage(
-      name: CANVASING_CUSTOMER,
-      page: () => CanvasingCustomerPage(),
+      name: CANVASING_OFFROUTE,
+      page: () => const CanvasingOffroute(),
+    ),
+    GetPage(
+      name: CANVASING_ONROUTE,
+      page: () => const CanvasingOnroute(),
     ),
     GetPage(
       name: CALL_MANAGEMENT,
-      page: () => CallManagementPage(),
+      page: () => const CallManagementPage(),
     ),
     ...createdMemoList.map((e) => GetPage(
           name: '/${e.name.replaceAll(' ', '_').toLowerCase()}',
