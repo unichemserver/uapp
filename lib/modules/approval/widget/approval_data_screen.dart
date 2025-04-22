@@ -68,7 +68,7 @@ class _ApprovalDataScreenState extends State<ApprovalDataScreen> {
                               'nama_perusahaan': safeValue(masternoo['nama_perusahaan']),
                               'group_cust': safeValue(masternoo['group_cust']),
                               'credit_limit': safeValue(masternoo['credit_limit']),
-                              'payment_method': safeValue(masternoo['payment_method']),
+                              'termin': safeValue(masternoo['termin']),
                               'jaminan': safeValue(masternoo['jaminan']),
                               'nilai_jaminan': safeValue(masternoo['nilai_jaminan']),
                               'area_marketing': safeValue(masternoo['area_marketing']),
@@ -295,7 +295,7 @@ class _ApprovalDataScreenState extends State<ApprovalDataScreen> {
 
     String paymentMethod = ctx.paymentMethod.value.isNotEmpty 
         ? ctx.paymentMethod.value 
-        : safeValue(masternoo?['payment_method']);
+        : safeValue(masternoo?['termin']);
 
 
     showDialog(

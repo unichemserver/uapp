@@ -118,6 +118,9 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       toItems: toItems,
     );
     Log.d('printData.toItems: ${printData.toItems}');
+    for (var item in printData.toItems) {
+      Log.d('ToModel details: ${item.toJson()}');
+    }
     PrintResi().printText(printData);
   }
 

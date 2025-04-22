@@ -153,18 +153,18 @@ class NooFormWidget extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         Obx(() {
-          var descriptionToTopIdMap = {
-            for (var item in topOptions) item['Description']: item['TOP_ID']
-          };
+          // var descriptionToTopIdMap = {
+          //   for (var item in topOptions) item['Description']: item['TOP_ID']
+          // };
 
           var items = topOptions
               .map((item) => DropdownMenuItem<String>(
-                    value: item['Description'],
+                    value: item['TOP_ID'],
                     child: Text(item['TOP_ID']),
                   ))
               .toList();
-          var selectedValue = items.any((element) => element.value == masternoo['payment_method'])
-              ? masternoo['payment_method']
+          var selectedValue = items.any((element) => element.value == masternoo['termin'])
+              ? masternoo['termin']
               : null;
 
           return DropdownButtonFormField<String>(
@@ -191,7 +191,7 @@ class NooFormWidget extends StatelessWidget {
             ),
             selectedItemBuilder: (BuildContext context) {
               return items.map((DropdownMenuItem<String> item) {
-                return Text(descriptionToTopIdMap[item.value] ?? '');
+                return Text(item.value ?? '');
               }).toList();
             },
           );

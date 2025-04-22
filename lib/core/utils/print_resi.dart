@@ -97,9 +97,15 @@ class PrintResi {
       receipt += '${centerText('*** L U N A S ***', totalWidth)}\n';
     }
     receipt += '\n';
+    if (resi.activity == 'Canvasing') {
     receipt += '${centerText("Barang yang sudah dibeli", totalWidth)}\n';
     receipt += '${centerText("tidak bisa ditukar", totalWidth)}\n';
     receipt += '${centerText("atau dikembalikan", totalWidth)}\n';
+    } 
+    // else {
+    //   receipt += '${formatLabel("Signature : ")}\n';
+    //   receipt += '\n';
+    // }
     receipt += '\n';
     receipt += '${centerText(".:TERIMA KASIH:.", totalWidth)}\n';
     receipt += '\n';

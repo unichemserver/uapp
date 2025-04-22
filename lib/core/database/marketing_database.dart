@@ -291,6 +291,7 @@ class MarketingDatabase {
     await db.delete('noospesimen');
     await db.delete('canvasing');
     await db.delete('mastergroup');
+    await db.delete('noo_activity');
   }
 
   Future<Map<String, dynamic>> getAllData() async {
@@ -308,7 +309,8 @@ class MarketingDatabase {
       'noodocument',
       'noospesimen',
       'canvasing',
-      'mastergroup'
+      'mastergroup',
+      'noo_activity',
     ];
     final Map<String, dynamic> result = {};
     for (String table in tables) {

@@ -219,7 +219,7 @@ class ApprovalController extends GetxController {
 
   void updatePaymentMethod(String value) {
     paymentMethod.value = value;
-    updateMasterNooField('payment_method', value); // Save to database
+    updateMasterNooField('termin', value); // Save to database
   }
 
   Future<void> approveData(String creditLimit, String paymentMethod) async {

@@ -8,6 +8,7 @@ import 'package:uapp/modules/marketing/marketing_api.dart';
 import 'package:uapp/modules/marketing/model/noo_model.dart';
 import 'package:uapp/modules/marketing/model/noo_activity.dart';
 import 'package:uapp/modules/marketing/api/sync_noo_activity_api.dart';
+import 'package:uapp/modules/marketing/visitasi/noo/widget/noo_form_widget.dart';
 // import 'package:uapp/core/notification/notification.dart';
 // import 'package:uapp/core/notification/notif_id.dart';
 
@@ -71,7 +72,6 @@ class _NooSavedState extends State<NooSaved> {
           'idnoo = ?',
           [id],
         );
-        // await getUserApprovalAndNotify(id);
         Log.d("Sinkronisasi dijalankan untuk idnoo: $id");
 
         final response = await apiClient.postRequest(
@@ -90,6 +90,13 @@ class _NooSavedState extends State<NooSaved> {
 
         }
       } else {
+        // await showNotification(
+        //   NotifId.MKT_SYNC_CH_ID,
+        //   NotifId.MKT_SYNC_CH_NAME,
+        //   NotifId.MKT_SYNC_ID,
+        //   'Data sudah tersinkronisasi',
+        //   'Data dengan id $id sudah tersinkronisasi.',
+        // );
         Log.d("idnoo $id sudah tersinkronisasi.");
       }
     }
@@ -98,6 +105,36 @@ class _NooSavedState extends State<NooSaved> {
     getNooData();
   }
 }
+
+  String safeValue(dynamic value) {
+  if (value == null || value == "null") return "-";
+  return value.toString();
+}
+// Future<void> getUserApprovalAndNotify(String id) async {
+//   final response = await api.getUserApproval(id);
+
+//   if (response != null && response['success'] == true) {
+//     final List<dynamic> userData = response['data'];
+//     for (var user in userData) {
+//       final String nik = user['nik'];
+//       final String nomorUrut = user['nomor_urut'];
+
+//       Log.d(nik);
+      
+
+//       // Send notification to the user
+//       await showNotification(
+//         NotifId.NOTIF_CH_ID,
+//         NotifId.NOTIF_CH_NAME,
+//         int.parse(nomorUrut),
+//         'Data Sinkronisasi',
+//         'Data dengan id $id telah disinkronisasi dan disetujui.',
+//       );
+//     }
+//   } else {
+//     Log.d("Gagal mendapatkan data user approval untuk idnoo: $id");
+//   }
+// }
 
 // Future<void> getUserApprovalAndNotify(String id) async {
 //   final response = await api.getUserApproval(id);
@@ -220,6 +257,52 @@ class _NooSavedState extends State<NooSaved> {
                     icon: const Icon(Icons.edit, color: Colors.green),
                     onPressed: () {
                       Get.back(result: data);
+                    },
+                  ),
+                ] else ...[
+                  IconButton(
+                    icon: const Icon(Icons.visibility),
+                    onPressed: () {
+                      Get.dialog(
+                        Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: NooFormWidget(
+                            masternoo: {
+                              'id': safeValue(data.id),
+                              'nama_perusahaan': safeValue(data.namaPerusahaan),
+                              'group_cust': safeValue(data.groupCust),
+                              'termin': safeValue(data.termin),
+                              'credit_limit': safeValue(data.creditLimit),
+                              'payment_method': safeValue(data.paymentMethod),
+                              'jaminan': safeValue(data.jaminan),
+                              'nilai_jaminan': safeValue(data.nilaiJaminan),
+                              'area_marketing': safeValue(data.areaMarketing),
+                              'tgl_join': safeValue(data.tglJoin),
+                              'spv_uci': safeValue(data.spvUci),
+                              'nama_owner': safeValue(data.namaOwner),
+                              'nohp_owner': safeValue(data.nohpOwner),
+                              'email_owner': safeValue(data.emailOwner),
+                              'alamat_owner': safeValue(data.alamatOwner),
+                              'alamat_kantor': safeValue(data.alamatKantor),
+                              'status_pajak': safeValue(data.statusPajak),
+                              'nama_npwp': safeValue(data.namaNpwp),
+                              'no_npwp': safeValue(data.noNpwp),
+                              'nama_bank': safeValue(data.namaBank),
+                              'no_rek_va': safeValue(data.noRekVa),
+                              'nama_rek': safeValue(data.namaRek),
+                              'cabang_bank': safeValue(data.cabangBank),
+                              'bidang_usaha': safeValue(data.bidangUsaha),
+                              'tgl_mulai_usaha': safeValue(data.tglMulaiUsaha),
+                              'produk_utama': safeValue(data.produkUtama),
+                              'produk_lain': safeValue(data.produkLain),
+                              'lima_cust_utama': safeValue(data.limaCustUtama),
+                              'est_omset_month': safeValue(data.estOmsetMonth),
+                            },
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ],

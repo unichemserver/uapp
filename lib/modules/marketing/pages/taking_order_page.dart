@@ -70,6 +70,7 @@ class TakingOrderPage extends StatelessWidget {
       columns: const [
         DataColumn(label: Text('Nama')),
         DataColumn(label: Text('Jumlah')),
+        DataColumn(label: Text('Unit')),
         DataColumn(label: Text('Satuan')),
         DataColumn(label: Text('Total')),
         DataColumn(label: Text('Ppn')),
@@ -83,6 +84,7 @@ class TakingOrderPage extends StatelessWidget {
       cells: [
         DataCell(_buildDismissibleNameCell(ctx, order)),
         DataCell(Text(order.quantity.toString())),
+        DataCell(Text(order.unitID.toString())), 
         DataCell(Text(order.unit.toString())),
         DataCell(Text(order.price.toString())),
         DataCell(Text(order.ppn.toString())),

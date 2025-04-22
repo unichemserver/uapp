@@ -268,24 +268,39 @@ Future<void> loadCustomerGroups() async {
     var dateToday = DateUtils.getFormatDate();
     var userId = Utils.getUserData().id;
     String pattern = 'NOO$userId$dateToday';
-    String query = '''
-    SELECT id FROM masternoo
-      WHERE id LIKE '$pattern%'
-      ORDER BY id DESC
-      LIMIT 1
-    ''';
-    List<Map> result = await db.rawQuery(query);
-    int newIncrement = 1;
-    if (result.isNotEmpty) {
-      String lastId = result.first['id'];
-      int lastIncrement = int.parse(lastId.substring(lastId.length - 1));
-      newIncrement = lastIncrement + 1;
-    }
-    if (newIncrement > 9) {
-      newIncrement = 1;
-    }
-    int randomDigit = Utils.getRandomDigit(); // Generate a random digit
-    return '$pattern$newIncrement$randomDigit';
+    String id;
+    bool isDuplicate;
+
+    do {
+      int randomDigit = Utils.getRandomDigit(); // Generate a random digit
+      int newIncrement = 1;
+      String query = '''
+      SELECT id FROM masternoo
+        WHERE id LIKE '$pattern%'
+        ORDER BY id DESC
+        LIMIT 1
+      ''';
+      List<Map> result = await db.rawQuery(query);
+      if (result.isNotEmpty) {
+        String lastId = result.first['id'];
+        int lastIncrement = int.parse(lastId.substring(lastId.length - 1));
+        newIncrement = lastIncrement + 1;
+      }
+      if (newIncrement > 9) {
+        newIncrement = 1;
+      }
+      id = '$pattern$randomDigit$newIncrement';
+
+      // Check for duplicate ID
+      String checkQuery = '''
+      SELECT COUNT(*) as count FROM masternoo
+        WHERE id = ?
+      ''';
+      List<Map> checkResult = await db.rawQuery(checkQuery, args: [id]);
+      isDuplicate = checkResult.first['count'] > 0;
+    } while (isDuplicate);
+
+    return id;
   }
 
   setNooId(String nooId) {
@@ -471,7 +486,7 @@ Future<void> loadCustomerGroups() async {
 
   Future<void> checkTables() async {
     final tables = await db.rawQuery(
-        "SELECT * FROM masternoo");
+        "SELECT * FROM noo_activity",);
     Log.d("Tables in Database: $tables");
   }
 

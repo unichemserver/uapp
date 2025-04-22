@@ -109,8 +109,6 @@ class CustactiveController extends GetxController {
               item['provinsi'] ?? '',
               item['kode_pos'] ?? ''
             ].where((field) => field.isNotEmpty).join(', ');
-
-            Log.d('Combined address: $combinedAddress');
             return {
               'CustID': item['id'] ?? '',
               'CustName': item['nama_perusahaan'] ?? '',

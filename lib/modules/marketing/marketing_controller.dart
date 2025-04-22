@@ -8,6 +8,7 @@ import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/hive/hive_service.dart';
 import 'package:uapp/core/utils/date_utils.dart' as du;
+import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/print_resi.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/models/customer.dart';
@@ -499,6 +500,9 @@ class MarketingController extends GetxController {
       namaSales: user.namaPanggilan ?? 'sales',
       toItems: toItems,
     );
+    for (var item in printData.toItems) {
+      Log.d('ToModel details: ${item.toJson()}');
+    }
     PrintResi().printText(printData);
   }
 
