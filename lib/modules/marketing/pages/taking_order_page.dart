@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
-
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hand_signature/signature.dart';
@@ -8,6 +8,8 @@ import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/modules/marketing/marketing_controller.dart';
 import 'package:uapp/modules/marketing/model/to_model.dart';
 import 'package:uapp/modules/marketing/widget/to_report_dialog.dart';
+
+
 
 class TakingOrderPage extends StatelessWidget {
   TakingOrderPage({super.key});
@@ -21,6 +23,7 @@ class TakingOrderPage extends StatelessWidget {
   final ValueNotifier<String?> svg = ValueNotifier<String?>(null);
   final ValueNotifier<ByteData?> rawImage = ValueNotifier<ByteData?>(null);
   final totalController = TextEditingController();
+  final ValueNotifier<String?> globalTopID = ValueNotifier<String?>(null); // Global TOP ID
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +56,8 @@ class TakingOrderPage extends StatelessWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // _buildTopCustSection(ctx),
+          _buildTopSelection(ctx),
+          const SizedBox(height: 16),
           _buildOrderTable(ctx),
           const SizedBox(height: 16),
           _buildAddProductButton(ctx),
@@ -61,6 +65,38 @@ class TakingOrderPage extends StatelessWidget {
           _buildSignatureSection(context, ctx),
         ],
       ),
+    );
+  }
+
+  Widget _buildTopSelection(MarketingController ctx) {
+    final topIDs = ctx.priceList.map((e) => e.topID!).toSet().toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            'Pilih Term of Payment (TOP)',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: DropdownSearch<String>(
+            items: topIDs,
+            onChanged: (String? value) {
+              globalTopID.value = value;
+              ctx.clearTakingOrders(); // Clear orders when TOP changes
+            },
+            dropdownDecoratorProps: const DropDownDecoratorProps(
+              dropdownSearchDecoration: InputDecoration(
+                hintText: 'Pilih TOP',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -84,7 +120,7 @@ class TakingOrderPage extends StatelessWidget {
       cells: [
         DataCell(_buildDismissibleNameCell(ctx, order)),
         DataCell(Text(order.quantity.toString())),
-        DataCell(Text(order.unitID.toString())), 
+        DataCell(Text(order.unitID.toString())),
         DataCell(Text(order.unit.toString())),
         DataCell(Text(order.price.toString())),
         DataCell(Text(order.ppn.toString())),
@@ -131,11 +167,18 @@ class TakingOrderPage extends StatelessWidget {
   Widget _buildAddProductButton(MarketingController ctx) {
     return ElevatedButton(
       onPressed: () async {
+        if (globalTopID.value == null) {
+          Get.snackbar('Peringatan', 'Pilih TOP terlebih dahulu');
+          return;
+        }
         ToModel? data = await Get.dialog(
           ToReportDialog(
             items: ctx.items,
             idMA: ctx.idMarketingActivity!,
-            priceList: ctx.priceList,
+            priceList: ctx.priceList
+                .where((price) => price.topID == globalTopID.value)
+                .toList(),
+            globalTopID: globalTopID.value!, // Pass the globalTopID here
           ),
         );
         if (data != null) {

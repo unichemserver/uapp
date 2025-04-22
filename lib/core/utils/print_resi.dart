@@ -53,12 +53,12 @@ class PrintResi {
   String getFormattedStringToPrint(Resi resi) {
     String receipt = '';
     var subtotal = resi.toItems.map((e) => e.price).reduce((value, element) => value! + element!);
-    // var subtotalFormatted = rp(subtotal.toString());
     var subtotalppn = resi.toItems.map((e) => e.ppn ?? 0).reduce((value, element) => value + element);
-    // var subtotalppnFormatted = rp(subtotalppn.toString());
-
     var total = (subtotal ?? 0) + (subtotalppn);
     var totalFormatted = rp(total.toString());
+
+    // Get one topID from toItems
+    String? topID = resi.toItems.isNotEmpty ? resi.toItems.first.topID : null;
 
     receipt += '\n';
     receipt += '${centerText('PT.UCI', totalWidth)}\n';
@@ -72,8 +72,9 @@ class PrintResi {
     receipt += '${formatLabel('Tanggal')} : ${DateUtils.getFormattedDateOnly(DateTime.now())}\n';
     receipt += '${formatLabel('Nomor')} : ${resi.nomor}\n';
     receipt += '${formatLabel('Pelanggan')} : ${resi.namaPelanngan}\n';
-    receipt += '${formatLabel('Pembayaran')} : Cash\n';
+    receipt += '${formatLabel('TOP')} : ${topID ?? 'COD'}\n'; // Include the topID here
     receipt += spaceone;
+
     for (var item in resi.toItems) {
       receipt += '${item.description}\n';
       String unitID = item.unitID ?? '';
@@ -93,19 +94,22 @@ class PrintResi {
     receipt += spacetwo;
     receipt += '${DateUtils.getCurrentDateTime()}-${resi.namaSales}\n';
     receipt += '\n';
+
     if (resi.activity == 'Canvasing') {
       receipt += '${centerText('*** L U N A S ***', totalWidth)}\n';
     }
     receipt += '\n';
-    if (resi.activity == 'Canvasing') {
-    receipt += '${centerText("Barang yang sudah dibeli", totalWidth)}\n';
-    receipt += '${centerText("tidak bisa ditukar", totalWidth)}\n';
-    receipt += '${centerText("atau dikembalikan", totalWidth)}\n';
-    } 
-    // else {
-    //   receipt += '${formatLabel("Signature : ")}\n';
-    //   receipt += '\n';
-    // }
+
+    if (resi.activity == 'Canvasing' || topID == 'COD') {
+      receipt += '${centerText("Barang yang sudah dibeli", totalWidth)}\n';
+      receipt += '${centerText("tidak bisa ditukar", totalWidth)}\n';
+      receipt += '${centerText("atau dikembalikan", totalWidth)}\n';
+    } else if (topID == 'K14') {
+      receipt += '${formatLabel("Signature : ")}\n';
+      receipt += '\n';
+      receipt += '\n';
+    }
+
     receipt += '\n';
     receipt += '${centerText(".:TERIMA KASIH:.", totalWidth)}\n';
     receipt += '\n';

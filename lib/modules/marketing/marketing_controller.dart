@@ -74,9 +74,27 @@ class MarketingController extends GetxController {
   bool isToComplete = false;
   final MarketingApiClient apiClient = MarketingApiClient();
 
+  String? globalTopID; // Global TOP ID
+
+  void setGlobalTopID(String? topID) {
+    globalTopID = topID;
+    takingOrders.clear(); // Clear taking orders when TOP changes
+    update();
+  }
+
+  void clearTakingOrders() {
+    takingOrders.clear();
+    update();
+  }
+
   void getPriceList() async {
     priceList = await HiveService.getPriceList();
     update();
+  }
+
+  List<PriceList> getFilteredPriceList() {
+    if (globalTopID == null) return [];
+    return priceList.where((price) => price.topID == globalTopID).toList();
   }
 
   void setCustTop(CustTop? value) async {
@@ -250,7 +268,6 @@ class MarketingController extends GetxController {
           description: element.description,
           salesUnit: element.salesUnit,
           salesPrice: element.salesPrice,
-          
         ));
       }
       update();
