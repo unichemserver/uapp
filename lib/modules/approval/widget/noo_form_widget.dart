@@ -40,6 +40,8 @@ class NooFormWidget extends StatelessWidget {
           const SizedBox(height: 16),
           _buildCreditLimitField(context),
           const SizedBox(height: 16),
+          _buildPaymentMethodField(context),
+          const SizedBox(height: 16),
           _buildPaymentTermDropdown(context),
           const SizedBox(height: 16),
           _buildReadOnlyTextField('Nilai Jaminan', jaminanCtrl.text),
@@ -98,7 +100,7 @@ class NooFormWidget extends StatelessWidget {
     return AppTextField(
       controller: TextEditingController(text: value),
       label: label,
-      readOnly: true,
+      enabled: false,
       suffixIcon: suffixIcon,
     );
   }
@@ -196,6 +198,46 @@ class NooFormWidget extends StatelessWidget {
             },
           );
         }),
+      ],
+    );
+  }
+
+  Widget _buildPaymentMethodField(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Metode Pembayaran:',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        DropdownButtonFormField<String>(
+          value: paymentMethod.isNotEmpty && ['CASH', 'KREDIT'].contains(paymentMethod)
+              ? paymentMethod
+              : null,
+          items: ['CASH', 'KREDIT']
+              .map((method) => DropdownMenuItem<String>(
+                    value: method,
+                    child: Text(method),
+                  ))
+              .toList(),
+          onChanged: (value) {
+            if (value != null) {
+              onPaymentMethodChanged(value); // Notify parent about the change
+            }
+          },
+          hint: const Text('Pilih Metode Pembayaran'),
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.blue, width: 2),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          ),
+        ),
       ],
     );
   }

@@ -22,12 +22,32 @@ class MarketingDrawer extends StatelessWidget {
             ),
           ),
         ),
-        ListTile(
-          title: const Text('New Opening Outlet'),
-          leading: const Icon(Icons.add_location_alt_outlined),
-          onTap: () async {
-            Get.toNamed(Routes.NOO);
-          },
+        ExpansionTile(
+          initiallyExpanded: false,
+          title: const Text('Data Outlet'),
+          leading: const Icon(Icons.checklist),
+          children: [
+            Container(
+                margin: const EdgeInsets.only(left: 16),
+                child: ListTile(
+                  title: const Text('New Opening Outlet'),
+                  leading: const Icon(Icons.add_location_alt_outlined),
+                  onTap: () async {
+                    Get.toNamed(Routes.NOO);
+                  },
+                ),    
+            ),
+            Container(
+                margin: const EdgeInsets.only(left: 16),
+                child: ListTile(
+                  title: const Text('Outlet Pengajuan'),
+                  leading: const Icon(Icons.add_comment_outlined),
+                  onTap: () async {
+                    Get.toNamed(Routes.UPDATE_NOO);
+                  },
+                ),    
+            ),
+          ]
         ),
         ExpansionTile(
           initiallyExpanded: false,

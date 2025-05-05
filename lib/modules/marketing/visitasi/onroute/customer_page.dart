@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:uapp/app/routes.dart';
+import 'package:uapp/core/utils/log.dart';
 // import 'package:uapp/app/routes.dart';
 // import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
@@ -79,12 +82,34 @@ class CustomerPage extends StatelessWidget {
               ? const Center(child: Text('Data tidak ditemukan'))
               : ListView.builder(
                   itemCount: ctx.callManagementFiltered.length,
-                  itemBuilder: (_, index) => RadioListTile(
-                    title: Text(ctx.callManagementFiltered[index].name ?? 'Unknown'),
-                    subtitle: Text(ctx.callManagementFiltered[index].address ?? 'No Address'),
-                    value: ctx.callManagementFiltered[index],
-                    groupValue: ctx.selectedCustId,
-                    onChanged: (value) => ctx.setSelectedCustId(value),
+                  itemBuilder: (_, index) => Slidable(
+                    key: ValueKey(ctx.callManagementFiltered[index].id),
+                    endActionPane: ActionPane(
+                      motion: const ScrollMotion(),
+                      children: [
+                        SlidableAction(
+                          onPressed: (context) {
+                            // Trigger edit action
+                            Log.d('Edit customer: ${ctx.callManagementFiltered[index].id}');
+                            Get.toNamed(Routes.NOO_EDIT, arguments: {
+                              'id': ctx.callManagementFiltered[index].id,
+                              'name': ctx.callManagementFiltered[index].name,
+                            });
+                          },
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          icon: Icons.edit,
+                          label: 'Update',
+                        ),
+                      ],
+                    ),
+                    child: RadioListTile(
+                      title: Text(ctx.callManagementFiltered[index].name ?? 'Unknown'),
+                      subtitle: Text(ctx.callManagementFiltered[index].address ?? 'No Address'),
+                      value: ctx.callManagementFiltered[index],
+                      groupValue: ctx.selectedCustId,
+                      onChanged: (value) => ctx.setSelectedCustId(value),
+                    ),
                   ),
                 ),
     );

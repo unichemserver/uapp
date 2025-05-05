@@ -71,7 +71,7 @@ class CheckCompetitorPage extends StatelessWidget {
             size: 100.0,
           ),
           Text(
-            'Belum ada data kompetitor yang anda masukkan',
+            'Belum ada data kompetitor',
             style: Theme.of(context).textTheme.titleMedium!.copyWith(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'OpenSans',

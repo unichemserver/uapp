@@ -5,6 +5,7 @@ import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/utils/date_utils.dart';
 import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/utils.dart';
+import 'package:uapp/modules/home/home_api.dart';
 import 'package:uapp/modules/marketing/marketing_api.dart';
 import 'package:uapp/modules/marketing/model/noo_model.dart';
 import 'package:uapp/modules/marketing/model/spesimen_model.dart';
@@ -14,10 +15,14 @@ import 'package:uapp/modules/marketing/visitasi/noo/noo_text_controller.dart';
 class NooController extends GetxController {
   final db = MarketingDatabase();
   final api = MarketingApiService();
+  final nooId = ''.obs;
+  final masternoo = Rxn<Map<String, dynamic>>();
+  final documents = <Map<String, dynamic>>[].obs;
+  final spesimens = <Map<String, dynamic>>[].obs;
   String? idNOO;
+  String? idUpdate;
   String clusterKelompok = '';
-  // String groupPelanggan = ''; 
-  String paymentMethod = '';
+  var paymentMethod = ''.obs; // Store payment method text directly
   String jaminan = '';
   String kantorOwnership = '';
   String gudangOwnership = '';
@@ -51,16 +56,36 @@ class NooController extends GetxController {
     ? '${selectedNamaDesc.value}[${selectedCluster.value}]'
     : selectedNamaDesc.value;
   List<SpesimenModel> spesimen = [];
-  var isCreditLimitAndJaminanVisible = false.obs; // Initialize as false
+  var isCreditLimitAndJaminanVisible = false.obs; 
 
-  saveData(NooTextController nooDatas) async {
-    if (idNOO == null) {
-      await getIDNOO();
+  saveData(NooTextController nooDatas, {String? nooId}) async {
+    if (nooId != null) {
+      idNOO = nooId; 
+    } else if (idNOO == null) {
+      await getIDNOO(); 
     }
+
+    if (idUpdate == null) {
+      await getIDNOOUpdate();
+    }
+
+    if (idNOO != null) {
+      await db.update(
+        'noo_activity',
+        {
+          'statussync': 0,
+        },
+        'idnoo = ?',
+        [idNOO],
+      );
+    }
+
+    Log.d('Data $nooDatas');
+    Log.d('Payment Method ${paymentMethod.value}');
+
     Map<String, dynamic> additionalData = {
       'group_cust': formatGroupCust,
-      // 'group_cust': groupPelanggan,
-      // 'termin': paymentMethod,
+      'payment_method': paymentMethod.value, // Use text value
       'jaminan': jaminan,
       'ownership_toko': kantorOwnership,
       'ownership_gudang': gudangOwnership,
@@ -68,17 +93,28 @@ class NooController extends GetxController {
       'status_pajak': statusPajak,
     };
     additionalData.addAll(nooDatas.toJson());
-    await db.update(
-      'masternoo',
-      additionalData,
-      'id = ?',
-      [idNOO],
-    );
+
+    if (nooId != null) {
+      await db.update(
+        'masternooupdate',
+        additionalData,
+        'id_noo = ?',
+        [idNOO], 
+      );
+    } else {
+      await db.update(
+        'masternoo',
+        additionalData,
+        'id = ?', // Use 'id' as the search column
+        [idNOO],  // Ensure idNOO is used correctly
+      );
+    }
+
     Map<String, dynamic> addressMap = {
       'alamat_owner': ownerAddress,
       'alamat_kantor': companyAddress,
       'alamat_gudang': warehouseAddress,
-      'alamat_npwp': billingAddress
+      'alamat_npwp': billingAddress,
     };
 
     for (var address in addressMap.keys) {
@@ -90,7 +126,7 @@ class NooController extends GetxController {
         [addressObject.id],
       );
     }
-    // Save document data only if provided
+
     Map<String, dynamic> documentData = {
       if (ktpPath.isNotEmpty) 'ktp': ktpPath,
       if (npwpPath.isNotEmpty) 'npwp': npwpPath,
@@ -185,6 +221,51 @@ class NooController extends GetxController {
     update();
   }
 
+  getIDNOOUpdate() async {
+    var idNOOUpdate = await generateID();
+    await db.insert(
+      'masternooupdate',
+      {
+        'id': idNOOUpdate,
+        'id_noo': idNOO,
+      },
+      nullColumnHack: 'group_cust',
+    );
+
+    // Insert into noo_activity
+    await db.insert(
+      'noo_activity',
+      {
+        'idnoo': idNOO,
+        'statussync': 0,
+        'approved': 0,
+      },
+    );
+
+    var idDocNoo = await generateNooID('noodocument');
+    await db.insert(
+      'noodocument',
+      {
+        'id': idDocNoo,
+        'id_noo': idNOO,
+      },
+      nullColumnHack: 'ktp',
+    );
+    await db.update(
+      'masternooupdate',
+      {
+        'alamat_owner': ownerAddress.id,
+        'alamat_kantor': companyAddress.id,
+        'alamat_gudang': warehouseAddress.id,
+        'alamat_npwp': billingAddress.id,
+      },
+      'id_noo = ?',
+      [idNOO],
+    );
+    update();
+  }
+  
+
 Future<void> fetchCustomerGroup() async {
    try {
       List<dynamic> result = await api.getMasterGroup();
@@ -228,21 +309,6 @@ Future<void> loadCustomerGroups() async {
     customerGroups.assignAll(groups);
     update();
   }
-
-// Future<void> saveCustomerGroupsToDB(List<dynamic> groups) async {
-//   await db.delete(
-//     'mastergroup',
-//     'cluster_kelompok = ?',
-//     [clusterKelompok],
-//   );
-
-//   for (var group in groups) {
-//     await db.insert('mastergroup', {
-//       'cluster_kelompok': group['cluster_kelompok'],
-//       'nama_desc': group['nama_desc'],
-//     });
-//   }
-// }
 
   Future<String> generateNooID(String table) async {
     var userId = Utils.getUserData().id;
@@ -303,8 +369,49 @@ Future<void> loadCustomerGroups() async {
     return id;
   }
 
+  Future<String> generateID() async {
+    var day = DateUtils.getDay();
+    var userId = Utils.getUserData().id;
+    String pattern = 'CUS$userId$day';
+    String id;
+    int newIncrement = 1;
+    bool isDuplicate;
+
+    do {
+    String query = '''
+      SELECT id FROM masternooupdate
+      WHERE id LIKE '$pattern%'
+      ORDER BY id DESC
+      LIMIT 1
+    ''';
+    List<Map> result = await db.rawQuery(query);
+
+    if (result.isNotEmpty) {
+      String lastId = result.first['id'];
+      int lastIncrement = int.parse(lastId.substring(pattern.length));
+      newIncrement = lastIncrement + 1;
+    }
+
+    id = '$pattern${newIncrement.toString().padLeft(2, '0')}';
+
+    String checkQuery = '''
+    SELECT COUNT(*) as count FROM masternoo
+      WHERE id = ?
+    ''';
+    List<Map> checkResult = await db.rawQuery(checkQuery, args: [id]);
+    isDuplicate = checkResult.first['count'] > 0;
+    } while (isDuplicate);
+  
+    return id;
+  }
+
   setNooId(String nooId) {
     idNOO = nooId;
+    update();
+  }
+
+  setNooUpdateId(String nooId) {
+    idUpdate = nooId;
     update();
   }
 
@@ -317,8 +424,8 @@ Future<void> loadCustomerGroups() async {
       selectedNamaDesc.value = data.groupCust ?? '';
       selectedCluster.value = '';
     }
-    // paymentMethod = data.termin ?? '';
     jaminan = data.jaminan ?? '';
+    paymentMethod.value = data.paymentMethod ?? '';
     kantorOwnership = data.ownershipToko ?? '';
     gudangOwnership = data.ownershipGudang ?? '';
     rumahOwnership = data.ownershipRumah ?? '';
@@ -333,6 +440,11 @@ Future<void> loadCustomerGroups() async {
 
   void setSelectedNamaDesc(String namaDesc) {
     selectedNamaDesc.value = namaDesc;
+    update();
+  }
+
+  void setPaymentMethod(String method) {
+    paymentMethod.value = method; // Set text value
     update();
   }
 
@@ -486,7 +598,7 @@ Future<void> loadCustomerGroups() async {
 
   Future<void> checkTables() async {
     final tables = await db.rawQuery(
-        "SELECT * FROM noo_activity",);
+        "SELECT * FROM masternooupdate",);
     Log.d("Tables in Database: $tables");
   }
 
@@ -526,13 +638,132 @@ Future<void> loadCustomerGroups() async {
     update();
   }
 
+  void setIdNoo(String idNoo) {
+    nooId.value = idNoo;
+    update();
+  }
+
+   Future<void> fetchMasterNooData() async {
+    try {
+      final apiData = await HomeApi.getDataNoo();
+      if (apiData != null) {
+        masternoo.value = apiData.firstWhere(
+          (noo) => noo['id'] == nooId.value,
+          orElse: () => <String, dynamic>{},
+        ).map((key, value) => MapEntry(key, value ?? "")); // Replace null with ""
+      }
+    } catch (e) {
+      Log.d('Error fetching masternoo data: $e');
+    }
+  }
+
+  Future<void> fetchDocumentNoo() async {
+    try {
+      Log.d('NOO ID: ${nooId.value}');
+      final apiDocuments = await HomeApi.getDocumentNoo(nooId.value);
+      Log.d('Documents: $apiDocuments');
+      if (apiDocuments != null) {
+        documents.assignAll(apiDocuments.map((doc) => doc.map((key, value) => MapEntry(key, value ?? "")))); // Replace null with ""
+      } else {
+        documents.clear();
+      }
+    } catch (e) {
+      Log.d('Error fetching document data: $e');
+    }
+  }
+
+  Future<void> fetchSpesimenNoo() async {
+    try {
+      final data = await db.query('noospesimen', where: 'id_noo = ?', whereArgs: [nooId.value]);
+      spesimens.assignAll(data.map((spec) => spec.map((key, value) => MapEntry(key, value ?? "")))); // Replace null with ""
+    } catch (e) {
+      Log.d('Error fetching spesimen data: $e');
+    }
+  }
+
+Future<void> setNooAddressFromApi() async {
+  try {
+    final response = await HomeApi.getAddress(nooId.value);
+    if (response != null) {
+      final List<dynamic> addresses = response;
+
+      await fetchMasterNooData();
+      final noo = masternoo.value;
+
+      if (noo != null) {
+        _matchAndSetAddress(addresses, noo['alamat_owner'], (val) {
+          ownerAddress = val;
+          Log.d('owner address: $val');
+        });
+
+        _matchAndSetAddress(addresses, noo['alamat_kantor'], (val) {
+          companyAddress = val;
+          Log.d('company address: $val');
+        });
+
+        _matchAndSetAddress(addresses, noo['alamat_gudang'], (val) {
+          warehouseAddress = val;
+          Log.d('warehouse address: $val');
+        });
+
+        _matchAndSetAddress(addresses, noo['alamat_npwp'], (val) {
+          billingAddress = val;
+          Log.d('billing address: $val');
+        });
+        update(); // Update state
+      } else {
+        Log.d('Error: masternoo.value is null or invalid');
+      }
+    }
+  } catch (e) {
+    Log.d('Error fetching address data: $e');
+  }
+}
+
+void _matchAndSetAddress(List<dynamic> addressList, String? id, Function(NooAddressModel) callback) {
+  if (id == null) return;
+  final matched = addressList.firstWhere(
+    (element) => element['id'] == id,
+    orElse: () => <String, dynamic>{},
+  );
+if (matched.isNotEmpty) {
+      callback(NooAddressModel.fromJson(matched));
+      update();
+    }
+}
+
+  Future<void> updateMasterNooField(String field, String value) async {
+    try {
+      await db.update(
+        'masternoo',
+        {field: value},
+        'id = ?',
+        [nooId.value],
+      );
+      await fetchMasterNooData();
+    } catch (e) {
+      Log.d('Error updating $field: $e');
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
+
+    // Fetch arguments and set nooId
+    final arg = Get.arguments as Map<String, dynamic>?;
+    if (arg != null && arg.containsKey('id')) {
+      setIdNoo(arg['id']);
+    }
+
     fetchCustomerGroup();
     fetchTopOptions();
     loadTopOptions();
     loadCustomerGroups();
     checkTables();
+    fetchMasterNooData();
+    fetchDocumentNoo();
+    fetchSpesimenNoo();
+    setNooAddressFromApi();
   }
 }

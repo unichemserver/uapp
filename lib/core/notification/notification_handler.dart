@@ -21,6 +21,13 @@ class NotificationHandler {
       _showNotification(message);
     });
 
+    // Handle background messages
+    // FirebaseMessaging.onBackgroundMessage((RemoteMessage message) async {
+    //   Log.d('FCM: Received message in background: ${message.notification?.title}');
+    //   await _showNotification(message);
+    // });
+
+
     // Handle background and terminated messages
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       Log.d('FCM: Notification clicked');
@@ -39,6 +46,8 @@ class NotificationHandler {
       }
     });
   }
+
+
 
   static Future<void> _showNotification(RemoteMessage message) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =

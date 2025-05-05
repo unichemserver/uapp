@@ -77,7 +77,13 @@ class _AddressInformationState extends State<AddressInformation> {
       leading: const Icon(Icons.location_on),
       expandedAlignment: Alignment.topLeft,
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: true,
       children: [
+        const SizedBox(height: 4),
+        Text(
+          'Alamat:',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         AppTextField(
           controller: addressController,
           hintText: 'Nama Jalan',
@@ -89,6 +95,10 @@ class _AddressInformationState extends State<AddressInformation> {
           },
         ),
         const SizedBox(height: 16),
+        Text(
+          'RT/RW:',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         AppTextField(
           controller: rtRwController,
           hintText: 'RT/RW',
@@ -100,6 +110,10 @@ class _AddressInformationState extends State<AddressInformation> {
           },
         ),
         const SizedBox(height: 16),
+        Text(
+          'Provinsi:',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         AppTextField(
           controller: propinsiController,
           hintText: 'Provinsi',
@@ -111,6 +125,10 @@ class _AddressInformationState extends State<AddressInformation> {
           },
         ),
         const SizedBox(height: 16),
+        Text(
+          'Kabupaten/Kota:',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         AppTextField(
           controller: kabKotaController,
           hintText: 'Kabupaten',
@@ -122,6 +140,10 @@ class _AddressInformationState extends State<AddressInformation> {
           },
         ),
         const SizedBox(height: 16),
+        Text(
+          'Kecamatan:',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         AppTextField(
           controller: kecamatanController,
           hintText: 'Kecamatan',
@@ -133,6 +155,10 @@ class _AddressInformationState extends State<AddressInformation> {
           },
         ),
         const SizedBox(height: 16),
+        Text(
+          'Desa/Kelurahan:',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         AppTextField(
           controller: desaKelurahanController,
           hintText: 'Desa/Kelurahan',
@@ -144,6 +170,10 @@ class _AddressInformationState extends State<AddressInformation> {
           },
         ),
         const SizedBox(height: 16),
+        Text(
+          'Kode Pos:',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         AppTextField(
           controller: kodePosController,
           hintText: 'Kode Pos',

@@ -7,7 +7,7 @@ class MarketingDatabase {
   static final MarketingDatabase _instance =
       MarketingDatabase._privateConstructor();
   static Database? _database;
-  final int marketingDbVersion = 8;
+  final int marketingDbVersion = 9;
 
   MarketingDatabase._privateConstructor();
 
@@ -225,6 +225,10 @@ class MarketingDatabase {
         Log.d('Column "ppn" already exists in "taking_order" table.');
       }
     }
+
+    if (oldVersion < 9) {
+      await db.execute(masterNooUpdateTable);
+    }
   }
 
   Future<int> insert(String table, Map<String, dynamic> data,
@@ -285,6 +289,7 @@ class MarketingDatabase {
     await db.delete('collection');
     await db.delete('invoice');
     await db.delete('masternoo');
+    await db.delete('masternooupdate');
     // await db.delete('ttdnoo');
     await db.delete('nooaddress');
     await db.delete('noodocument');
@@ -305,6 +310,7 @@ class MarketingDatabase {
       'collection',
       'invoice',
       'masternoo',
+      'masternooupdate',
       'nooaddress',
       'noodocument',
       'noospesimen',

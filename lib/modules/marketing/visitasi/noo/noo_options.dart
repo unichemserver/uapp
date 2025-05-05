@@ -8,10 +8,10 @@ class NooOptions {
     'Lainnya',
   ];
 
-  static const List<String> paymentMethod = [
-    'Terms of Payment (TOP)',
-    'Cash Before Delivery (CBD)',
-    'Cash on Delivery (COD)',
+
+  static const List<String> paymentMethods = [
+    'CASH',
+    'KREDIT',
   ];
 
   static const List<String> jaminanDistributor = [

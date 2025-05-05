@@ -178,75 +178,69 @@ class _StockReportDialogState extends State<StockReportDialog> {
                         const SizedBox(
                           height: 16.0,
                         ),
-                        Expanded(
-                          child: imagePath.isEmpty
-                              ? Container(
-                                  alignment: Alignment.center,
-                                  height: 200.0,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8.0),
+                        imagePath.isEmpty
+                            ? Container(
+                                alignment: Alignment.center,
+                                height: 200.0,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Theme.of(context).colorScheme.primary,
                                   ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.add_a_photo),
-                                        onPressed: () async {
-                                          var imagePath =
-                                              await Navigator.pushNamed(
-                                                  context, Routes.REPORT);
-                                          if (imagePath != null) {
-                                            setState(() {
-                                              this.imagePath =
-                                                  imagePath.toString();
-                                            });
-                                          }
-                                        },
-                                      ),
-                                      const Text(
-                                          'Tidak ada gambar yang dipilih'),
-                                    ],
-                                  ),
-                                )
-                              : GestureDetector(
-                                  onTap: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          content: Image.file(
-                                            File(imagePath),
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('Tutup'),
-                                            ),
-                                            TextButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  imagePath = '';
-                                                });
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('Hapus Foto'),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
-                                  child: Image.file(
-                                    File(imagePath),
-                                  ),
+                                  borderRadius: BorderRadius.circular(8.0),
                                 ),
-                        ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.add_a_photo),
+                                      onPressed: () async {
+                                        var imagePath = await Navigator.pushNamed(
+                                            context, Routes.REPORT);
+                                        if (imagePath != null) {
+                                          setState(() {
+                                            this.imagePath = imagePath.toString();
+                                          });
+                                        }
+                                      },
+                                    ),
+                                    const Text('Tidak ada gambar yang dipilih'),
+                                  ],
+                                ),
+                              )
+                            : GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        content: Image.file(
+                                          File(imagePath),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text('Tutup'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                imagePath = '';
+                                              });
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text('Hapus Foto'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Image.file(
+                                  File(imagePath),
+                                ),
+                              ),
                         const SizedBox(
                           height: 16.0,
                         ),

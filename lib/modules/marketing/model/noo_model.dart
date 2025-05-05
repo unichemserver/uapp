@@ -1,5 +1,6 @@
 class NooModel {
   String? id;
+  String? idNoo;
   String? groupCust;
   String? creditLimit;
   String? paymentMethod;
@@ -50,6 +51,7 @@ class NooModel {
 
   NooModel({
     this.id,
+    this.idNoo,
     this.groupCust,
     this.creditLimit,
     this.paymentMethod,
@@ -103,6 +105,7 @@ class NooModel {
   factory NooModel.fromJson(Map<String, dynamic> json) {
     return NooModel(
       id: json['id'],
+      idNoo: json['id_noo'],
       groupCust: json['group_cust'],
       creditLimit: json['credit_limit'],
       paymentMethod: json['payment_method'],
@@ -156,6 +159,7 @@ class NooModel {
   // Method to convert the instance back to JSON
   Map<String, dynamic> toJson() {
     return {
+      'id_noo': idNoo,
       'group_cust': groupCust,
       'credit_limit': creditLimit,
       'payment_method': paymentMethod,

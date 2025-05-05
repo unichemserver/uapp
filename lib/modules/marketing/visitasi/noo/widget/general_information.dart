@@ -91,9 +91,33 @@ class GeneralInformation extends StatelessWidget {
               ),
             const SizedBox(height: 16),
             Text(
-              'Termin Pembayaran (TOP) Pelanggan:',
+              'Metode Pembayaran:',
               style: Theme.of(context).textTheme.titleSmall,
             ),
+            Obx(() {
+              return DropdownButtonFormField<String>(
+                items: NooOptions.paymentMethods
+                    .map((method) => DropdownMenuItem(
+                          value: method,
+                          child: Text(method),
+                        ))
+                    .toList(),
+                value: ctx.paymentMethod.value.isNotEmpty ? ctx.paymentMethod.value : null,
+                onChanged: (value) {
+                  if (value == 'CASH') {
+                    ctx.paymentMethod.value = 'CASH';
+                    topDateCtrl.text = 'COD';
+                    // ctx.showCreditLimitAndJaminan(false);
+                  } else if (value == 'KREDIT') {
+                    ctx.paymentMethod.value = 'KREDIT';
+                    topDateCtrl.clear();
+                    // ctx.showCreditLimitAndJaminan(false);
+                  }
+                },
+                hint: const Text('Pilih Metode Pembayaran'),
+                icon: const Icon(Icons.payment),
+              );
+            }),
             Obx(() {
               var items = ctx.topOptions
                   .map((item) => DropdownMenuItem<String>(
@@ -106,96 +130,32 @@ class GeneralInformation extends StatelessWidget {
                   ? topDateCtrl.text
                   : null;
 
-              return DropdownButtonFormField<String>(
-                value: selectedValue,
-                items: items,
-                onChanged: (value) {
-                  if (value != null) {
-                    Log.d('Selected TOP: $value');
-                    topDateCtrl.text = value;
-                    ctx.paymentMethod = value;
-                    ctx.update();
-
-                    // Hide or show inputs based on selected TOP
-                    if (value == 'K00' || value == 'COD' || value == 'CIA') {
-                      ctx.showCreditLimitAndJaminan(false);
-                    } else {
-                      ctx.showCreditLimitAndJaminan(true);
-                    }
-                  } else {
-                    // Hide inputs if no TOP is selected
-                    ctx.showCreditLimitAndJaminan(false);
-                  }
-                },
-                hint: const Text('Pilih Termin Pembayaran'),
-                icon: const Icon(Icons.calendar_today),
-              );
-            }),
-            Obx(() {
-              if (!ctx.isCreditLimitAndJaminanVisible.value) {
-                return const SizedBox.shrink();
+              if (ctx.paymentMethod.value == 'KREDIT') {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    Text(
+                      'Termin Pembayaran (TOP):',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    DropdownButtonFormField<String>(
+                      value: selectedValue,
+                      items: items,
+                      onChanged: (value) {
+                        if (value != null) {
+                          topDateCtrl.text = value;
+                          // ctx.paymentMethod.value = value;
+                          ctx.update();
+                        }
+                      },
+                      hint: const Text('Pilih Termin Pembayaran'),
+                      icon: const Icon(Icons.calendar_today),
+                    ),
+                  ],
+                );
               }
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-                  Text(
-                    'Credit Limit (Secara Total dalam Rupiah):',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  AppTextField(
-                    hintText: 'Masukan Credit Limit',
-                    controller: creditLimitCtrl,
-                    prefixIcon: Container(
-                      padding: const EdgeInsets.all(8),
-                      child: const Text(
-                        'Rp',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontFamily: 'OpenSans',	                        
-                        ),
-                      ),
-                    ),
-                    onChanged: (value) {
-                      var credit = int.tryParse(value.replaceAll(RegExp(r'\D'), ''));
-                      if (credit != null) {
-                        jaminanCtrl.text = (credit * 1.1).toInt().toString();
-                      }
-                    },
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Credit limit tidak boleh kosong';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Nilai Jaminan (Rp) : 110% dari Nominal Credit Limit:',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  AppTextField(
-                    hintText: 'Masukan Nilai Jaminan',
-                    controller: jaminanCtrl,
-                    prefixIcon: Container(
-                      padding: const EdgeInsets.all(8),
-                      child: const Text(
-                        'Rp',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontFamily: 'OpenSans',	                        
-                        )
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Nilai jaminan tidak boleh kosong';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-              );
+              return const SizedBox.shrink();
             }),
             const SizedBox(height: 16),
             Text(
@@ -241,21 +201,6 @@ class GeneralInformation extends StatelessWidget {
               },
             ),
             const SizedBox(height: 16),
-            // Text(
-            //   'No. ID Pelanggan (Diisi oleh HO PT. UCI):',
-            //   style: Theme.of(context).textTheme.titleSmall,
-            // ),
-            // AppTextField(
-            //   hintText: 'Masukan ID Pelanggan',
-            //   controller: idPelangganCtrl,
-            //   validator: (value) {
-            //     if (value!.isEmpty) {
-            //       return 'ID Pelanggan tidak boleh kosong';
-            //     }
-            //     return null;
-            //   },
-            // ),
-            // const SizedBox(height: 16),
             Text(
               'Area Pemasaran:',
               style: Theme.of(context).textTheme.titleSmall,
@@ -297,21 +242,6 @@ class GeneralInformation extends StatelessWidget {
                 return null;
               },
             ),
-            // const SizedBox(height: 16),
-            // Text(
-            //   'Nama ASM PT. UCI:',
-            //   style: Theme.of(context).textTheme.titleSmall,
-            // ),
-            // AppTextField(
-            //   hintText: 'Masukan Nama ASM',
-            //   controller: asmNameCtrl,
-            //   validator: (value) {
-            //     if (value!.isEmpty) {
-            //       return 'Nama ASM tidak boleh kosong';
-            //     }
-            //     return null;
-            //   },
-            // ),
           ],
         );
       },

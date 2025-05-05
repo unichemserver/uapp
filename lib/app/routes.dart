@@ -34,6 +34,8 @@ import 'package:uapp/modules/approval/approval_screen.dart';
 import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_offroute.dart';
 import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_onroute.dart';
 import 'package:uapp/modules/marketing/visitasi/callmanagement/callmanagement_page.dart';
+import 'package:uapp/modules/marketing/visitasi/noo/update_noo_page.dart';
+import 'package:uapp/modules/marketing/visitasi/noo/update_noo_saved.dart';
 
 class Routes {
   static const String INITIAL = '/';
@@ -53,12 +55,14 @@ class Routes {
   static const String CUSTACTIVE = '/custactive';
   static const String HISTORY_VISITASI = '/history-visitasi';
   static const String SAVED_NOO = '/saved-noo';
+  static const String UPDATE_NOO = '/update-noo';
   static const String SYNC_MARKETING = '/sync-marketing';
   static const String APPROVAL = '/approval';
   static const String CANVASING_OFFROUTE = '/canvasing-offroute';
   static const String CANVASING_ONROUTE = '/canvasing-onroute';
   static const String CALL_MANAGEMENT = '/call-management';
-
+  static const String NOO_EDIT = '/noo-Edit';
+  
   static List<GetPage> pages = [
     GetPage(
       name: INITIAL,
@@ -124,7 +128,7 @@ class Routes {
     ),
     GetPage(
       name: CUSTACTIVE,
-      page: () => CustactivePage(),
+      page: () => const CustactivePage(),
       binding: CustactiveBinding(),
     ),
     GetPage(
@@ -134,6 +138,10 @@ class Routes {
     GetPage(
       name: SAVED_NOO,
       page: () => const NooSaved(),
+    ),
+    GetPage(
+      name: UPDATE_NOO,
+      page: () => const UpdateNooSaved(),
     ),
     GetPage(
       name: SYNC_MARKETING,
@@ -152,10 +160,15 @@ class Routes {
       page: () => const CanvasingOnroute(),
     ),
     GetPage(
+      name: NOO_EDIT,
+      page: () => const UpdateNooPage(),
+      binding: NooBinding(),
+    ),
+    GetPage(
       name: CALL_MANAGEMENT,
       page: () => const CallManagementPage(),
     ),
-    ...createdMemoList.map((e) => GetPage(
+        ...createdMemoList.map((e) => GetPage(
           name: '/${e.name.replaceAll(' ', '_').toLowerCase()}',
           page: () => e.page,
         )),

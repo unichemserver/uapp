@@ -28,12 +28,12 @@ class ProfileScreen extends StatelessWidget {
           appBar: AppBar(
             title: const Text('Profile'),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () {
-                  Get.toNamed(Routes.SETTING);
-                },
-              ),
+              // IconButton(
+              //   icon: const Icon(Icons.settings),
+              //   onPressed: () {
+              //     Get.toNamed(Routes.SETTING);
+              //   },
+              // ),
               IconButton(
                 icon: const Icon(Icons.logout),
                 onPressed: () {

@@ -73,6 +73,60 @@ CREATE TABLE IF NOT EXISTS masternoo (
     status_sync INTEGER DEFAULT 0
 );
 ''';
+const masterNooUpdateTable = '''
+CREATE TABLE IF NOT EXISTS masternooupdate (
+    id TEXT PRIMARY KEY,
+    id_noo TEXT,
+    group_cust TEXT,
+    credit_limit TEXT,
+    payment_method TEXT,
+    termin TEXT,
+    jaminan TEXT,
+    nilai_jaminan TEXT,
+    nama_perusahaan TEXT,
+    id_cust TEXT,
+    area_marketing TEXT,
+    tgl_join TEXT,
+    spv_uci TEXT,
+    asm_uci TEXT,
+    nama_owner TEXT,
+    id_owner TEXT,
+    age_gender_owner TEXT,
+    nohp_owner TEXT,
+    email_owner TEXT,
+    alamat_owner TEXT,
+    alamat_kantor TEXT,
+    nama_jabatan_keuangan TEXT,
+    nohp_keuangan TEXT,
+    web_email_keuangan TEXT,
+    nama_jabatan_penjualan TEXT,
+    nohp_penjualan TEXT,
+    web_email_penjualan TEXT,
+    alamat_gudang TEXT,
+    nama_pic_jabatan TEXT,
+    nohp_pic TEXT,
+    ownership_toko TEXT,
+    ownership_gudang TEXT,
+    ownership_rumah TEXT,
+    luas_toko TEXT,
+    luas_gudang TEXT,
+    status_pajak TEXT,
+    nama_npwp TEXT,
+    no_npwp TEXT,
+    alamat_npwp TEXT,
+    nama_bank TEXT,
+    no_rek_va TEXT,
+    nama_rek TEXT,
+    cabang_bank TEXT,
+    bidang_usaha TEXT,
+    tgl_mulai_usaha TEXT,
+    produk_utama TEXT,
+    produk_lain TEXT,
+    lima_cust_utama TEXT,
+    est_omset_month TEXT,
+    status_sync INTEGER DEFAULT 0
+);
+''';
 
 const ttdNooTable = '''
 CREATE TABLE IF NOT EXISTS noottd (

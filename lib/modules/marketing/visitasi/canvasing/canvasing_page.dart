@@ -88,8 +88,7 @@ class CanvasingPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              Get.back();
-              Get.back();
+              Navigator.of(context).pop();
             },
             child: const Text('Tidak'),
           ),

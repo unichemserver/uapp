@@ -183,41 +183,45 @@ class NooTextController {
   }
 
   void mapModelToCtrl(NooModel data) {
-    creditLimitCtrl.text = data.creditLimit ?? '';
-    topDateCtrl.text = data.termin ?? '';
-    jaminanCtrl.text = data.nilaiJaminan ?? '';
-    namaPerusahaanCtrl.text = data.namaPerusahaan ?? '';
-    idPelangganCtrl.text = data.idCust ?? '';
-    areaPemasaranCtrl.text = data.areaMarketing ?? '';
-    tglJoinCtrl.text = data.tglJoin ?? '';
-    supervisorNameCtrl.text = data.spvUci ?? '';
-    asmNameCtrl.text = data.asmUci ?? '';
-    namaOwnerCtrl.text = data.namaOwner ?? '';
-    idOwnerCtrl.text = data.idOwner ?? '';
-    ageGenderOwnerCtrl.text = data.ageGenderOwner ?? '';
-    nohpOwnerCtrl.text = data.nohpOwner ?? '';
-    emailOwnerCtrl.text = data.emailOwner ?? '';
-    namaJabatanKeuanganCtrl.text = data.namaJabatanKeuangan ?? '';
-    nohpKeuanganCtrl.text = data.nohpKeuangan ?? '';
-    webEmailKeuanganCtrl.text = data.webEmailKeuangan ?? '';
-    namaJabatanPenjualanCtrl.text = data.namaJabatanPenjualan ?? '';
-    nohpPenjualanCtrl.text = data.nohpPenjualan ?? '';
-    webEmailPenjualanCtrl.text = data.webEmailPenjualan ?? '';
-    namaPicCtrl.text = data.namaPICJabatan ?? '';
-    noTelpCtrl.text = data.nohpPIC ?? '';
-    luasTokoCtrl.text = data.luasToko ?? '';
-    luasGudangCtrl.text = data.luasGudang ?? '';
-    namaNpwpCtrl.text = data.namaNpwp ?? '';
-    noNpwpCtrl.text = data.noNpwp ?? '';
-    namaBankCtrl.text = data.namaBank ?? '';
-    noRekVaCtrl.text = data.noRekVa ?? '';
-    namaRekCtrl.text = data.namaRek ?? '';
-    cabangBankCtrl.text = data.cabangBank ?? '';
-    bidangUsahaCtrl.text = data.bidangUsaha ?? '';
-    tglMulaiUsahaCtrl.text = data.tglMulaiUsaha ?? '';
-    produkUtamaCtrl.text = data.produkUtama ?? '';
-    produkLainCtrl.text = data.produkLain ?? '';
-    limaCustUtamaCtrl.text = data.limaCustUtama ?? '';
-    estOmsetMonthCtrl.text = data.estOmsetMonth ?? '';
+    String sanitize(String? value) {
+      return (value == null || value == "null") ? '' : value;
+    }
+
+    creditLimitCtrl.text = sanitize(data.creditLimit);
+    topDateCtrl.text = sanitize(data.termin);
+    jaminanCtrl.text = sanitize(data.nilaiJaminan);
+    namaPerusahaanCtrl.text = sanitize(data.namaPerusahaan);
+    idPelangganCtrl.text = sanitize(data.idCust);
+    areaPemasaranCtrl.text = sanitize(data.areaMarketing);
+    tglJoinCtrl.text = sanitize(data.tglJoin);
+    supervisorNameCtrl.text = sanitize(data.spvUci);
+    asmNameCtrl.text = sanitize(data.asmUci);
+    namaOwnerCtrl.text = sanitize(data.namaOwner);
+    idOwnerCtrl.text = sanitize(data.idOwner);
+    ageGenderOwnerCtrl.text = sanitize(data.ageGenderOwner);
+    nohpOwnerCtrl.text = sanitize(data.nohpOwner);
+    emailOwnerCtrl.text = sanitize(data.emailOwner);
+    namaJabatanKeuanganCtrl.text = sanitize(data.namaJabatanKeuangan);
+    nohpKeuanganCtrl.text = sanitize(data.nohpKeuangan);
+    webEmailKeuanganCtrl.text = sanitize(data.webEmailKeuangan);
+    namaJabatanPenjualanCtrl.text = sanitize(data.namaJabatanPenjualan);
+    nohpPenjualanCtrl.text = sanitize(data.nohpPenjualan);
+    webEmailPenjualanCtrl.text = sanitize(data.webEmailPenjualan);
+    namaPicCtrl.text = sanitize(data.namaPICJabatan);
+    noTelpCtrl.text = sanitize(data.nohpPIC);
+    luasTokoCtrl.text = sanitize(data.luasToko);
+    luasGudangCtrl.text = sanitize(data.luasGudang);
+    namaNpwpCtrl.text = sanitize(data.namaNpwp);
+    noNpwpCtrl.text = sanitize(data.noNpwp);
+    namaBankCtrl.text = sanitize(data.namaBank);
+    noRekVaCtrl.text = sanitize(data.noRekVa);
+    namaRekCtrl.text = sanitize(data.namaRek);
+    cabangBankCtrl.text = sanitize(data.cabangBank);
+    bidangUsahaCtrl.text = sanitize(data.bidangUsaha);
+    tglMulaiUsahaCtrl.text = sanitize(data.tglMulaiUsaha);
+    produkUtamaCtrl.text = sanitize(data.produkUtama);
+    produkLainCtrl.text = sanitize(data.produkLain);
+    limaCustUtamaCtrl.text = sanitize(data.limaCustUtama);
+    estOmsetMonthCtrl.text = sanitize(data.estOmsetMonth);
   }
 }

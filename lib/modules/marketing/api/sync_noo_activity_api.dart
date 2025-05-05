@@ -41,6 +41,33 @@ class SyncNooActivityApi {
       'Data NOO telah berhasil dibuat dan menunggu persetujuan',
     );
   }
+  Future<void> syncNooUpdate({String? idNoo}) async {
+    Log.d('Syncing NOO activity...');
+    final data = await _getNooActivityById(idNoo!);
+    if (data.isEmpty) return;
+    for (final item in data) {
+      var idNoo = item.idnoo;
+      Log.d('Syncing NOO activity for ID $idNoo');
+      await _uploadUpdateNoo(idNoo!);
+      try {
+        await db.update(
+          'noo_activity',
+          {'statussync': 1},
+          'idnoo = ?',
+          [idNoo],
+        );
+      } catch (e) {
+        Log.d('Error syncing NOO activity for ID $idNoo: $e');
+      }
+    }
+    showNotification(
+      NotifId.MKT_SYNC_CH_ID,
+      NotifId.MKT_SYNC_CH_NAME,
+      NotifId.MKT_SYNC_ID,
+      'NOO berhasil dibuat',
+      'Data NOO telah berhasil dibuat dan menunggu persetujuan',
+    );
+  }
 
   Future<List<NooActivity>> _getNooActivityById(String idNoo) async {
     final nooActivity = await db.query(
@@ -88,6 +115,37 @@ class SyncNooActivityApi {
       'masternoo',
       {'status_sync': 1},
       'id = ?',
+      [idNoo],
+    );
+  }
+  Future<void> _uploadUpdateNoo(String idNoo) async {
+    var result = await db.query(
+      'masternooupdate',
+      where: 'status_sync = ? AND id_noo = ?',
+      whereArgs: [0, idNoo],
+    );
+
+    if (result.isEmpty) return;
+
+    var nooAddress = await db.query('nooaddress', where: 'id_noo = ?', whereArgs: [idNoo]);
+    var nooDocumentResult = await db.query('noodocument', where: 'id_noo = ?', whereArgs: [idNoo]);
+    var nooSpesimen = await db.query('noospesimen', where: 'id_noo = ?', whereArgs: [idNoo]);
+
+    var nooData = result.first;
+    var nooDocument = nooDocumentResult.first;
+
+    await api.postRequest(method: 'marketing_noo_update', additionalData: nooData);
+    await _uploadMultipleRecords(nooAddress, 'insert_noo_address');
+    await _uploadMultipleFileRecords(nooSpesimen, 'insert_noo_spesimen', ['ttd', 'stempel']);
+    var docFileKeys = nooDocument.keys.where((key) => key != 'id' && key != 'id_noo').toList();
+    await api.postFileRequest(
+        method: 'insert_noo_document',
+        additionalData: nooDocument,
+        fileKeys: docFileKeys);
+    await db.update(
+      'masternooupdate',
+      {'status_sync': 1},
+      'id_noo = ?',
       [idNoo],
     );
   }
