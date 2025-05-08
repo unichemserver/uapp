@@ -37,6 +37,10 @@ class NooController extends GetxController {
   NooAddressModel companyAddress = NooAddressModel();
   NooAddressModel warehouseAddress = NooAddressModel();
   NooAddressModel billingAddress = NooAddressModel();
+  String idAddress = '';
+  String idAddressCompany = '';
+  String idAddressWarehouse = '';
+  String idAddressBilling = '';
 
   String ktpPath = '';
   String npwpPath = '';
@@ -251,6 +255,63 @@ class NooController extends GetxController {
       },
       nullColumnHack: 'ktp',
     );
+
+    ownerAddress.id = await generateNooID('nooaddress');
+    ownerAddress.idNoo = idNOO;
+    await db.insert(
+      'nooaddress',
+      ownerAddress.toJson(),
+    );
+    companyAddress.id = await generateNooID('nooaddress');
+    companyAddress.idNoo = idNOO;
+    await db.insert(
+      'nooaddress',
+      companyAddress.toJson(),
+    );
+    warehouseAddress.id = await generateNooID('nooaddress');
+    warehouseAddress.idNoo = idNOO;
+    await db.insert(
+      'nooaddress',
+      warehouseAddress.toJson(),
+    );
+    billingAddress.id = await generateNooID('nooaddress');
+    billingAddress.idNoo = idNOO;
+    await db.insert(
+      'nooaddress',
+      billingAddress.toJson(),
+    );
+
+    // Reuse existing IDs for nooaddress
+    // ownerAddress.id = idAddress;
+    // ownerAddress.idNoo = idNOO;
+    // Log.d("Address to json: ${ownerAddress.toJson()}");
+    // await db.insert(
+    //   'nooaddress',
+    //   ownerAddress.toJson(),
+    // );
+
+    // companyAddress.id = idAddressCompany;
+    // companyAddress.idNoo = idNOO;
+    // Log.d("Address to json: ${companyAddress.toJson()}");
+    // await db.insert(
+    //   'nooaddress',
+    //   companyAddress.toJson(),
+    // );
+
+    // warehouseAddress.id = idAddressWarehouse;
+    // warehouseAddress.idNoo = idNOO;
+    // await db.insert(
+    //   'nooaddress',
+    //   warehouseAddress.toJson(),
+    // );
+
+    // billingAddress.id = idAddressBilling;
+    // billingAddress.idNoo = idNOO;
+    // await db.insert(
+    //   'nooaddress',
+    //   billingAddress.toJson(),
+    // );
+
     await db.update(
       'masternooupdate',
       {
@@ -415,6 +476,26 @@ Future<void> loadCustomerGroups() async {
     update();
   }
 
+  setIdAddress() {
+    idAddress = masternoo.value?['alamat_owner'];
+    update();
+  }
+
+  setIdAddressCompany() {
+    idAddressCompany = masternoo.value?['alamat_kantor'];
+    update();
+  }
+
+  setIdAddressWarehouse() {
+    idAddressWarehouse = masternoo.value?['alamat_gudang'];
+    update();
+  }
+
+  setIdAddressBilling() {
+    idAddressBilling = masternoo.value?['alamat_npwp'];
+    update();
+  }
+
   setNooData(NooModel data) {
     var match = RegExp(r'^(.*?)\[(.*?)\]$').firstMatch(data.groupCust ?? '');
     if (match != null) {
@@ -499,6 +580,27 @@ Future<void> loadCustomerGroups() async {
     });
     await _setAddress(data['alamat_npwp'], (address) {
       Log.d('billing address: $address');
+      billingAddress = address;
+    });
+  }
+  setNooUpdateAddress() async {
+    var query = "SELECT alamat_owner, alamat_kantor, alamat_gudang, alamat_npwp FROM masternooupdate WHERE id_noo = ?";
+    var result = await db.rawQuery(query, args: [idNOO]);
+    var data = result[0];
+    await _setAddress(data['alamat_owner'], (address) {
+      Log.d('owner address: ${address.toJson()}');
+      ownerAddress = address;
+    });
+    await _setAddress(data['alamat_kantor'], (address) {
+      Log.d('company address: ${address.toJson()}');
+      companyAddress = address;
+    });
+    await _setAddress(data['alamat_gudang'], (address) {
+      Log.d('warehouse address: ${address.toJson()}');
+      warehouseAddress = address;
+    });
+    await _setAddress(data['alamat_npwp'], (address) {
+      Log.d('billing address: ${address.toJson()}');
       billingAddress = address;
     });
   }
@@ -598,7 +700,7 @@ Future<void> loadCustomerGroups() async {
 
   Future<void> checkTables() async {
     final tables = await db.rawQuery(
-        "SELECT * FROM masternooupdate",);
+        "SELECT * FROM nooaddress",);
     Log.d("Tables in Database: $tables");
   }
 
@@ -652,6 +754,10 @@ Future<void> loadCustomerGroups() async {
           orElse: () => <String, dynamic>{},
         ).map((key, value) => MapEntry(key, value ?? "")); // Replace null with ""
       }
+      setIdAddress();
+      setIdAddressCompany();
+      setIdAddressWarehouse();
+      setIdAddressBilling();
     } catch (e) {
       Log.d('Error fetching masternoo data: $e');
     }
@@ -693,22 +799,22 @@ Future<void> setNooAddressFromApi() async {
       if (noo != null) {
         _matchAndSetAddress(addresses, noo['alamat_owner'], (val) {
           ownerAddress = val;
-          Log.d('owner address: $val');
+          Log.d('owner address: ${val.id}');
         });
 
         _matchAndSetAddress(addresses, noo['alamat_kantor'], (val) {
           companyAddress = val;
-          Log.d('company address: $val');
+          Log.d('company address: ${val.id}');
         });
 
         _matchAndSetAddress(addresses, noo['alamat_gudang'], (val) {
           warehouseAddress = val;
-          Log.d('warehouse address: $val');
+          Log.d('warehouse address: ${val.id}');
         });
 
         _matchAndSetAddress(addresses, noo['alamat_npwp'], (val) {
           billingAddress = val;
-          Log.d('billing address: $val');
+          Log.d('billing address: ${val.id}');
         });
         update(); // Update state
       } else {
@@ -764,6 +870,5 @@ if (matched.isNotEmpty) {
     fetchMasterNooData();
     fetchDocumentNoo();
     fetchSpesimenNoo();
-    setNooAddressFromApi();
   }
 }

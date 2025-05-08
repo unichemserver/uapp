@@ -43,6 +43,7 @@ class GeneralInformation extends StatelessWidget {
           leading: const Icon(Icons.info),
           expandedAlignment: Alignment.topLeft,
           expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          initiallyExpanded: true,
           children: [
             Text(
               'Group Pelanggan:',

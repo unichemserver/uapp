@@ -117,7 +117,6 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       namaSales: user.namaPanggilan ?? 'sales',
       toItems: toItems,
     );
-    Log.d('printData.toItems: ${printData.toItems}');
     for (var item in printData.toItems) {
       Log.d('ToModel details: ${item.toJson()}');
     }
@@ -158,7 +157,6 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
     String noTelp,
     String alamat,
   ) async {
-    Log.d('updateCustomerData called with: $namaOutlet, $namaOwner, $noTelp, $alamat');
     Map<String, dynamic> canvasingData = {
       'CustID': customerId,
       'nama_outlet': namaOutlet,
@@ -170,7 +168,6 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       'image_path': outletImagePath,
       'pembayaran': totalPayment,
     };
-    Log.d('canvasingData: $canvasingData');
     Map<String, dynamic> maData = {'cust_name': namaOutlet};
     await db.insert("canvasing", canvasingData);
     await db.update("marketing_activity", maData, "id = ?", [idMA]);
@@ -314,7 +311,6 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       'lat_ci': lat,
       'lon_ci': lon,
     };
-    Log.d("ID: $customerId");
     await db.insert("canvasing", dataOutlet);
     await db.insert("marketing_activity", dataMA);
   }
@@ -322,7 +318,6 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
   Future<String> generateCanvasingID(String table) async {
     var userId = Utils.getUserData().id;
     String pattern = Call.canvasing + userId;
-    Log.d('generateCanvasingID pattern: $pattern');
     String query = '''
       SELECT CustID FROM $table
       WHERE CustID LIKE '$pattern%'
@@ -330,7 +325,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
       LIMIT 1
     ''';
     List<Map> result = await db.rawQuery(query);
-    Log.d('generateCanvasingID result: $result');
+
     int newIncrement = 1;
     if (result.isNotEmpty) {
       String lastId = result.first['CustID'];
@@ -468,7 +463,6 @@ Future<void> handleArgumentsOrLocation() async {
   } else {
     // Kalau args punya data penting lainnya → jalankan handleArguments
     handleArguments(args);
-    Log.d('Arguments: $args');
   }
 }
 

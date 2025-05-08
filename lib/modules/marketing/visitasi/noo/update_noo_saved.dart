@@ -28,7 +28,7 @@ class _UpdateNooSavedState extends State<UpdateNooSaved> {
 
   void getNooData() async {
     final data = await db.query('masternooupdate');
-    Log.d("Data: ${data.toString()}");
+  
     final activityData = await db.query('noo_activity');
     setState(() {
       nooData = data.map((e) => NooModel.fromJson(e)).toList();
@@ -214,7 +214,6 @@ class _UpdateNooSavedState extends State<UpdateNooSaved> {
                           'id': data.idNoo,
                           'data': data,	
                         });
-                        Log.d('Edit customer: $data');
                     },
                   ),
                 ] else ...[

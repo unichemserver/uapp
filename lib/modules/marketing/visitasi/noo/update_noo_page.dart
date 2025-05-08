@@ -23,39 +23,56 @@ class _UpdateNooPageState extends State<UpdateNooPage> {
   bool isLoading = true;
 
   @override
-  @override
-void initState() {
-  super.initState();
-  loadNooData();
-}
+  void initState() {
+    super.initState();
+    loadNooData();
+  }
 
-Future<void> loadNooData() async {
-  final nooId = Get.arguments['id'] as String;
-  final nooData = Get.arguments['data'] as NooModel?;
-  final controller = Get.find<NooController>();
+  Future<void> loadNooData() async {
+    final arguments = Get.arguments as Map<String, dynamic>?;
 
-  setState(() {
-    isLoading = true;
-  });
+    if (arguments == null || !arguments.containsKey('id')) {
+      Log.d('Error: Missing or invalid arguments');
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
 
-  controller.setIdNoo(nooId);
+    final nooId = arguments['id'] as String?;
+    final nooData = arguments['data'] as NooModel?;
 
-  try {
-    await controller.fetchMasterNooData();
-    final masternoo = controller.masternoo.value;
-    
+    if (nooId == null) {
+      Log.d('Error: NOO ID is null');
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
 
-    if (nooData != null) {
-      controller.setNooUpdateId(nooData.id!);
-      controller.setNooId(nooData.idNoo!);
-      controller.setNooData(nooData);
-      controller.setNooDocument();
-      controller.setSpesimentData();
-      controller.setNooAddressFromApi();
-      nooCtrl.mapModelToCtrl(nooData);
-    } else {
-      if (masternoo != null && masternoo.isNotEmpty) {
+    final controller = Get.find<NooController>();
+    setState(() {
+      isLoading = true;
+    });
+
+    controller.setIdNoo(nooId);
+
+    try {
+      await controller.fetchMasterNooData();
+      final masternoo = controller.masternoo.value;
+
+      if (nooData != null) {
+        controller.setNooUpdateId(nooData.id!);
+        controller.setNooId(nooData.idNoo!);
+        controller.setNooData(nooData);
+        controller.setNooDocument();
+        controller.setSpesimentData();
+        controller.setNooUpdateAddress();
+        nooCtrl.mapModelToCtrl(nooData);
+        Log.d('NooData: ${nooData.toJson()}');
+      } else if (masternoo != null && masternoo.isNotEmpty) {
         final nooModel = NooModel.fromJson(masternoo);
+        controller.setNooAddressFromApi();
         nooCtrl.mapModelToCtrl(nooModel);
 
         final groupCust = nooModel.groupCust ?? '';
@@ -65,17 +82,14 @@ Future<void> loadNooData() async {
           controller.setSelectedNamaDesc(match.group(1) ?? '');
         }
       }
+    } catch (e) {
+      Log.d('Error fetching NOO data: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
-  } catch (e) {
-    Log.d('Error fetching NOO data: $e');
-  } finally {
-    setState(() {
-      isLoading = false;
-    });
   }
-}
-
-
 
   void showConfirmationDialog(NooController ctx, BuildContext context) {
     Get.dialog(
@@ -191,7 +205,6 @@ Future<void> loadNooData() async {
                           Navigator.pop(context);
                           _formKey.currentState!.reset();
                           Get.offNamed(Routes.HOME);
-                          Log.d('Data berhasil disimpan: $nooCtrl');
                           Utils.showSuccessSnackBar(context, 'Data berhasil disimpan');
                         }).catchError((error) {
                           Navigator.pop(context);

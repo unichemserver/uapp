@@ -37,6 +37,7 @@ class OutletInformation extends StatelessWidget {
       leading: const Icon(Icons.store),
       expandedAlignment: Alignment.topLeft,
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: true,
       children: [
         AddressInformation(
           title: 'Alamat Usaha',

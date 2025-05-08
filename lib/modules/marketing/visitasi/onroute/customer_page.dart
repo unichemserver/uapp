@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:uapp/app/routes.dart';
-import 'package:uapp/core/utils/log.dart';
-// import 'package:uapp/app/routes.dart';
-// import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
 import 'package:uapp/modules/marketing/visitasi/callmanagement/callmanagement_controller.dart';
 
@@ -90,7 +87,6 @@ class CustomerPage extends StatelessWidget {
                         SlidableAction(
                           onPressed: (context) {
                             // Trigger edit action
-                            Log.d('Edit customer: ${ctx.callManagementFiltered[index].id}');
                             Get.toNamed(Routes.NOO_EDIT, arguments: {
                               'id': ctx.callManagementFiltered[index].id,
                               'name': ctx.callManagementFiltered[index].name,

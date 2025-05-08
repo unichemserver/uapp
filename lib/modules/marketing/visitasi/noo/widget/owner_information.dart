@@ -28,6 +28,7 @@ class OwnerInformation extends StatelessWidget {
       leading: const Icon(Icons.person),
       expandedAlignment: Alignment.topLeft,
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: true,
       children: [
         Text(
           'Nama Pemilik Usaha:',

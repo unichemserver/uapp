@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
 // import 'package:intl/intl.dart';
 
@@ -174,7 +173,6 @@ class NooFormWidget extends StatelessWidget {
             items: items,
             onChanged: (value) {
               if (value != null) {
-                Log.d('Selected TOP_ID: $value');
                 onPaymentMethodChanged(value); // Notify parent about the change
               }
             },
