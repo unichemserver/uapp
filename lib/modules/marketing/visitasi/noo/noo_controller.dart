@@ -1,5 +1,3 @@
-// import 'package:http/http.dart' as http;
-// import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/utils/date_utils.dart';
@@ -11,6 +9,7 @@ import 'package:uapp/modules/marketing/model/noo_model.dart';
 import 'package:uapp/modules/marketing/model/spesimen_model.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_address_model.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_text_controller.dart';
+import 'package:uapp/app/routes.dart';
 
 class NooController extends GetxController {
   final db = MarketingDatabase();
@@ -83,9 +82,6 @@ class NooController extends GetxController {
         [idNOO],
       );
     }
-
-    Log.d('Data $nooDatas');
-    Log.d('Payment Method ${paymentMethod.value}');
 
     Map<String, dynamic> additionalData = {
       'group_cust': formatGroupCust,
@@ -281,37 +277,6 @@ class NooController extends GetxController {
       billingAddress.toJson(),
     );
 
-    // Reuse existing IDs for nooaddress
-    // ownerAddress.id = idAddress;
-    // ownerAddress.idNoo = idNOO;
-    // Log.d("Address to json: ${ownerAddress.toJson()}");
-    // await db.insert(
-    //   'nooaddress',
-    //   ownerAddress.toJson(),
-    // );
-
-    // companyAddress.id = idAddressCompany;
-    // companyAddress.idNoo = idNOO;
-    // Log.d("Address to json: ${companyAddress.toJson()}");
-    // await db.insert(
-    //   'nooaddress',
-    //   companyAddress.toJson(),
-    // );
-
-    // warehouseAddress.id = idAddressWarehouse;
-    // warehouseAddress.idNoo = idNOO;
-    // await db.insert(
-    //   'nooaddress',
-    //   warehouseAddress.toJson(),
-    // );
-
-    // billingAddress.id = idAddressBilling;
-    // billingAddress.idNoo = idNOO;
-    // await db.insert(
-    //   'nooaddress',
-    //   billingAddress.toJson(),
-    // );
-
     await db.update(
       'masternooupdate',
       {
@@ -330,7 +295,6 @@ class NooController extends GetxController {
 Future<void> fetchCustomerGroup() async {
    try {
       List<dynamic> result = await api.getMasterGroup();
-      // Log.d('Customer Group: $result');
 
       await db.delete('mastergroup', '1 = 1', []); 
 
@@ -431,14 +395,14 @@ Future<void> loadCustomerGroups() async {
   }
 
   Future<String> generateID() async {
-    var day = DateUtils.getDay();
-    var userId = Utils.getUserData().id;
-    String pattern = 'CUS$userId$day';
+    var dateToday = DateUtils.getFormatDate();
+    String pattern = 'CUS$dateToday';
     String id;
     int newIncrement = 1;
     bool isDuplicate;
 
     do {
+    int randomDigit = Utils.getRandomDigit(); 
     String query = '''
       SELECT id FROM masternooupdate
       WHERE id LIKE '$pattern%'
@@ -453,10 +417,14 @@ Future<void> loadCustomerGroups() async {
       newIncrement = lastIncrement + 1;
     }
 
-    id = '$pattern${newIncrement.toString().padLeft(2, '0')}';
+    if (newIncrement > 9) {
+      newIncrement = 1;
+    }
+
+    id = '$pattern$randomDigit$newIncrement';
 
     String checkQuery = '''
-    SELECT COUNT(*) as count FROM masternoo
+    SELECT COUNT(*) as count FROM masternooupdate
       WHERE id = ?
     ''';
     List<Map> checkResult = await db.rawQuery(checkQuery, args: [id]);
@@ -567,19 +535,15 @@ Future<void> loadCustomerGroups() async {
     var result = await db.rawQuery(query, args: [idNOO]);
     var data = result[0];
     await _setAddress(data['alamat_owner'], (address) {
-      Log.d('owner address: $address');
       ownerAddress = address;
     });
     await _setAddress(data['alamat_kantor'], (address) {
-      Log.d('company address: $address');
       companyAddress = address;
     });
     await _setAddress(data['alamat_gudang'], (address) {
-      Log.d('warehouse address: $address');
       warehouseAddress = address;
     });
     await _setAddress(data['alamat_npwp'], (address) {
-      Log.d('billing address: $address');
       billingAddress = address;
     });
   }
@@ -588,19 +552,15 @@ Future<void> loadCustomerGroups() async {
     var result = await db.rawQuery(query, args: [idNOO]);
     var data = result[0];
     await _setAddress(data['alamat_owner'], (address) {
-      Log.d('owner address: ${address.toJson()}');
       ownerAddress = address;
     });
     await _setAddress(data['alamat_kantor'], (address) {
-      Log.d('company address: ${address.toJson()}');
       companyAddress = address;
     });
     await _setAddress(data['alamat_gudang'], (address) {
-      Log.d('warehouse address: ${address.toJson()}');
       warehouseAddress = address;
     });
     await _setAddress(data['alamat_npwp'], (address) {
-      Log.d('billing address: ${address.toJson()}');
       billingAddress = address;
     });
   }
@@ -765,9 +725,7 @@ Future<void> loadCustomerGroups() async {
 
   Future<void> fetchDocumentNoo() async {
     try {
-      Log.d('NOO ID: ${nooId.value}');
       final apiDocuments = await HomeApi.getDocumentNoo(nooId.value);
-      Log.d('Documents: $apiDocuments');
       if (apiDocuments != null) {
         documents.assignAll(apiDocuments.map((doc) => doc.map((key, value) => MapEntry(key, value ?? "")))); // Replace null with ""
       } else {
@@ -799,22 +757,18 @@ Future<void> setNooAddressFromApi() async {
       if (noo != null) {
         _matchAndSetAddress(addresses, noo['alamat_owner'], (val) {
           ownerAddress = val;
-          Log.d('owner address: ${val.id}');
         });
 
         _matchAndSetAddress(addresses, noo['alamat_kantor'], (val) {
           companyAddress = val;
-          Log.d('company address: ${val.id}');
         });
 
         _matchAndSetAddress(addresses, noo['alamat_gudang'], (val) {
           warehouseAddress = val;
-          Log.d('warehouse address: ${val.id}');
         });
 
         _matchAndSetAddress(addresses, noo['alamat_npwp'], (val) {
           billingAddress = val;
-          Log.d('billing address: ${val.id}');
         });
         update(); // Update state
       } else {
@@ -850,6 +804,10 @@ if (matched.isNotEmpty) {
     } catch (e) {
       Log.d('Error updating $field: $e');
     }
+  }
+
+  void navigateToAddressPage(String nooId) {
+    Get.toNamed(Routes.NOO_ADDRESS, arguments: {'id': nooId});
   }
 
   @override

@@ -69,7 +69,6 @@ class _UpdateNooPageState extends State<UpdateNooPage> {
         controller.setSpesimentData();
         controller.setNooUpdateAddress();
         nooCtrl.mapModelToCtrl(nooData);
-        Log.d('NooData: ${nooData.toJson()}');
       } else if (masternoo != null && masternoo.isNotEmpty) {
         final nooModel = NooModel.fromJson(masternoo);
         controller.setNooAddressFromApi();
@@ -202,10 +201,9 @@ class _UpdateNooPageState extends State<UpdateNooPage> {
                         }
                         Utils.showLoadingDialog(context);
                         ctx.saveData(nooCtrl, nooId: ctx.nooId.value).then((value) {
-                          Navigator.pop(context);
                           _formKey.currentState!.reset();
-                          Get.offNamed(Routes.HOME);
-                          Utils.showSuccessSnackBar(context, 'Data berhasil disimpan');
+                          Navigator.pop(context);
+                          Get.offNamed(Routes.NOO_ADDRESS, arguments: {'id': ctx.nooId.value});
                         }).catchError((error) {
                           Navigator.pop(context);
                           Utils.showErrorSnackBar(

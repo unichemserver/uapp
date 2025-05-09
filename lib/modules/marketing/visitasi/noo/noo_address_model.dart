@@ -58,4 +58,12 @@ class NooAddressModel {
     data['kode_pos'] = kodePos;
     return data;
   }
+
+    String getFullAddress() {
+    return '''
+    $address, RT/RW: $rtRw 
+    $desaKelurahan, Kec. $kecamatan
+    $kabupatenKota, $provinsi $kodePos
+    ''';
+  }
 }

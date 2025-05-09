@@ -36,6 +36,7 @@ import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_onroute.dart
 import 'package:uapp/modules/marketing/visitasi/callmanagement/callmanagement_page.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/update_noo_page.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/update_noo_saved.dart';
+import 'package:uapp/modules/marketing/visitasi/noo_address_page.dart';
 
 class Routes {
   static const String INITIAL = '/';
@@ -62,6 +63,7 @@ class Routes {
   static const String CANVASING_ONROUTE = '/canvasing-onroute';
   static const String CALL_MANAGEMENT = '/call-management';
   static const String NOO_EDIT = '/noo-Edit';
+  static const String NOO_ADDRESS = '/noo-address';
   
   static List<GetPage> pages = [
     GetPage(
@@ -163,6 +165,10 @@ class Routes {
       name: NOO_EDIT,
       page: () => const UpdateNooPage(),
       binding: NooBinding(),
+    ),
+    GetPage(
+      name: NOO_ADDRESS,
+      page: () => const NooAddressPage(),
     ),
     GetPage(
       name: CALL_MANAGEMENT,

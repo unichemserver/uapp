@@ -7,7 +7,7 @@ class MarketingDatabase {
   static final MarketingDatabase _instance =
       MarketingDatabase._privateConstructor();
   static Database? _database;
-  final int marketingDbVersion = 9;
+  final int marketingDbVersion = 10;
 
   MarketingDatabase._privateConstructor();
 
@@ -228,6 +228,33 @@ class MarketingDatabase {
 
     if (oldVersion < 9) {
       await db.execute(masterNooUpdateTable);
+    }
+    if (oldVersion < 10) {
+      var result = await db.rawQuery('PRAGMA table_info(masternooupdate)');
+      bool billToExists = result.any((column) => column['name'] == 'bill_to');
+      bool shipToExists = result.any((column) => column['name'] == 'ship_to');
+      bool taxToExists = result.any((column) => column['name'] == 'tax_to');
+
+      if (!billToExists) {
+        await db.execute('''
+          ALTER TABLE masternooupdate ADD COLUMN bill_to TEXT
+        ''');
+        Log.d('Column "bill_to" added to "masternooupdate" table.');
+      }
+
+      if (!shipToExists) {
+        await db.execute('''
+          ALTER TABLE masternooupdate ADD COLUMN ship_to TEXT
+        ''');
+        Log.d('Column "ship_to" added to "masternooupdate" table.');
+      }
+
+      if (!taxToExists) {
+        await db.execute('''
+          ALTER TABLE masternooupdate ADD COLUMN tax_to TEXT
+        ''');
+        Log.d('Column "tax_to" added to "masternooupdate" table.');
+      }
     }
   }
 

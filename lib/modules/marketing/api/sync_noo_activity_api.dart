@@ -131,11 +131,13 @@ class SyncNooActivityApi {
     var nooDocumentResult = await db.query('noodocument', where: 'id_noo = ?', whereArgs: [idNoo]);
     var nooSpesimen = await db.query('noospesimen', where: 'id_noo = ?', whereArgs: [idNoo]);
 
+    Log.d('nooAddresssync: $nooAddress');
+
     var nooData = result.first;
     var nooDocument = nooDocumentResult.first;
 
     await api.postRequest(method: 'marketing_noo_update', additionalData: nooData);
-    await _uploadMultipleRecords(nooAddress, 'insert_noo_address');
+    await _uploadMultipleRecords(nooAddress, 'insert_nooupdate_address');
     await _uploadMultipleFileRecords(nooSpesimen, 'insert_noo_spesimen', ['ttd', 'stempel']);
     var docFileKeys = nooDocument.keys.where((key) => key != 'id' && key != 'id_noo').toList();
     await api.postFileRequest(
