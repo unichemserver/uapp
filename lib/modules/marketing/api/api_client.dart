@@ -44,6 +44,34 @@ class MarketingApiClient {
     }
   }
 
+  Future<ApiResponse> postnoo({
+    required String method,
+    Map<String, dynamic>? additionalData,
+  }) async {
+    final Map<String, dynamic> body = {
+      'action': 'noo',
+      'method': method,
+    };
+
+    if (additionalData != null) {
+      additionalData.forEach((key, value) {
+        body[key] = value.toString();
+      });
+    }
+    final Uri url = Uri.parse(baseUrl);
+    final response = await http.post(
+      url,
+      body: body,
+    );
+    
+    if (response.statusCode == 200) {
+      final bodyResponse = jsonDecode(response.body);
+      return ApiResponse.fromJson(bodyResponse);
+    } else {
+      return ApiResponse(message: 'Failed to load data');
+    }
+  }
+
   Future<ApiResponse> postFileRequest({
     required String method,
     required Map<String, dynamic> additionalData,

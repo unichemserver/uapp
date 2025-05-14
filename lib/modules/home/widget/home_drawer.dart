@@ -6,6 +6,7 @@ import 'package:uapp/modules/home/home_controller.dart';
 import 'package:uapp/modules/home/widget/marketing_drawer.dart';
 import 'package:uapp/modules/webview/webview_screen.dart';
 
+
 class HomeDrawer extends StatelessWidget {
   HomeDrawer({
     super.key,
@@ -24,129 +25,157 @@ class HomeDrawer extends StatelessWidget {
   final List<MenuData> menus;
   final ctx = Get.put(HomeController());
   final GlobalKey<ScaffoldState> scaffoldKey;
+  final Future<bool> _approvalAccessFuture = Get.find<HomeController>().hasApprovalAccess();
 
   bool isMenuAvailable(String menuName) {
-    for (var menu in menus) {
-      if (menu.namaMenu.toLowerCase() == menuName.toLowerCase()) {
-        return true;
-      }
-    }
-    return false;
+    return menus.any((menu) => menu.namaMenu.toLowerCase() == menuName.toLowerCase());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
+    return _buildDrawer(context);
+
+  }
+
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: Column(
+        children: [
+          _buildDrawerHeader(context),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: _buildDrawerMenu(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerHeader(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      color: Theme.of(context).primaryColor,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundImage: NetworkImage(foto),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    jabatan,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    department.replaceAll('amp;', ''),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildDrawerMenu(BuildContext context) {
+    return [
+      _buildMenuSection('Menu Utama', context),
+      if (isMenuAvailable('Document'))
+        ListTile(
+          title: const Text('Document'),
+          leading: const Icon(Icons.description),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => WebViewScreen(
+                  url: menus.firstWhere((element) =>
+                          element.namaMenu.toLowerCase().contains('document'))
+                      .urlMenu,
+                  title: 'Document',
+                ),
+              ),
+            );
+          },
+        ),
+      if (isMenuAvailable('HR Form Submission'))
+        ListTile(
+          title: const Text('HR Form Submission'),
+          leading: const Icon(Icons.assignment),
+          onTap: () {
+            Get.toNamed(Routes.HR);
+          },
+        ),
+        FutureBuilder<bool>(
+        future: _approvalAccessFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const SizedBox();
+          }
+          if (snapshot.hasData && snapshot.data == true) {
+            return ListTile(
+              title: const Text('Approval'),
+              leading: const Icon(Icons.approval),
+              onTap: () {
+                Get.toNamed(Routes.APPROVAL);
+              },
+            );
+          }
+          return const SizedBox();
+        },
+      ),
+      if (ctx.showMarketingMenu()) const MarketingDrawer(),
+      _buildMenuSection('Personal', context),
+      ListTile(
+        title: const Text('Profil'),
+        leading: const Icon(Icons.person),
+        onTap: () {
+          Get.toNamed(Routes.PROFILE);
+        },
+      ),
+    ];
+  }
+
+  Widget _buildMenuSection(String title, BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(left: 16, top: 8),
+      child: Text(
+        title,
+        textAlign: TextAlign.start,
+        style: TextStyle(
           color: Theme.of(context).primaryColor,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-              Text(
-                jabatan,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
-              ),
-              Text(
-                department.replaceAll('amp;', ''),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'OpenSans',
         ),
-        Expanded(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(left: 16),
-                child: Text(
-                  'Menu Utama',
-                  textAlign: TextAlign.start,
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              isMenuAvailable('Document')
-                  ? ListTile(
-                      title: const Text('Document'),
-                      leading: const Icon(Icons.description),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => WebViewScreen(
-                              url: menus
-                                  .firstWhere(
-                                    (element) =>
-                                        element.namaMenu.toLowerCase().contains(
-                                              'document',
-                                            ),
-                                  )
-                                  .urlMenu,
-                              title: 'Document',
-                            ),
-                          ),
-                        );
-                      },
-                    )
-                  : const SizedBox(),
-              isMenuAvailable('HR Form Submission')
-                  ? ListTile(
-                      title: const Text('HR Form Submission'),
-                      leading: const Icon(Icons.assignment),
-                      onTap: () {
-                        Get.toNamed(Routes.HR);
-                      },
-                    )
-                  : const SizedBox(),
-              ctx.showMarketingMenu()
-                  ? const MarketingDrawer()
-                  : const SizedBox(),
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(left: 16),
-                child: Text(
-                  'Personal',
-                  textAlign: TextAlign.start,
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              ListTile(
-                title: const Text('Profil'),
-                leading: const Icon(Icons.person),
-                onTap: () {
-                  Get.toNamed(Routes.PROFILE);
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

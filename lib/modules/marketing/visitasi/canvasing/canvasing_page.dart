@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/core/widget/loading_dialog.dart';
 import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_controller.dart';
@@ -87,8 +88,7 @@ class CanvasingPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              Get.back();
-              Get.back();
+              Navigator.of(context).pop();
             },
             child: const Text('Tidak'),
           ),
@@ -143,7 +143,7 @@ class CanvasingPage extends StatelessWidget {
               title: Text(
                 getCanvasingTitle(ctx.canvasingIndex),
                 style: const TextStyle(
-                  fontFamily: 'Rubik',
+                  fontFamily: 'OpenSans',
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -166,6 +166,10 @@ class CanvasingPage extends StatelessWidget {
                   showWarningSnackBar('Form Customer belum lengkap');
                   return;
                 }
+                Log.d('Canvasing index: ${ctx.namaController.text}');
+                Log.d('Canvasing index: ${ctx.pemilikController.text}');
+                Log.d('Canvasing index: ${ctx.telpController.text}');
+                Log.d('Canvasing index: ${ctx.customerId}');
                 ctx.setCanvasingIndex(index);
                 if (index != 0) {
                   ctx.saveCustomerData();

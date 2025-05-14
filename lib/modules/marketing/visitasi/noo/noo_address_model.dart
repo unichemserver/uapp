@@ -5,8 +5,8 @@ class NooAddressModel {
   String? rtRw;
   String? desaKelurahan;
   String? kecamatan;
-  String? kabKota;
-  String? propinsi;
+  String? kabupatenKota;
+  String? provinsi;
   String? kodePos;
 
   NooAddressModel({
@@ -16,8 +16,8 @@ class NooAddressModel {
     this.rtRw,
     this.desaKelurahan,
     this.kecamatan,
-    this.kabKota,
-    this.propinsi,
+    this.kabupatenKota,
+    this.provinsi,
     this.kodePos,
   });
 
@@ -26,8 +26,8 @@ class NooAddressModel {
         (rtRw != null || rtRw != '') &&
         (desaKelurahan != null || desaKelurahan != '') &&
         (kecamatan != null || kecamatan != '') &&
-        (kabKota != null || kabKota != '') &&
-        (propinsi != null || propinsi != '') &&
+        (kabupatenKota != null || kabupatenKota != '') &&
+        (provinsi != null || provinsi != '') &&
         (kodePos != null || kodePos != '');
   }
 
@@ -39,8 +39,8 @@ class NooAddressModel {
       rtRw: json['rt_rw'],
       desaKelurahan: json['desa_kelurahan'],
       kecamatan: json['kecamatan'],
-      kabKota: json['kabupaten_kota'],
-      propinsi: json['provinsi'],
+      kabupatenKota: json['kabupaten_kota'],
+      provinsi: json['provinsi'],
       kodePos: json['kode_pos'],
     );
   }
@@ -53,10 +53,17 @@ class NooAddressModel {
     data['rt_rw'] = rtRw;
     data['desa_kelurahan'] = desaKelurahan;
     data['kecamatan'] = kecamatan;
-    data['kabupaten_kota'] = kabKota;
-    data['provinsi'] = propinsi;
+    data['kabupaten_kota'] = kabupatenKota;
+    data['provinsi'] = provinsi;
     data['kode_pos'] = kodePos;
     return data;
   }
 
+    String getFullAddress() {
+    return '''
+    $address, RT/RW: $rtRw 
+    $desaKelurahan, Kec. $kecamatan
+    $kabupatenKota, $provinsi $kodePos
+    ''';
+  }
 }

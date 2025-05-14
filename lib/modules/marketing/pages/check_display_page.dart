@@ -27,7 +27,7 @@ class CheckDisplayPage extends StatelessWidget {
       title: const Text(
         'Cek Display',
         style: TextStyle(
-          fontFamily: 'Rubik',
+          fontFamily: 'OpenSans',
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -67,7 +67,7 @@ class CheckDisplayPage extends StatelessWidget {
           Text(
             'Belum ada foto yang anda upload',
             style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                  fontFamily: 'Rubik',
+                  fontFamily: 'OpenSans',
                   fontWeight: FontWeight.bold,
                 ),
           ),

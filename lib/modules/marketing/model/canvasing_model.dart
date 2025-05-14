@@ -9,6 +9,7 @@ class CanvasingModel {
   String? alamat;
   String? imagePath;
   String? waktuCo;
+  int? pembayaran;
   int? status;
 
   CanvasingModel({
@@ -22,6 +23,7 @@ class CanvasingModel {
     this.alamat,
     this.imagePath,
     this.waktuCo,
+    this.pembayaran,
     this.status,
   });
 
@@ -37,6 +39,7 @@ class CanvasingModel {
       alamat: json['alamat'],
       imagePath: json['image_path'],
       waktuCo: json['waktu_co'],
+      pembayaran: json['pembayaran'],
       status: json['status_sync'],
     );
   }
@@ -51,6 +54,7 @@ class CanvasingModel {
       'longitude': longitude,
       'alamat': alamat,
       'image_path': imagePath,
+      'pembayaran': pembayaran,
     };
   }
 }

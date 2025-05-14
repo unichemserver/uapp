@@ -52,9 +52,13 @@ class DocForm extends StatelessWidget {
               ),
               ExpansionTile(
                 title: const Text(
-                  'Foto Owner dengan PIC Marketing, Foto Outlet, Foto Gudang, dll',
+                  'Foto Outlet/Toko',
                 ),
                 children: [
+                  Text(
+                    'Foto Tampak Depan Outlet',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                   ImagePickerWidget(
                     imagePath: ctx.ownerPicPath,
                     onImagePicked: (path) {
@@ -68,6 +72,10 @@ class DocForm extends StatelessWidget {
                       ctx.update();
                     },
                   ),
+                  Text(
+                    'Foto Tampak Samping Outlet',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                   ImagePickerWidget(
                     imagePath: ctx.outletPath,
                     onImagePicked: (path) {
@@ -80,6 +88,10 @@ class DocForm extends StatelessWidget {
                       ctx.deleteDocument('outlet');
                       ctx.update();
                     },
+                  ),
+                  Text(
+                    'Foto Tampak Samping Outlet',
+                    style: Theme.of(context).textTheme.titleSmall,
                   ),
                   ImagePickerWidget(
                     imagePath: ctx.warehousePath,

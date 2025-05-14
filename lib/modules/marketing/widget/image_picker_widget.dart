@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
+// import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
@@ -57,20 +57,20 @@ class ImagePickerWidget extends StatelessWidget {
                         }
                       },
                     ),
-                    ListTile(
-                      title: const Text('Galeri'),
-                      leading: const Icon(Icons.image),
-                      onTap: () async {
-                        FilePickerResult? result =
-                            await FilePicker.platform.pickFiles(
-                          type: FileType.image,
-                        );
-                        if (result != null) {
-                          onImagePicked(result.files.single.path!);
-                          Get.back();
-                        }
-                      },
-                    ),
+                    // ListTile(
+                    //   title: const Text('Galeri'),
+                    //   leading: const Icon(Icons.image),
+                    //   onTap: () async {
+                    //     FilePickerResult? result =
+                    //         await FilePicker.platform.pickFiles(
+                    //       type: FileType.image,
+                    //     );
+                    //     if (result != null) {
+                    //       onImagePicked(result.files.single.path!);
+                    //       Get.back();
+                    //     }
+                    //   },
+                    // ),
                   ],
                 ),
               ),

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
-import 'package:uapp/core/utils/jenis_call.dart';
+// import 'package:uapp/core/utils/jenis_call.dart';
+// import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/modules/marketing/model/noo_model.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/doc_form.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/kil_form.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_controller.dart';
-import 'package:uapp/modules/marketing/visitasi/noo/noo_options.dart';
+// import 'package:uapp/modules/marketing/visitasi/noo/noo_options.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_text_controller.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/spesimen_form.dart';
 
@@ -30,32 +31,24 @@ class _NooPageState extends State<NooPage> {
       AlertDialog(
         title: const Text('Konfirmasi'),
         content: const Text(
-          'Apakah anda ingin menyimpan data ini?',
+          'Apakah anda yakin ingin kembali?',
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Utils.showLoadingDialog(context);
-              ctx.deleteData().then((value) {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              });
-            },
-            child: const Text('Tidak'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Utils.showLoadingDialog(context);
-              ctx.saveData(nooCtrl).then((value) {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              });
-            },
-            child: const Text('Ya'),
-          ),
-        ],
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); // Tutup dialog, tetap di halaman NOO
+          },
+          child: const Text('Tidak'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); // Tutup dialog
+            _formKey.currentState!.reset();
+            Get.back();
+          },
+          child: const Text('Ya'),
+        ),
+      ],
       ),
     );
   }
@@ -97,9 +90,9 @@ class _NooPageState extends State<NooPage> {
                       data = data as NooModel;
                       Get.dialog(
                         AlertDialog(
-                          title: const Text('Data KIL'),
+                          title: const Text('Data PDL'),
                           content: const Text(
-                            'Apakah anda yakin ingin melanjutkan data KIL ini?',
+                            'Apakah anda yakin ingin melanjutkan data PDL ini?',
                           ),
                           actions: [
                             TextButton(
@@ -121,15 +114,15 @@ class _NooPageState extends State<NooPage> {
                   },
                   icon: const Icon(Icons.dataset),
                 ),
-                IconButton(
-                  onPressed: () {
-                    Get.toNamed(
-                      Routes.HISTORY_VISITASI,
-                      arguments: Call.noo,
-                    );
-                  },
-                  icon: const Icon(Icons.history),
-                ),
+                // IconButton(
+                //   onPressed: () {
+                //     Get.toNamed(
+                //       Routes.HISTORY_VISITASI,
+                //       arguments: Call.noo,
+                //     );
+                //   },
+                //   icon: const Icon(Icons.history),
+                // ),
               ],
             ),
             body: Form(
@@ -165,22 +158,21 @@ class _NooPageState extends State<NooPage> {
                     padding: const EdgeInsets.all(8.0),
                     child: ElevatedButton(
                       onPressed: () async {
-                        if (ctx.groupPelanggan.isEmpty) {
+                        if (ctx.selectedNamaDesc.value.isEmpty) {
                           Utils.showErrorSnackBar(
                             context,
                             'Pilih Group Pelanggan terlebih dahulu',
                           );
                           return;
                         }
-                        if (ctx.paymentMethod.isEmpty) {
+                        if (ctx.paymentMethod.value.isEmpty) {
                           Utils.showErrorSnackBar(
                             context,
                             'Pilih Metode Pembayaran terlebih dahulu',
                           );
                           return;
                         }
-                        if (ctx.jaminan.isEmpty &&
-                            ctx.groupPelanggan == NooOptions.custGroup[1]) {
+                        if (ctx.jaminan.isEmpty) {
                           Utils.showErrorSnackBar(
                             context,
                             'Pilih Jenis Jaminan terlebih dahulu',
@@ -194,12 +186,24 @@ class _NooPageState extends State<NooPage> {
                         ctx.saveData(nooCtrl).then((value) {
                           Navigator.pop(context);
                           _formKey.currentState!.reset();
-                          Get.toNamed(Routes.MARKETING, arguments: {
-                            'id': ctx.idNOO,
-                            'type': Call.noo,
-                            'name': nooCtrl.namaPerusahaanCtrl.text,
-                          });
+                          if (ctx.paymentMethod.value == 'CASH') {
+                            Get.offNamed(Routes.HOME);
+                          } else {
+                            Get.offNamed(Routes.NOO_ADDRESS, arguments: {'id': ctx.idNOO});
+                          }
+                          Utils.showSuccessSnackBar(context, 'Data berhasil disimpan');
+                        }).catchError((error) {
+                          Navigator.pop(context);
+                          Utils.showErrorSnackBar(
+                            context,
+                            'Terjadi kesalahan saat menyimpan data: $error',
+                          );
                         });
+                        // Get.toNamed(Routes.MARKETING, arguments: {
+                          //   'id': ctx.idNOO,
+                          //   'type': Call.noo,
+                          //   'name': nooCtrl.namaPerusahaanCtrl.text,
+                          // });
                       },
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 48.0),

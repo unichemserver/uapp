@@ -22,7 +22,7 @@ class CheckInPage extends StatelessWidget {
             title: const Text(
               'Check in - Kunjungan',
               style: TextStyle(
-                fontFamily: 'Rubik',
+                fontFamily: 'OpenSans',
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -39,7 +39,7 @@ class CheckInPage extends StatelessWidget {
                   'Foto Check-In',
                   style: Theme.of(context).textTheme.titleMedium!.copyWith(
                         fontWeight: FontWeight.bold,
-                        fontFamily: 'Rubik',
+                        fontFamily: 'OpenSans',
                       ),
                 ),
                 Container(
@@ -76,7 +76,7 @@ class CheckInPage extends StatelessWidget {
                                       .titleMedium!
                                       .copyWith(
                                         color: Colors.grey,
-                                        fontFamily: 'Rubik',
+                                        fontFamily: 'OpenSans',
                                       ),
                                 ),
                               ],
@@ -121,7 +121,7 @@ class CheckInPage extends StatelessWidget {
                   'Lokasi Check-In',
                   style: Theme.of(context).textTheme.titleMedium!.copyWith(
                         fontWeight: FontWeight.bold,
-                        fontFamily: 'Rubik',
+                        fontFamily: 'OpenSans',
                       ),
                 ),
                 _buildUserLocation(ctx, context),
@@ -176,7 +176,7 @@ class CheckInPage extends StatelessWidget {
                   child: const Text(
                     'Check-In',
                     style: TextStyle(
-                      fontFamily: 'Rubik',
+                      fontFamily: 'OpenSans',
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -203,7 +203,7 @@ class CheckInPage extends StatelessWidget {
                 : ctx.userPosition!.latitude.toString()
             : address,
         style: Theme.of(context).textTheme.titleMedium!.copyWith(
-              fontFamily: 'Rubik',
+              fontFamily: 'OpenSans',
             ),
       ),
       subtitle: Text(
@@ -213,7 +213,7 @@ class CheckInPage extends StatelessWidget {
                 : ctx.userPosition!.longitude.toString()
             : region,
         style: Theme.of(context).textTheme.titleMedium!.copyWith(
-              fontFamily: 'Rubik',
+              fontFamily: 'OpenSans',
             ),
       ),
       leading: const Icon(Icons.location_on),

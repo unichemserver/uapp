@@ -1,6 +1,6 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
-import 'package:uapp/core/utils/log.dart';
+// import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
 import 'package:uapp/modules/marketing/model/master_item.dart';
 import 'package:uapp/modules/marketing/model/price_list.dart';
@@ -12,11 +12,13 @@ class ToReportDialog extends StatefulWidget {
     required this.items,
     required this.idMA,
     required this.priceList,
+    required this.globalTopID, // Pass global TOP ID from TakingOrderPage
   });
 
   final List<MasterItem> items;
   final String idMA;
   final List<PriceList> priceList;
+  final String globalTopID; // Global TOP ID
 
   @override
   State<ToReportDialog> createState() => _ToReportDialogState();
@@ -27,32 +29,84 @@ class _ToReportDialogState extends State<ToReportDialog> {
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _unitController = TextEditingController();
   final TextEditingController _totalController = TextEditingController();
-  final List<String> _topID = [];
+  final TextEditingController _ppnController = TextEditingController();
   final List<String> _listUnit = [];
   List<PriceList> _priceList = [];
   MasterItem? _selectedItem;
   String selectedUnit = '';
-  String selectedTopID = '';
 
   @override
   void dispose() {
     _quantityController.dispose();
     _unitController.dispose();
     _totalController.dispose();
+    _ppnController.dispose();
     super.dispose();
   }
 
   void _calculateTotal(String value) {
-    if (value.isEmpty) return;
+    if (value.isEmpty || widget.globalTopID.isEmpty || selectedUnit.isEmpty) {
+      _ppnController.text = '';
+      _totalController.text = '';
+      return;
+    }
+
     final quantity = int.tryParse(value) ?? 0;
-    final unitValue =
-        int.tryParse(_unitController.text.replaceAll('.', '')) ?? 0;
-    _totalController.text = (quantity * unitValue).toString().replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+
+    // Update unit price based on quantity thresholds
+    if (_selectedItem != null) {
+      for (var priceData in _priceList) {
+        if (priceData.topID == widget.globalTopID && priceData.unitID == selectedUnit) {
+          if (quantity >= double.parse(priceData.qty.toString())) {
+            var unitPrice = priceData.unitPrice.toString();
+            unitPrice = unitPrice.contains('.00')
+                ? unitPrice.substring(0, unitPrice.length - 3)
+                : unitPrice;
+            _unitController.text = unitPrice.replaceAllMapped(
+                RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                (Match m) => '${m[1]}.');
+          }
+        }
+      }
+    }
+
+    final unitValue = int.tryParse(_unitController.text.replaceAll('.', '')) ?? 0;
+    final totalPayment = quantity * unitValue;
+
+    // Special logic for specific itemIDs
+    List<String> exemptedItemIDs = [
+      'BJD8-RP-0005K-RICET-DAU001',
+      'BJD8-RP-0012G-DEFLT-DAU001',
+      'BJD8-RP-0004G-DEFLT-DAU001',
+      'BJD8-RP-0007G-DEFLT-DAU001'
+    ];
+
+    int ppnValue;
+    if (['BJD8-RP-0012G-DEFLT-DAU001', 'BJD8-RP-0004G-DEFLT-DAU001', 'BJD8-RP-0007G-DEFLT-DAU001']
+        .contains(_selectedItem?.itemID)) {
+      var dpp = ((totalPayment) / 111) * 100;
+      ppnValue = (dpp * 0.11).toInt();
+      _ppnController.text = '0'; // Set PPN controller text to 0 for these item IDs
+    } else {
+      final ppnRate = (_selectedItem?.taxGroupID == 'PPN' && exemptedItemIDs.contains(_selectedItem?.itemID))
+          ? 0.0
+          : (_selectedItem?.taxGroupID == 'PPN')
+              ? 0.11
+              : 0.0;
+      ppnValue = (totalPayment * ppnRate).toInt();
+      _ppnController.text = ppnValue.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+    }
+
+    // Format total
+    _totalController.text = totalPayment
+        .toString()
+        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
   }
 
   void _onSave() {
     if (_formKey.currentState?.validate() == true && _selectedItem != null) {
+      final ppnValue = int.parse(_ppnController.text.replaceAll('.', ''));
       final data = ToModel(
         idMA: widget.idMA,
         itemid: _selectedItem!.itemID!,
@@ -60,16 +114,15 @@ class _ToReportDialogState extends State<ToReportDialog> {
         quantity: int.parse(_quantityController.text),
         unit: _unitController.text,
         price: int.parse(_totalController.text.replaceAll('.', '')),
-        topID: selectedTopID,
+        topID: widget.globalTopID,
         unitID: selectedUnit,
+        ppn: ppnValue,
       );
       Navigator.of(context).pop(data);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_formKey.currentState?.validate() == true
-              ? 'Pilih produk terlebih dahulu'
-              : 'Isi semua field'),
+        const SnackBar(
+          content: const Text('Isi semua field dan pilih produk terlebih dahulu'),
         ),
       );
     }
@@ -94,7 +147,6 @@ class _ToReportDialogState extends State<ToReportDialog> {
                       const Text('Pilih Produk'),
                       _buildItemDropdown(),
                       _buildUnitDropdown(),
-                      _buildTopIDDropdown(),
                       const SizedBox(height: 16.0),
                       Row(
                         children: [
@@ -133,6 +185,17 @@ class _ToReportDialogState extends State<ToReportDialog> {
                         ],
                       ),
                       const SizedBox(height: 16.0),
+                      AppTextField(
+                        controller: _ppnController,
+                        label: 'PPN',
+                        prefixIcon: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Rp'),
+                          ],
+                        ),
+                        readOnly: true,
+                      ),
                       const SizedBox(height: 16.0),
                       AppTextField(
                         controller: _totalController,
@@ -166,31 +229,34 @@ class _ToReportDialogState extends State<ToReportDialog> {
 
   Widget _buildItemDropdown() {
     return DropdownSearch<MasterItem>(
-      items: widget.items,
+      items: widget.globalTopID.isEmpty
+          ? []
+          : widget.items, // Disable item selection if TOP is not selected
       itemAsString: (MasterItem item) => item.description!,
       onChanged: (MasterItem? item) {
         _priceList = widget.priceList
-            .where((element) => element.itemID == item?.itemID)
+            .where((element) =>
+                element.itemID == item?.itemID &&
+                element.topID == widget.globalTopID) // Filter by global TOP
             .toList();
-        _topID.clear();
         _listUnit.clear();
-        for (var i = 0; i < _priceList.length; i++) {
-          if (!_topID.contains(_priceList[i].topID!)) {
-            _topID.add(_priceList[i].topID!.trim());
+        for (var priceData in _priceList) {
+          if (!_listUnit.contains(priceData.unitID)) {
+            _listUnit.add(priceData.unitID!.trim());
           }
-          if (!_listUnit.contains(_priceList[i].unitID)) {
-            _listUnit.add(_priceList[i].unitID!.trim());
-          }
-          Log.d('topID: ${_priceList[i].toJson()}');
         }
         _selectedItem = item;
+        _ppnController.text = '';
+        _totalController.text = '';
         setState(() {});
       },
       popupProps: PopupProps.menu(
         showSearchBox: true,
         searchFieldProps: TextFieldProps(
           decoration: InputDecoration(
-            hintText: 'Cari produk',
+            hintText: widget.globalTopID.isEmpty
+                ? 'TOP belum dipilih'
+                : 'Cari produk',
             contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16.0),
@@ -213,32 +279,10 @@ class _ToReportDialogState extends State<ToReportDialog> {
         DropdownSearch<String>(
           items: _listUnit,
           onChanged: (String? value) {
-            setState(() {
-              selectedUnit = value!;
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTopIDDropdown() {
-    if (_topID.isEmpty) {
-      return const SizedBox();
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16.0),
-        const Text('Pilih Term of Payment (TOP)'),
-        DropdownSearch<String>(
-          items: _topID,
-          onChanged: (String? value) {
-            selectedTopID = value!;
-            for (var i = 0; i < _priceList.length; i++) {
-              if (_priceList[i].topID == selectedTopID &&
-                  _priceList[i].unitID == selectedUnit) {
-                var unitPrice = _priceList[i].unitPrice.toString();
+            selectedUnit = value!;
+            for (var priceData in _priceList) {
+              if (priceData.unitID == selectedUnit) {
+                var unitPrice = priceData.unitPrice.toString();
                 unitPrice = unitPrice.contains('.00')
                     ? unitPrice.substring(0, unitPrice.length - 3)
                     : unitPrice;
@@ -248,6 +292,7 @@ class _ToReportDialogState extends State<ToReportDialog> {
                 break;
               }
             }
+            setState(() {});
           },
         ),
       ],

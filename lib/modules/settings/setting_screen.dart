@@ -50,7 +50,7 @@ class SettingScreen extends StatelessWidget {
             title: const Text(
               'Pengaturan',
               style: TextStyle(
-                fontFamily: 'Rubik',
+                fontFamily: 'OpenSans',
                 fontWeight: FontWeight.bold,
               ),
             ),

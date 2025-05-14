@@ -62,6 +62,9 @@ class DateUtils {
   static String getFormatDate() {
     return DateFormat('yyMMdd').format(DateTime.now());
   }
+  static String getDay() {
+    return DateFormat('dd').format(DateTime.now());
+  }
 
   static int getDayOfWeek(String date) {
     return DateFormat('yyyy-MM-dd').parse(date).weekday;

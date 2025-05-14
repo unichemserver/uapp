@@ -18,6 +18,7 @@ class AppTextField extends StatelessWidget {
     this.maxLines = 1,
     this.label,
     this.onSubmitted,
+    this.enabled,
     this.textInputAction = TextInputAction.next,
     this.maxLength,
   });
@@ -36,6 +37,7 @@ class AppTextField extends StatelessWidget {
   final int? maxLines;
   final String? label;
   final void Function(String)? onSubmitted;
+  final bool? enabled;
   final TextInputAction? textInputAction;
   final int? maxLength;
 
@@ -52,18 +54,27 @@ class AppTextField extends StatelessWidget {
       controller: controller,
       validator: validator,
       keyboardType: keyboardType,
-      textInputAction: TextInputAction.next,
+      textInputAction: textInputAction,
       onFieldSubmitted: onSubmitted,
       maxLength: maxLength,
+      enabled: enabled,
+      style: TextStyle(
+        color: enabled == false ?  Colors.black45 : null,
+      ),
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         counterText: '',
         hintText: hintText,
         labelText: label,
+        labelStyle: TextStyle(
+          color: enabled == false ? Colors.black54 : null,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.black45),
         ),
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,

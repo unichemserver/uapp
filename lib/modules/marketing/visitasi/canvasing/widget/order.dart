@@ -39,7 +39,7 @@ class OrderWidget extends StatelessWidget {
                       },
                 title: Text(item.description!),
                 subtitle: Text(
-                  '${item.quantity} * ${Utils.formatCurrency(item.unit!)}',
+                  '${item.quantity} ${item.unitID} x ${Utils.formatCurrency(item.unit!)}\nPPN: ${Utils.formatCurrency(item.ppn.toString())}', // Display unitID
                 ),
                 leading: Text('${index + 1}'),
                 trailing: Text(
@@ -65,7 +65,7 @@ class OrderWidget extends StatelessWidget {
                 'Tanda Tangan Customer',
                 textAlign: TextAlign.end,
                 style: TextStyle(
-                  fontFamily: 'Rubik',
+                  fontFamily: 'OpenSans',
                   fontWeight: FontWeight.bold,
                 ),
               ),

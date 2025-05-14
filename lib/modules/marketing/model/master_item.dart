@@ -14,8 +14,10 @@ class MasterItem extends HiveObject {
   String? salesPrice;
   @HiveField(4)
   String? unitSetID;
+  @HiveField(5)
+  String? taxGroupID;
 
-  MasterItem({this.itemID, this.description, this.salesUnit, this.salesPrice, this.unitSetID});
+  MasterItem({this.itemID, this.description, this.salesUnit, this.salesPrice, this.unitSetID, this.taxGroupID});
 
   MasterItem.fromJson(Map<String, dynamic> json) {
     itemID = json['ItemID'];
@@ -23,6 +25,7 @@ class MasterItem extends HiveObject {
     salesUnit = json['Sales_Unit'];
     salesPrice = json['Sales_Price'];
     unitSetID = json['UnitSetID'];
+    taxGroupID = json['Tax_GroupID'];
   }
 
   Map<String, dynamic> toJson() {
@@ -32,6 +35,7 @@ class MasterItem extends HiveObject {
     data['Sales_Unit'] = salesUnit;
     data['Sales_Price'] = salesPrice;
     data['UnitSetID'] = unitSetID;
+    data['Tax_GroupID'] = taxGroupID;
     return data;
   }
 }

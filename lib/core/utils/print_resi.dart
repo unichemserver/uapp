@@ -53,32 +53,63 @@ class PrintResi {
   String getFormattedStringToPrint(Resi resi) {
     String receipt = '';
     var subtotal = resi.toItems.map((e) => e.price).reduce((value, element) => value! + element!);
-    var subtotalFormatted = rp(subtotal.toString());
+    var subtotalppn = resi.toItems.map((e) => e.ppn ?? 0).reduce((value, element) => value + element);
+    var total = (subtotal ?? 0) + (subtotalppn);
+    var totalFormatted = rp(total.toString());
 
+    // Get one topID from toItems
+    String? topID = resi.toItems.isNotEmpty ? resi.toItems.first.topID : null;
+
+    receipt += '\n';
+    receipt += '${centerText('PT.UCI', totalWidth)}\n';
+    receipt += spacetwo;
+    if (resi.activity == 'Canvasing') {
+      receipt += '${centerText('NOTA PENJUALAN', totalWidth)}\n';
+    } else {
+      receipt += '${centerText('PEMESANAN', totalWidth)}\n';
+    }
     receipt += spacetwo;
     receipt += '${formatLabel('Tanggal')} : ${DateUtils.getFormattedDateOnly(DateTime.now())}\n';
     receipt += '${formatLabel('Nomor')} : ${resi.nomor}\n';
     receipt += '${formatLabel('Pelanggan')} : ${resi.namaPelanngan}\n';
+    receipt += '${formatLabel('TOP')} : ${topID ?? 'COD'}\n'; // Include the topID here
     receipt += spaceone;
+
     for (var item in resi.toItems) {
       receipt += '${item.description}\n';
+      String unitID = item.unitID ?? '';
       String quantity = formatQuantity(item.quantity!);
       String unit = rp(formatUnit(item.unit!));
       String price = rp(item.price.toString());
-      receipt += '${formatLabelValue('$quantity X $unit', price)}\n';
+      // String ppn = rp((item.ppn ?? 0).toString());
+      receipt += '${formatLabelValue('$quantity $unitID X $unit', price)}\n';
+      // receipt += '${formatLabelValue('PPN', ppn)}\n';
     }
+    // receipt += spaceone;
+    // receipt += '${formatLabelValue('SUB TOTAL', subtotalFormatted)}\n';
+    // receipt += '${formatLabelValue('DISKON', '0')}\n';
+    // receipt += '${formatLabelValue('PPN', subtotalppnFormatted)}\n';
     receipt += spaceone;
-    receipt += '${formatLabelValue('SUB TOTAL', subtotalFormatted)}\n';
-    receipt += '${formatLabelValue('DISKON', '0')}\n';
-    // receipt += '${formatLabelValue('PPN (0%)', '0')}\n';
-    receipt += spaceone;
-    receipt += '${formatLabelValue('TOTAL', subtotalFormatted)}\n';
+    receipt += '${formatLabelValue('TOTAL', totalFormatted)}\n';
     receipt += spacetwo;
     receipt += '${DateUtils.getCurrentDateTime()}-${resi.namaSales}\n';
     receipt += '\n';
-    receipt += '${centerText("Barang yang sudah dibeli", totalWidth)}\n';
-    receipt += '${centerText("tidak bisa ditukar", totalWidth)}\n';
-    receipt += '${centerText("atau dikembalikan", totalWidth)}\n';
+
+    if (resi.activity == 'Canvasing') {
+      receipt += '${centerText('*** L U N A S ***', totalWidth)}\n';
+    }
+    receipt += '\n';
+
+    if (resi.activity == 'Canvasing' || topID == 'COD') {
+      receipt += '${centerText("Barang yang sudah dibeli", totalWidth)}\n';
+      receipt += '${centerText("tidak bisa ditukar", totalWidth)}\n';
+      receipt += '${centerText("atau dikembalikan", totalWidth)}\n';
+    } else if (topID == 'K14') {
+      receipt += '${formatLabel("Signature : ")}\n';
+      receipt += '\n';
+      receipt += '\n';
+    }
+
     receipt += '\n';
     receipt += '${centerText(".:TERIMA KASIH:.", totalWidth)}\n';
     receipt += '\n';

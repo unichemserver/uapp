@@ -1,11 +1,13 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:uapp/core/database/ext.dart';
+import 'package:uapp/core/utils/log.dart';
+import 'package:path/path.dart';
 
 class MarketingDatabase {
   static final MarketingDatabase _instance =
       MarketingDatabase._privateConstructor();
   static Database? _database;
-  final int marketingDbVersion = 1;
+  final int marketingDbVersion = 10;
 
   MarketingDatabase._privateConstructor();
 
@@ -22,14 +24,18 @@ class MarketingDatabase {
   }
 
   Future<Database> _initDatabase() async {
+    String path = join(await getDatabasesPath(), 'marketing.db');
     return await openDatabase(
-      'marketing.db',
+      path,
       version: marketingDbVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
   Future<void> _onCreate(Database db, int version) async {
+    Log.d('creating database...');
+
     await db.execute('''
       CREATE TABLE IF NOT EXISTS marketing_activity (
         id TEXT PRIMARY KEY,
@@ -91,7 +97,8 @@ class MarketingDatabase {
         unit TEXT,
         price DECIMAL(10, 2),
         top TEXT,
-        unit_id TEXT
+        unit_id TEXT,
+        ppn DECIMAL(10, 2) DEFAULT 0
       )
     ''');
 
@@ -107,6 +114,38 @@ class MarketingDatabase {
       )
     ''');
 
+    await db.execute('''
+    CREATE TABLE IF NOT EXISTS mastergroup (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cluster_kelompok TEXT NOT NULL,
+        type TEXT NOT NULL,
+        kode TEXT NOT NULL,
+        nama_desc TEXT NOT NULL,
+        singkatan TEXT NOT NULL,
+        definisi TEXT NOT NULL,
+        active INTEGER DEFAULT 1
+    )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS noo_activity (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        idnoo TEXT,
+        statussync INTEGER DEFAULT 0,
+        status TEXT,
+        approved INTEGER DEFAULT 0,
+        idCustOrlan TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS top_options (
+        TOP_ID TEXT PRIMARY KEY,
+        Description TEXT
+      )
+    ''');
+
+    await db.execute(mastergroupTable);
     await db.execute(invoiceTable);
     await db.execute(masterNooTable);
     await db.execute(ttdNooTable);
@@ -115,6 +154,108 @@ class MarketingDatabase {
     await db.execute(nooSpesimenTable);
     await db.execute(canvasingTable);
     await db.execute(deleteSevenDaysMarketingActivity);
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 6) {
+      Log.d('upgrading database...');
+
+      await db.execute('''
+      CREATE TABLE IF NOT EXISTS mastergroup (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          cluster_kelompok TEXT NOT NULL,
+          type TEXT NOT NULL,
+          kode TEXT NOT NULL,
+          nama_desc TEXT NOT NULL,
+          singkatan TEXT NOT NULL,
+          definisi TEXT NOT NULL,
+          active INTEGER DEFAULT 1
+      )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS noo_activity (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          idnoo TEXT,
+          statussync INTEGER DEFAULT 0,
+          status TEXT,
+          approved INTEGER DEFAULT 0,
+          idCustOrlan TEXT
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS top_options (
+          TOP_ID TEXT PRIMARY KEY,
+          Description TEXT
+        )
+      ''');
+
+      await db.execute(mastergroupTable);
+    }
+
+    if (oldVersion < 7) {
+      // Check if the 'pembayaran' column exists in the 'canvasing' table
+      var result = await db.rawQuery('PRAGMA table_info(canvasing)');
+      bool columnExists = result.any((column) => column['name'] == 'pembayaran');
+
+      if (!columnExists) {
+        // Add the 'pembayaran' column if it does not exist
+        await db.execute('''
+          ALTER TABLE canvasing ADD COLUMN pembayaran INTEGER DEFAULT 0
+        ''');
+        Log.d('Column "pembayaran" added to "canvasing" table.');
+      } else {
+        Log.d('Column "pembayaran" already exists in "canvasing" table.');
+      }
+    }
+
+    if (oldVersion < 8) {
+            // Check if the 'ppn' column exists in the 'taking_order' table
+      var result = await db.rawQuery('PRAGMA table_info(taking_order)');
+      bool columnExists = result.any((column) => column['name'] == 'ppn');
+
+      if (!columnExists) {
+        // Add the 'ppn' column if it does not exist
+        await db.execute('''
+          ALTER TABLE taking_order ADD COLUMN ppn DECIMAL(10, 2) DEFAULT 0
+        ''');
+        Log.d('Column "ppn" added to "taking_order" table.');
+      } else {
+        Log.d('Column "ppn" already exists in "taking_order" table.');
+      }
+    }
+
+    if (oldVersion < 9) {
+      await db.execute(masterNooUpdateTable);
+    }
+    if (oldVersion < 10) {
+      var result = await db.rawQuery('PRAGMA table_info(masternooupdate)');
+      bool billToExists = result.any((column) => column['name'] == 'bill_to');
+      bool shipToExists = result.any((column) => column['name'] == 'ship_to');
+      bool taxToExists = result.any((column) => column['name'] == 'tax_to');
+
+      if (!billToExists) {
+        await db.execute('''
+          ALTER TABLE masternooupdate ADD COLUMN bill_to TEXT
+        ''');
+        Log.d('Column "bill_to" added to "masternooupdate" table.');
+      }
+
+      if (!shipToExists) {
+        await db.execute('''
+          ALTER TABLE masternooupdate ADD COLUMN ship_to TEXT
+        ''');
+        Log.d('Column "ship_to" added to "masternooupdate" table.');
+      }
+
+      if (!taxToExists) {
+        await db.execute('''
+          ALTER TABLE masternooupdate ADD COLUMN tax_to TEXT
+        ''');
+        Log.d('Column "tax_to" added to "masternooupdate" table.');
+      }
+    }
   }
 
   Future<int> insert(String table, Map<String, dynamic> data,
@@ -175,11 +316,14 @@ class MarketingDatabase {
     await db.delete('collection');
     await db.delete('invoice');
     await db.delete('masternoo');
+    await db.delete('masternooupdate');
     // await db.delete('ttdnoo');
     await db.delete('nooaddress');
     await db.delete('noodocument');
     await db.delete('noospesimen');
     await db.delete('canvasing');
+    await db.delete('mastergroup');
+    await db.delete('noo_activity');
   }
 
   Future<Map<String, dynamic>> getAllData() async {
@@ -193,10 +337,13 @@ class MarketingDatabase {
       'collection',
       'invoice',
       'masternoo',
+      'masternooupdate',
       'nooaddress',
       'noodocument',
       'noospesimen',
-      'canvasing'
+      'canvasing',
+      'mastergroup',
+      'noo_activity',
     ];
     final Map<String, dynamic> result = {};
     for (String table in tables) {

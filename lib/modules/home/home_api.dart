@@ -544,4 +544,91 @@ class HomeApi {
       return null;
     }
   }
+
+  static Future<List<Map<String, dynamic>>?> getDataNoo() async {
+    try {
+      final baseUrl = Uri.parse('https://unichem.co.id/api/');
+      final bodyRequest = {
+        'action': 'noo',
+        'method': 'get_data',
+      };
+      final response = await http.post(
+        baseUrl,
+        body: bodyRequest,
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['message'] == 'Data Found') {
+          return List<Map<String, dynamic>>.from(data['data']);
+        } else {
+          return [];
+        }
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching NOO data: $e');
+      return null;
+    }
+  }
+  static Future<List<Map<String, dynamic>>?> getDocumentNoo(String nonoo) async {
+    try {
+      final baseUrl = Uri.parse('https://unichem.co.id/api/');
+      final bodyRequest = {
+        'action': 'noo',
+        'method': 'get_document',
+        'nonoo' : nonoo,
+      };
+      final response = await http.post(
+        baseUrl,
+        body: bodyRequest,
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['message'] == 'Data Found') {
+          return List<Map<String, dynamic>>.from(data['data']);
+        } else {
+          return [];
+        }
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching NOO data: $e');
+      return null;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>?> getAddress(String nonoo) async {
+    try {
+      final baseUrl = Uri.parse('https://unichem.co.id/api/');
+      final bodyRequest = {
+        'action': 'noo',
+        'method': 'get_address',
+        'nonoo' : nonoo,
+      };
+      final response = await http.post(
+        baseUrl,
+        body: bodyRequest,
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['message'] == 'Data Found') {
+          return List<Map<String, dynamic>>.from(data['data']);
+        } else {
+          return [];
+        }
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching NOO data: $e');
+      return null;
+    }
+  }
 }
+
+
+
+
+

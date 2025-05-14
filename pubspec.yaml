@@ -53,6 +53,7 @@ dependencies:
   workmanager: ^0.5.2
   device_apps: ^2.2.0
   firebase_messaging: ^15.2.1
+  flutter_slidable: ^3.1.2
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +71,6 @@ flutter:
     - assets/
 
   fonts:
-    - family: Rubik
+    - family: OpenSans
       fonts:
-        - asset: fonts/Rubik-VariableFont_wght.ttf
+        - asset: fonts/OpenSans-VariableFont_wdth,wght.ttf

@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/Users/ferdi/Unichem/Mobile Apps/uapp/linux"
+    "cmake.sourceDirectory": "C:/Users/ferdi/Unichem/Mobile Apps/uapp/linux",
+    "files.autoSave": "afterDelay"
 }

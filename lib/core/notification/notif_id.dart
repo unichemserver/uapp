@@ -14,4 +14,4 @@ class NotifId {
 
   static const String NOTIF_CH_ID = 'notif_ch_id';
   static const String NOTIF_CH_NAME = 'notif_ch_name';
-}
+  }

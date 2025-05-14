@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:remove_bg/remove_bg.dart';
-import 'package:uapp/app/routes.dart';
+// import 'package:uapp/app/routes.dart';
 import 'package:uapp/app/strings.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/core/widget/id_card_image.dart';
@@ -28,12 +28,12 @@ class ProfileScreen extends StatelessWidget {
           appBar: AppBar(
             title: const Text('Profile'),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () {
-                  Get.toNamed(Routes.SETTING);
-                },
-              ),
+              // IconButton(
+              //   icon: const Icon(Icons.settings),
+              //   onPressed: () {
+              //     Get.toNamed(Routes.SETTING);
+              //   },
+              // ),
               IconButton(
                 icon: const Icon(Icons.logout),
                 onPressed: () {

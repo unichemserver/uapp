@@ -40,6 +40,7 @@ class CheckoutPage extends StatelessWidget {
               _buildCollectionSection(ctx),
               _buildSignatureSection(ctx),
               const SizedBox(height: 16),
+              _cetakStrukButton(ctx),
               _buildCheckoutButton(context, ctx),
             ],
           ),
@@ -147,7 +148,12 @@ class CheckoutPage extends StatelessWidget {
           .map(
             (e) => ListTile(
               title: Text(e.description!),
-              subtitle: Text(e.price.toString()),
+              subtitle: Text(
+                  '${e.quantity} * ${Utils.formatCurrency(e.unit!)}\nPPN: ${Utils.formatCurrency(e.ppn.toString())}',
+                ),
+                trailing: Text(
+                  Utils.formatCurrency(e.price.toString()),
+                ),
             ),
           )
           .toList(),
@@ -186,6 +192,20 @@ class CheckoutPage extends StatelessWidget {
     return ElevatedButton(
       onPressed: () => _showCheckoutConfirmationDialog(context, ctx),
       child: const Text('Check-Out'),
+    );
+  }
+
+Widget _cetakStrukButton(MarketingController ctx) {
+    return ElevatedButton(
+      onPressed: () async {
+        ctx.printResi().then((value) {
+          ctx.completeTo();
+        });
+        
+      },
+      child: Text(
+        ctx.isToComplete ? 'Cetak Ulang Struk' : 'Cetak Struk',
+      ),
     );
   }
 

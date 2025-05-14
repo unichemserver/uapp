@@ -8,8 +8,11 @@ import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/hive/hive_service.dart';
 import 'package:uapp/core/utils/date_utils.dart' as du;
+import 'package:uapp/core/utils/log.dart';
+import 'package:uapp/core/utils/print_resi.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/models/customer.dart';
+import 'package:uapp/models/resi.dart';
 import 'package:uapp/models/route.dart' as rt;
 import 'package:uapp/modules/marketing/api/api_client.dart';
 import 'package:uapp/modules/marketing/marketing_api.dart';
@@ -68,11 +71,30 @@ class MarketingController extends GetxController {
   int selectedOffRoute = -1;
   String? idMarketingActivity;
   int selectedStatusPayment = -1;
+  bool isToComplete = false;
   final MarketingApiClient apiClient = MarketingApiClient();
+
+  String? globalTopID; // Global TOP ID
+
+  void setGlobalTopID(String? topID) {
+    globalTopID = topID;
+    takingOrders.clear(); // Clear taking orders when TOP changes
+    update();
+  }
+
+  void clearTakingOrders() {
+    takingOrders.clear();
+    update();
+  }
 
   void getPriceList() async {
     priceList = await HiveService.getPriceList();
     update();
+  }
+
+  List<PriceList> getFilteredPriceList() {
+    if (globalTopID == null) return [];
+    return priceList.where((price) => price.topID == globalTopID).toList();
   }
 
   void setCustTop(CustTop? value) async {
@@ -475,6 +497,38 @@ class MarketingController extends GetxController {
       ],
     );
     getCollectionFromDatabase();
+  }
+
+    void completeTo() {
+      isToComplete = true;
+      update();
+    }
+
+    printResi() async {
+    var user = Utils.getUserData();
+    var userId = user.id;
+    var result = await db.query("taking_order",
+        where: "idMA = ?", whereArgs: [idMarketingActivity]);
+    var toItems = result.map((e) => ToModel.fromJson(e)).toList();
+    var printData = Resi(
+      activity: 'Taking Order',
+      nomor: getNomorResi(idMarketingActivity!, userId),
+      namaPelanngan: customerName ?? 'customer',
+      namaSales: user.namaPanggilan ?? 'sales',
+      toItems: toItems,
+    );
+    for (var item in printData.toItems) {
+      Log.d('ToModel details: ${item.toJson()}');
+    }
+    PrintResi().printText(printData);
+  }
+
+  String getNomorResi(String idMa, String idUser) {
+    var date = du.DateUtils.getCurrentDate();
+    var year = date.substring(2, 4);
+    var month = date.substring(5, 7);
+    var nomor = idMa.isNotEmpty ? idMa.substring(idMa.length - 1) : '0';
+    return 'FP.$year$month${idUser.padLeft(4, '0')}$nomor';
   }
 
   void rotateScreen(bool toPortrait) {

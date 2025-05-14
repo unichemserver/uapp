@@ -10,6 +10,8 @@ import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/modules/marketing/api/api_client.dart';
 import 'package:uapp/modules/marketing/api/sync_marketing_activity_api.dart';
 import 'package:http/http.dart' as http;
+import 'package:uapp/modules/approval/approval_api.dart';
+import 'package:uapp/core/notification/notification_handler.dart';
 
 class AlarmManager {
   static Future<void> init() async {
@@ -88,6 +90,39 @@ class AlarmManager {
     // );
   }
 
+  static void scheduleApprovalCheck() {
+    Log.d('AlarmManager: scheduleApprovalCheck called');
+    const int alarmId = AlarmId.approvalPeriodic;
+    AndroidAlarmManager.periodic(
+      const Duration(minutes: 15), // Interval periodik
+      alarmId,
+      _checkApprovalData,
+      allowWhileIdle: true,
+      exact: true,
+      wakeup: true,
+      rescheduleOnReboot: true,
+    );
+  }
+
+  static void _checkApprovalData() async {
+    try {
+      final userId = Utils.getUserData().id;
+      if (userId.isNotEmpty) {
+        final approvalData = await ApprovalApi.getApprovalData(userId);
+        if (approvalData != null && approvalData.isNotEmpty) {
+          Log.d('AlarmManager: New approval data found (${approvalData.length} items)');
+          NotificationHandler.showFallbackNotification(approvalData.length);
+        } else {
+          Log.d('AlarmManager: No new approval data found');
+        }
+      } else {
+        Log.d('AlarmManager: User ID is empty');
+      }
+    } catch (e) {
+      Log.d('AlarmManager: Error while checking approval data - $e');
+    }
+  }
+
   static Future<void> cancelAllAlarm() async {
     await AndroidAlarmManager.cancel(AlarmId.marketingPeriodic);
     await AndroidAlarmManager.cancel(AlarmId.location);
@@ -109,7 +144,7 @@ Future<void> sendLocationToAPI(Position position) async {
     );
 
     if (response.statusCode == 200) {
-      Log.d("Lokasi berhasil dikirim");
+      Log.d("Lokasi berhasil dikirimb");
     } else {
       Log.d("Gagal mengirim lokasi: ${response.statusCode} - ${response.body}");
     }

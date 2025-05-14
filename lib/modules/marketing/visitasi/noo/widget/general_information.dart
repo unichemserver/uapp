@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:uapp/core/utils/log.dart';
+import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_controller.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_options.dart';
@@ -32,128 +34,130 @@ class GeneralInformation extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<NooController>(
       init: NooController(),
-      initState: (state) {},
+      initState: (state) {
+        supervisorNameCtrl.text = Utils.getUserData().id;
+      },
       builder: (ctx) {
         return ExpansionTile(
           title: const Text('Informasi Umum'),
           leading: const Icon(Icons.info),
           expandedAlignment: Alignment.topLeft,
           expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          initiallyExpanded: true,
           children: [
             Text(
               'Group Pelanggan:',
               style: Theme.of(context).textTheme.titleSmall,
-            ),
+            ),            
             Wrap(
               spacing: 8,
               runSpacing: 0,
-              children: List.generate(
-                NooOptions.custGroup.length,
-                (index) {
-                  return ChoiceChip(
-                    label: SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.3,
-                      child: Text(
-                        NooOptions.custGroup[index],
-                        textAlign: TextAlign.center,
-                      ),
+              children: ctx.customerGroups.keys.map((cluster) {
+                return ChoiceChip(
+                  label: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.3,
+                    child: Text(
+                      cluster,
+                      textAlign: TextAlign.center,
                     ),
-                    selected: ctx.groupPelanggan == NooOptions.custGroup[index],
-                    onSelected: (value) {
-                      if (value) {
-                        ctx.groupPelanggan = NooOptions.custGroup[index];
-                        ctx.update();
-                      }
-                    },
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Credit Limit (Secara Total dalam Rupiah):',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            AppTextField(
-              controller: creditLimitCtrl,
-              prefixIcon: Container(
-                padding: const EdgeInsets.all(8),
-                child: const Text(
-                  'Rp',
-                  style: TextStyle(fontSize: 20),
-                ),
-              ),
-              onChanged: (value) {
-                var credit = int.tryParse(value.replaceAll(RegExp(r'\D'), ''));
-                if (credit != null) {
-                  jaminanCtrl.text = (credit * 1.1).toInt().toString();
-                }
-              },
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'Credit limit tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Metode Pembayaran Pelanggan:',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            Wrap(
-              spacing: 8,
-              runSpacing: 0,
-              children: List.generate(
-                NooOptions.paymentMethod.length,
-                (index) {
-                  return ChoiceChip(
-                    label: Row(
-                      children: [
-                        Text(
-                          NooOptions.paymentMethod[index],
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                    selected:
-                        ctx.paymentMethod == NooOptions.paymentMethod[index],
-                    onSelected: (value) {
-                      if (value) {
-                        ctx.paymentMethod = NooOptions.paymentMethod[index];
-                        ctx.update();
-                      }
-                    },
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Termin Pembayaran (TOP) dari Tanggal Surat Jalan:',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: AppTextField(
-                    controller: topDateCtrl,
-                    prefixIcon: const Icon(Icons.calendar_today),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Termin pembayaran tidak boleh kosong';
-                      }
-                      return null;
-                    },
                   ),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  'Hari',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-              ],
+                  selected: ctx.selectedCluster.value == cluster,
+                  onSelected: (value) {
+                    if (value) {
+                      ctx.setSelectedCluster(cluster);
+                      ctx.setSelectedNamaDesc('');
+                    }
+                  },
+                );
+              }).toList(),
             ),
+
+            if (ctx.selectedCluster.value.isNotEmpty) 
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(labelText: 'Pilih Nama Desc'),
+                value: ctx.customerGroups[ctx.selectedCluster.value]!.contains(ctx.selectedNamaDesc.value) == true 
+                    ? ctx.selectedNamaDesc.value 
+                    : null,
+                items: ctx.customerGroups[ctx.selectedCluster.value]!
+                    .toSet()
+                    .map((namaDesc) => DropdownMenuItem(
+                          value: namaDesc,
+                          child: Text(namaDesc),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  ctx.setSelectedNamaDesc(value!);
+                  Log.d('Selected Nama Desc: ${ctx.selectedNamaDesc.value}');
+                },
+              ),
+            const SizedBox(height: 16),
+            Text(
+              'Metode Pembayaran:',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            Obx(() {
+              return DropdownButtonFormField<String>(
+                items: NooOptions.paymentMethods
+                    .map((method) => DropdownMenuItem(
+                          value: method,
+                          child: Text(method),
+                        ))
+                    .toList(),
+                value: ctx.paymentMethod.value.isNotEmpty ? ctx.paymentMethod.value : null,
+                onChanged: (value) {
+                  if (value == 'CASH') {
+                    ctx.paymentMethod.value = 'CASH';
+                    topDateCtrl.text = 'COD';
+                    // ctx.showCreditLimitAndJaminan(false);
+                  } else if (value == 'KREDIT') {
+                    ctx.paymentMethod.value = 'KREDIT';
+                    topDateCtrl.clear();
+                    // ctx.showCreditLimitAndJaminan(false);
+                  }
+                },
+                hint: const Text('Pilih Metode Pembayaran'),
+                icon: const Icon(Icons.payment),
+              );
+            }),
+            Obx(() {
+              var items = ctx.topOptions
+                  .map((item) => DropdownMenuItem<String>(
+                        value: item['TOP_ID'],
+                        child: Text(item['TOP_ID']),
+                      ))
+                  .toList();
+
+              var selectedValue = items.any((element) => element.value == topDateCtrl.text)
+                  ? topDateCtrl.text
+                  : null;
+
+              if (ctx.paymentMethod.value == 'KREDIT') {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    Text(
+                      'Termin Pembayaran (TOP):',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    DropdownButtonFormField<String>(
+                      value: selectedValue,
+                      items: items,
+                      onChanged: (value) {
+                        if (value != null) {
+                          topDateCtrl.text = value;
+                          // ctx.paymentMethod.value = value;
+                          ctx.update();
+                        }
+                      },
+                      hint: const Text('Pilih Termin Pembayaran'),
+                      icon: const Icon(Icons.calendar_today),
+                    ),
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
+            }),
             const SizedBox(height: 16),
             Text(
               'Jaminan (Khusus Distributor):',
@@ -184,31 +188,11 @@ class GeneralInformation extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Nilai Jaminan (Rp) : 110% dari Nominal Credit Limit:',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            AppTextField(
-              controller: jaminanCtrl,
-              prefixIcon: Container(
-                padding: const EdgeInsets.all(8),
-                child: const Text(
-                  'Rp',
-                  style: TextStyle(fontSize: 20),
-                ),
-              ),
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'Nilai jaminan tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
               'Nama Perusahaan (PT/CV/UD) atau Toko:',
               style: Theme.of(context).textTheme.titleSmall,
             ),
             AppTextField(
+              hintText: 'Masukan Nama Perusahaan',
               controller: namaPerusahaanCtrl,
               validator: (value) {
                 if (value!.isEmpty) {
@@ -219,24 +203,11 @@ class GeneralInformation extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'No. ID Pelanggan (Diisi oleh HO PT. UCI):',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            AppTextField(
-              controller: idPelangganCtrl,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'ID Pelanggan tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
               'Area Pemasaran:',
               style: Theme.of(context).textTheme.titleSmall,
             ),
             AppTextField(
+              hintText: 'Masukan Area Pemasaran',
               controller: areaPemasaranCtrl,
               validator: (value) {
                 if (value!.isEmpty) {
@@ -251,6 +222,7 @@ class GeneralInformation extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             AppTextField(
+              hintText: 'Pilih Tanggal',
               controller: tglJoinCtrl,
               readOnly: true,
               onTap: () {
@@ -267,34 +239,6 @@ class GeneralInformation extends StatelessWidget {
               validator: (value) {
                 if (value!.isEmpty) {
                   return 'Tanggal bergabung tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Nama Supervisor PT. UCI:',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            AppTextField(
-              controller: supervisorNameCtrl,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'Nama Supervisor tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Nama ASM PT. UCI:',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            AppTextField(
-              controller: asmNameCtrl,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'Nama ASM tidak boleh kosong';
                 }
                 return null;
               },

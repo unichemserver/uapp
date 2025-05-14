@@ -37,10 +37,53 @@ class OutletInformation extends StatelessWidget {
       leading: const Icon(Icons.store),
       expandedAlignment: Alignment.topLeft,
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: true,
       children: [
         AddressInformation(
-          title: 'Alamat Kantor',
+          title: 'Alamat Usaha',
           addressModel: officeAddress,
+          addressValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Nama Jalan tidak boleh kosong';
+            }
+            return null;
+          },
+          rtRwValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'RT/RW tidak boleh kosong';
+            }
+            return null;
+          },
+          propinsiValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Kelurahan tidak boleh kosong';
+            }
+            return null;
+          },
+          kabKotaValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Kabupaten/Kota tidak boleh kosong';
+            }
+            return null;
+          },
+          kecamatanValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Kecamatan tidak boleh kosong';
+            }
+            return null;
+          },
+          desaKelurahanValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Desa/Kelurahan tidak boleh kosong';
+            }
+            return null;
+          },
+          kodePosValidator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Kode Pos tidak boleh kosong';
+            }
+            return null;
+          },
         ),
         DepartmentInformation(
           title: 'Departemen Keuangan',
@@ -63,6 +106,7 @@ class OutletInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan nama PIC',
           controller: namaPicCtrl,
         ),
         const SizedBox(height: 16),
@@ -71,6 +115,7 @@ class OutletInformation extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         AppTextField(
+          hintText: 'Masukan nomor telepon',
           controller: noTelpCtrl,
         ),
       ],

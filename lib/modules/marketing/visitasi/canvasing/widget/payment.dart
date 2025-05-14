@@ -28,7 +28,7 @@ class PaymentWidget extends StatelessWidget {
               Text(
                 Utils.formatCurrency(ctx.totalPayment.toString()),
                 style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                      fontFamily: Fonts.rubik,
+                      fontFamily: Fonts.openSans,
                     ),
               ),
               const SizedBox(height: 16),

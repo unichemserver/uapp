@@ -13,6 +13,14 @@ class AddCustomerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<CanvasingController>(
       builder: (ctx) {
+        final args = Get.arguments as Map<String, dynamic>?;
+
+        // Pre-fill fields if arguments are provided
+        if (args != null) {
+          ctx.namaController.text = args['name'] ?? '';
+          ctx.lokasiController.text = args['address'] ?? '';
+        }
+
         return Scaffold(
           body: Form(
             key: ctx.addFormKey,
@@ -111,7 +119,8 @@ class AddCustomerWidget extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 AppTextField(
-                  readOnly: ctx.isToComplete,
+                  hintText: 'Masukan Nama Outlet',
+                  readOnly: true,
                   prefixIcon: const Icon(Icons.store),
                   controller: ctx.namaController,
                   validator: (value) {
@@ -130,6 +139,7 @@ class AddCustomerWidget extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 AppTextField(
+                  hintText: 'Masukan Nama Pemilik',
                   readOnly: ctx.isToComplete,
                   prefixIcon: const Icon(Icons.person),
                   controller: ctx.pemilikController,
@@ -149,6 +159,7 @@ class AddCustomerWidget extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 AppTextField(
+                  hintText: 'Masukan Nomer Telepon',
                   readOnly: ctx.isToComplete,
                   prefixIcon: const Icon(Icons.phone),
                   controller: ctx.telpController,
@@ -165,6 +176,24 @@ class AddCustomerWidget extends StatelessWidget {
                   'Alamat',
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
+                AppTextField(
+                  hintText: 'Masukan Alamat outlet',
+                  readOnly: true,
+                  prefixIcon: const Icon(Icons.store),
+                  controller: ctx.lokasiController,//alamattextCotelpController,//ntrolltexter
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Alamat tidak boleh kosong';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Lokasi Outlet',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 TextFormField(
                   readOnly: true,
                   textAlignVertical: TextAlignVertical.center,
@@ -173,7 +202,7 @@ class AddCustomerWidget extends StatelessWidget {
                   maxLines: null,
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return 'Alamat tidak boleh kosong';
+                      return 'Lokasi tidak boleh kosong';
                     }
                     return null;
                   },

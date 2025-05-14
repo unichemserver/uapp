@@ -27,19 +27,19 @@ class DepartmentInformation extends StatelessWidget {
           'Nama/ Jabatan',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        AppTextField(controller: namaCtrl),
+        AppTextField(controller: namaCtrl, hintText: 'Masukan Nama/ Jabatan'),
         const SizedBox(height: 16),
         Text(
           'No. Telp./ Handphone',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        AppTextField(controller: noTelpCtrl),
+        AppTextField(controller: noTelpCtrl, hintText: 'Masukan Nomer Telepon'),
         const SizedBox(height: 16),
         Text(
           'Website/ Email',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        AppTextField(controller: emailCtrl),
+        AppTextField(controller: emailCtrl, hintText: 'Masukan email',),
       ],
     );
   }

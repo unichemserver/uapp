@@ -23,6 +23,7 @@ class HiveKeys {
   static const String isOnRoute = 'isOnRoute';
 
   static const String custActiveBox = 'custActiveBox';
+  static const String callBox = 'callBox';
   static const String masterItemBox = 'masterItemBox';
   static const String unitSetBox = 'unitSetBox';
   static const String custTopBox = 'custTopBox';

@@ -21,6 +21,9 @@ import 'package:uapp/models/menu.dart';
 import 'package:uapp/models/user.dart';
 import 'package:uapp/modules/home/home_api.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:uapp/modules/approval/approval_api.dart';
+import 'package:hive/hive.dart';
+
 
 class HomeController extends GetxController with WidgetsBindingObserver {
   final Box box = Hive.box(HiveKeys.appBox);
@@ -265,6 +268,14 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     } else {
       return 0;
     }
+  }
+
+  Future<bool> hasApprovalAccess() {
+    return ApprovalApi.getUserApproval().then((approvalUsers) {
+      if (approvalUsers == null) return false;
+      final userId = Utils.getUserData().id;
+      return approvalUsers.contains(userId);
+    }).catchError((_) => false);
   }
 
   bool showMarketingMenu() {
