@@ -62,13 +62,14 @@ class NooController extends GetxController {
   var isCreditLimitAndJaminanVisible = false.obs; 
 
   saveData(NooTextController nooDatas, {String? nooId}) async {
+    final method = paymentMethod.value;
     if (nooId != null) {
       idNOO = nooId; 
-    } else if (idNOO == null) {
-      await getIDNOO(); 
+    } else if (idNOO == null ) {
+      await getIDNOO();
     }
 
-    if (idUpdate == null) {
+    if (idUpdate == null && method == 'KREDIT' && nooId != null) {
       await getIDNOOUpdate();
     }
 
@@ -95,6 +96,13 @@ class NooController extends GetxController {
     additionalData.addAll(nooDatas.toJson());
 
     if (nooId != null) {
+      await db.update(
+        'masternooupdate',
+        additionalData,
+        'id_noo = ?',
+        [idNOO], 
+      );
+    } else if (idNOO != null && method == 'KREDIT') {
       await db.update(
         'masternooupdate',
         additionalData,
@@ -155,71 +163,125 @@ class NooController extends GetxController {
   }
 
   getIDNOO() async {
-    idNOO = await generateNOOID();
-    await db.insert(
-      'masternoo',
-      {
-        'id': idNOO,
-      },
-      nullColumnHack: 'group_cust',
-    );
+  idNOO = await generateNOOID();
+  final method = paymentMethod.value;
 
-    // Insert into noo_activity
-    await db.insert(
-      'noo_activity',
-      {
-        'idnoo': idNOO,
-        'statussync': 0,
-        'approved': 0,
-      },
-    );
-
-    var idDocNoo = await generateNooID('noodocument');
-    await db.insert(
-      'noodocument',
-      {
-        'id': idDocNoo,
-        'id_noo': idNOO,
-      },
-      nullColumnHack: 'ktp',
-    );
-    ownerAddress.id = await generateNooID('nooaddress');
-    ownerAddress.idNoo = idNOO;
-    await db.insert(
-      'nooaddress',
-      ownerAddress.toJson(),
-    );
-    companyAddress.id = await generateNooID('nooaddress');
-    companyAddress.idNoo = idNOO;
-    await db.insert(
-      'nooaddress',
-      companyAddress.toJson(),
-    );
-    warehouseAddress.id = await generateNooID('nooaddress');
-    warehouseAddress.idNoo = idNOO;
-    await db.insert(
-      'nooaddress',
-      warehouseAddress.toJson(),
-    );
-    billingAddress.id = await generateNooID('nooaddress');
-    billingAddress.idNoo = idNOO;
-    await db.insert(
-      'nooaddress',
-      billingAddress.toJson(),
-    );
-    await db.update(
-      'masternoo',
-      {
-        'alamat_owner': ownerAddress.id,
-        'alamat_kantor': companyAddress.id,
-        'alamat_gudang': warehouseAddress.id,
-        'alamat_npwp': billingAddress.id,
-      },
-      'id = ?',
-      [idNOO],
-    );
-    update();
+  if (method == 'KREDIT') {
+    await createKreditRecords();
+  } else {
+    await createCashRecords();
   }
+  update();
+}
+
+createKreditRecords() async {
+  idUpdate = await generateID();
+  await db.insert(
+    'masternooupdate',
+    {
+      'id': idUpdate,
+      'id_noo': idNOO,
+    },
+    nullColumnHack: 'group_cust',
+  );
+
+  await db.insert(
+    'noo_activity',
+    {
+      'idnoo': idNOO,
+      'statussync': 0,
+      'approved': 0,
+    },
+  );
+
+  await createCommonRecords();
+
+  await db.update(
+    'masternooupdate',
+    {
+      'alamat_owner': ownerAddress.id,
+      'alamat_kantor': companyAddress.id,
+      'alamat_gudang': warehouseAddress.id,
+      'alamat_npwp': billingAddress.id,
+    },
+    'id_noo = ?',
+    [idNOO],
+  );
+}
+
+createCashRecords() async {
+  await db.insert(
+    'masternoo',
+    {
+      'id': idNOO,
+    },
+    nullColumnHack: 'group_cust',
+  );
+
+
+  await db.insert(
+    'noo_activity',
+    {
+      'idnoo': idNOO,
+      'statussync': 0,
+      'approved': 0,
+    },
+  );
+
+  await createCommonRecords();
+
+  await db.update(
+    'masternoo',
+    {
+      'alamat_owner': ownerAddress.id,
+      'alamat_kantor': companyAddress.id,
+      'alamat_gudang': warehouseAddress.id,
+      'alamat_npwp': billingAddress.id,
+    },
+    'id = ?',
+    [idNOO],
+  );
+}
+
+createCommonRecords() async {
+  var idDocNoo = await generateNooID('noodocument');
+  await db.insert(
+    'noodocument',
+    {
+      'id': idDocNoo,
+      'id_noo': idNOO,
+    },
+    nullColumnHack: 'ktp',
+  );
+
+  ownerAddress.id = await generateNooID('nooaddress');
+  ownerAddress.idNoo = idNOO;
+  await db.insert(
+    'nooaddress',
+    ownerAddress.toJson(),
+  );
+  
+  companyAddress.id = await generateNooID('nooaddress');
+  companyAddress.idNoo = idNOO;
+  await db.insert(
+    'nooaddress',
+    companyAddress.toJson(),
+  );
+  
+  warehouseAddress.id = await generateNooID('nooaddress');
+  warehouseAddress.idNoo = idNOO;
+  await db.insert(
+    'nooaddress',
+    warehouseAddress.toJson(),
+  );
+  
+  billingAddress.id = await generateNooID('nooaddress');
+  billingAddress.idNoo = idNOO;
+  await db.insert(
+    'nooaddress',
+    billingAddress.toJson(),
+  );
+}
 
   getIDNOOUpdate() async {
     var idNOOUpdate = await generateID();
@@ -660,7 +722,7 @@ Future<void> loadCustomerGroups() async {
 
   Future<void> checkTables() async {
     final tables = await db.rawQuery(
-        "SELECT * FROM nooaddress",);
+        "SELECT id FROM nooaddress");
     Log.d("Tables in Database: $tables");
   }
 
@@ -808,6 +870,21 @@ if (matched.isNotEmpty) {
 
   void navigateToAddressPage(String nooId) {
     Get.toNamed(Routes.NOO_ADDRESS, arguments: {'id': nooId});
+  }
+
+  Future<String?> getPaymentMethod(String idNoo) async {
+    try {
+      var result = await db.rawQuery(
+        "SELECT payment_method, id_noo FROM masternooupdate where id_noo = ?", args: [idNoo]
+      );
+
+      if (result.isNotEmpty) {
+        return result.first['payment_method'] as String?;
+      }
+    } catch (e) {
+      Log.d('Error fetching payment_method for id_noo $idNoo: $e');
+    }
+    return null;
   }
 
   @override

@@ -5,38 +5,62 @@ import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/widget/app_textfield.dart';
 import 'package:uapp/modules/marketing/visitasi/callmanagement/callmanagement_controller.dart';
 
-class CustomerPage extends StatelessWidget {
+class CustomerPage extends StatefulWidget {
   final String title;
   final Future<void> Function(CallManagementController) fetchData;
   final void Function(CallManagementController) onContinue;
-  final List<Widget>? actions; // New parameter for AppBar actions
+  final List<Widget>? actions;
 
   const CustomerPage({
     super.key,
     required this.title,
     required this.fetchData,
     required this.onContinue,
-    this.actions, // Initialize actions
+    this.actions,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final TextEditingController searchController = TextEditingController();
+  State<CustomerPage> createState() => _CustomerPageState();
+}
 
+class _CustomerPageState extends State<CustomerPage> {
+  final TextEditingController searchController = TextEditingController();
+  late CallManagementController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    try {
+      controller = Get.find<CallManagementController>();
+    } catch (e) {
+      // Jika tidak ditemukan, inisialisasi controller baru
+      controller = Get.put(CallManagementController());
+    }
+    // Memanggil fetchData saat halaman pertama kali dibuat
+    widget.fetchData(controller);
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
-        actions: actions, // Use the passed actions
+        title: Text(widget.title),
+        actions: widget.actions,
       ),
       body: GetBuilder<CallManagementController>(
-        init: CallManagementController(),
         builder: (ctx) => RefreshIndicator(
-          onRefresh: () => fetchData(ctx),
+          onRefresh: () => widget.fetchData(ctx),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Column(
               children: [
-                _buildSearchField(ctx, searchController),
+                _buildSearchField(ctx),
                 const SizedBox(height: 16.0),
                 _buildCustomerList(ctx),
                 const SizedBox(height: 12.0),
@@ -49,7 +73,7 @@ class CustomerPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchField(CallManagementController ctx, TextEditingController searchController) {
+  Widget _buildSearchField(CallManagementController ctx) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       child: AppTextField(
@@ -76,7 +100,8 @@ class CustomerPage extends StatelessWidget {
       child: ctx.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ctx.callManagementFiltered.isEmpty
-              ? const Center(child: Text('Data tidak ditemukan'))
+              // ? const Center(child: Text('Data tidak ditemukan'))
+              ? const Center(child: CircularProgressIndicator())
               : ListView.builder(
                   itemCount: ctx.callManagementFiltered.length,
                   itemBuilder: (_, index) => Slidable(
@@ -113,11 +138,12 @@ class CustomerPage extends StatelessWidget {
 
   Widget _buildContinueButton(CallManagementController ctx) {
     return ElevatedButton(
-      onPressed: ctx.selectedCustId == null ? null : () => onContinue(ctx),
+      onPressed: ctx.selectedCustId == null ? null : () => widget.onContinue(ctx),
       style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 40)),
       child: const Text('Lanjut'),
     );
   }
+}
 
   // Future<void> _syncData(BuildContext context) async {
   //   Utils.showLoadingDialog(context);
@@ -126,4 +152,4 @@ class CustomerPage extends StatelessWidget {
   //     Navigator.of(context).pop();
   //   }
   // }
-}
+

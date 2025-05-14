@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
 // import 'package:uapp/core/utils/jenis_call.dart';
-import 'package:uapp/core/utils/log.dart';
+// import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/modules/marketing/model/noo_model.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/doc_form.dart';
@@ -165,13 +165,13 @@ class _NooPageState extends State<NooPage> {
                           );
                           return;
                         }
-                        // if (ctx.paymentMethod.isEmpty) {
-                        //   Utils.showErrorSnackBar(
-                        //     context,
-                        //     'Pilih Metode Pembayaran terlebih dahulu',
-                        //   );
-                        //   return;
-                        // }
+                        if (ctx.paymentMethod.value.isEmpty) {
+                          Utils.showErrorSnackBar(
+                            context,
+                            'Pilih Metode Pembayaran terlebih dahulu',
+                          );
+                          return;
+                        }
                         if (ctx.jaminan.isEmpty) {
                           Utils.showErrorSnackBar(
                             context,
@@ -182,15 +182,15 @@ class _NooPageState extends State<NooPage> {
                         if (!_formKey.currentState!.validate()) {
                           return;
                         }
-
-                        // Cetak data relevan dari nooCtrl
-                        Log.d('Data NOO: ${nooCtrl.toJson()}');
-
                         Utils.showLoadingDialog(context);
                         ctx.saveData(nooCtrl).then((value) {
                           Navigator.pop(context);
                           _formKey.currentState!.reset();
-                          Get.offNamed(Routes.HOME);
+                          if (ctx.paymentMethod.value == 'CASH') {
+                            Get.offNamed(Routes.HOME);
+                          } else {
+                            Get.offNamed(Routes.NOO_ADDRESS, arguments: {'id': ctx.idNOO});
+                          }
                           Utils.showSuccessSnackBar(context, 'Data berhasil disimpan');
                         }).catchError((error) {
                           Navigator.pop(context);

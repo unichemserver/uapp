@@ -14,10 +14,8 @@ class CanvasingOnroute extends StatelessWidget {
     return CustomerPage(
       title: 'Pilih Customer',
       fetchData: (ctx) async {
-        if (!ctx.isLoading) {
-          ctx.setSelectedCustId(null);
-          ctx.getCall(); // Replace with canvasing-specific data fetching if needed
-        }
+        await ctx.initData(loadCanvasing: true);
+        ctx.setSelectedCustId(null);
       },
       onContinue: (ctx) {
         Get.toNamed(Routes.CANVASING, arguments: {

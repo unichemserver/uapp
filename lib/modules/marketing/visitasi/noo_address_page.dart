@@ -39,10 +39,19 @@ class _NooAddressPageState extends State<NooAddressPage> {
     nooId = Get.arguments['id'];
     loadAddresses();
   }
+  
 
   Future<void> loadAddresses() async {
     try {
-      controller.setNooUpdateAddress();
+      final method = await controller.getPaymentMethod(nooId!); // Await the result
+      Log.d('Payment method address: $method');
+
+      if (method == 'KREDIT') {
+        controller.setNooAddress();
+      } else {
+        controller.setNooUpdateAddress();
+      }
+
       addresses = [
         controller.ownerAddress,
         controller.companyAddress,
@@ -216,7 +225,7 @@ class _NooAddressPageState extends State<NooAddressPage> {
                         Utils.showLoadingDialog(context),
                         saveSelectedAddresses(context).then((value) {
                           Navigator.pop(context); 
-                          Get.offNamed(Routes.HOME); 
+                          Get.offAllNamed(Routes.HOME); 
                           Utils.showSuccessSnackBar(context, 'Data berhasil disimpan');
                         }).catchError((error) {
                           Navigator.pop(context);

@@ -13,10 +13,8 @@ class CallManagementPage extends StatelessWidget {
     return CustomerPage(
       title: 'Call Management',
       fetchData: (ctx) async {
-        if (!ctx.isLoading) {
-          ctx.setSelectedCustId(null);
-          ctx.getCall();
-        }
+        await ctx.initData(loadCanvasing: false);
+        ctx.setSelectedCustId(null);
       },
       onContinue: (ctx) {
         Get.toNamed(Routes.MARKETING, arguments: {
