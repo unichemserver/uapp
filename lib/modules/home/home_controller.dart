@@ -282,10 +282,13 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     final box = Hive.box(HiveKeys.appBox);
     final userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
     final salesrepid = userData.salesrepid;
-    if (userData.namaPanggilan?.toLowerCase() == 'ferdi') {
+    if (userData.namaPanggilan?.toLowerCase() == 'renaldy') {
       return true;
     }
     if (userData.department == 'MKT') {
+      return true;
+    }
+    if (userData.department == 'UND' && userData.bagian == 'MKT014') {
       return true;
     }
     if (salesrepid == null ||
