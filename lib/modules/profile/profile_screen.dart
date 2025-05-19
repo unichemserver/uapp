@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:remove_bg/remove_bg.dart';
-// import 'package:uapp/app/routes.dart';
 import 'package:uapp/app/strings.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/core/widget/id_card_image.dart';
@@ -20,25 +19,35 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GetBuilder<ProfileController>(
       init: ProfileController(),
       initState: (_) {},
       builder: (ctx) {
         return Scaffold(
+          backgroundColor: theme.scaffoldBackgroundColor,
           appBar: AppBar(
-            title: const Text('Profile'),
+            elevation: 0,
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.transparent,
+            centerTitle: true,
+            title: const Text(
+              'Profile',
+               style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2D3748),
+                  fontSize: 18,
+                ),
+            ),
             actions: [
-              // IconButton(
-              //   icon: const Icon(Icons.settings),
-              //   onPressed: () {
-              //     Get.toNamed(Routes.SETTING);
-              //   },
-              // ),
               IconButton(
                 icon: const Icon(Icons.logout),
                 onPressed: () {
                   Get.dialog(
                     AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                       title: const Text('Keluar'),
                       content: const Text(
                         'Apakah anda yakin ingin keluar dari aplikasi U-APP?',
@@ -48,9 +57,12 @@ class ProfileScreen extends StatelessWidget {
                           onPressed: () {
                             Get.back();
                           },
-                          child: const Text('Batal'),
+                          child: Text(
+                            'Batal',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
                         ),
-                        TextButton(
+                        ElevatedButton(
                           onPressed: () {
                             Get.back();
                             Get.dialog(
@@ -61,6 +73,13 @@ class ProfileScreen extends StatelessWidget {
                             );
                             ctx.logout();
                           },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.primaryColor,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
                           child: const Text('Keluar'),
                         ),
                       ],
@@ -70,58 +89,10 @@ class ProfileScreen extends StatelessWidget {
               ),
             ],
           ),
-          body: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Container(
-                alignment: Alignment.center,
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 200,
-                      child: Hero(
-                        tag: 'profile_photo',
-                        child: ProfileImage(
-                          imgUrl: ctx.profilePicture!,
-                          radius: 200.0,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      ctx.userData!.nama,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      ctx.userData!.namaJabatan,
-                      style: const TextStyle(
-                        fontSize: 16,
-                      ),
-                    ),
-                    Text(
-                      ctx.userData!.namaDepartment,
-                      style: const TextStyle(
-                        fontSize: 16,
-                      ),
-                    ),
-                    Text(
-                      ctx.userData!.namaBagian,
-                      style: const TextStyle(
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Divider(),
-              const SizedBox(height: 8),
-              _buildProfileBody(ctx.profile),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton(
+          body: ctx.userData == null
+              ? const Center(child: CircularProgressIndicator())
+              : _buildBody(context, ctx),
+          floatingActionButton: FloatingActionButton.extended(
             onPressed: () async {
               if (Utils.fotoKaryawan() == null) {
                 Get.dialog(
@@ -160,108 +131,381 @@ class ProfileScreen extends StatelessWidget {
                 ),
               );
             },
-            child: const Icon(Icons.qr_code),
+            icon: const Icon(Icons.qr_code),
+            label: const Text('ID Card'),
           ),
         );
       },
     );
   }
 
-  _buildProfileBody(Profile? profile) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ExpansionTile(
-          title: const Text(
+  Widget _buildBody(BuildContext context, ProfileController ctx) {
+    // final theme = Theme.of(context);
+    
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildProfileHeader(context, ctx),
+          const SizedBox(height: 24),
+          _buildProfileBody(context, ctx.profile),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader(BuildContext context, ProfileController ctx) {
+    // final theme = Theme.of(context);
+    
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
+      ),
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          Hero(
+            tag: 'profile_photo',
+            child: Container(
+              height: 120,
+              width: 120,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    spreadRadius: 5,
+                  ),
+                ],
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white,
+                  width: 4,
+                ),
+              ),
+              child: ClipOval(
+                child: ProfileImage(
+                  imgUrl: ctx.profilePicture!,
+                  radius: 120.0,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            ctx.userData!.nama,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2D3748).withOpacity(0.08),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              ctx.userData!.namaJabatan,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF2D3748),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.business, size: 16, color: Color(0xFF2D3748)),
+              const SizedBox(width: 6),
+              Text(
+                ctx.userData!.namaDepartment,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF2D3748),
+                ),
+              ),
+              // const SizedBox(width: 16),
+              // const Icon(Icons.dashboard, size: 16, color: Color(0xFF2D3748)),
+              // const SizedBox(width: 6),
+              // Text(
+              //   ctx.userData!.bagian,
+              //   style: const TextStyle(
+              //     fontSize: 14,
+              //     color: Color(0xFF2D3748),
+              //   ),
+              // ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileBody(BuildContext context, Profile? profile) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildProfileSection(
+            context,
             'Data Karyawan',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            Icons.person,
+            profile == null
+                ? [const Center(child: CircularProgressIndicator())]
+                : [
+                    _buildProfileItem(context, 'Nama Panggilan', profile.namaPanggilan ?? ''),
+                    _buildProfileItem(context, 'Tanggal Masuk Kerja', profile.tanggalMasukKerja ?? ''),
+                    _buildProfileItem(context, 'Status Kerja', profile.statusPekerja ?? ''),
+                    _buildProfileItem(context, 'Tanggal Pengangkatan', profile.tanggalPengangkatan ?? ''),
+                    _buildProfileItem(context, 'Tanggal Habis Kontrak Kerja', profile.tanggalHabisKontrakKerja ?? ''),
+                    _buildProfileItem(context, 'Jenis Kelamin', profile.jenisKelamin ?? ''),
+                    _buildProfileItem(context, 'Tempat Tanggal Lahir', '${profile.tempatLahir}, ${profile.tanggalLahir}'),
+                    _buildProfileItem(context, 'Suku Bangsa', profile.sukuBangsa ?? ''),
+                    _buildProfileItem(context, 'Agama', profile.agama ?? ''),
+                    _buildProfileItem(context, 'Golongan Darah', profile.golonganDarah ?? ''),
+                    _buildProfileItem(context, 'Status Perkawinan', profile.statusPerkawinan ?? ''),
+                    _buildProfileItem(context, 'Tipe', profile.tipe ?? ''),
+                  ],
           ),
-          children: profile == null
-              ? [const CircularProgressIndicator()]
-              : [
-                  _buildProfileItem(
-                      'Nama Panggilan', profile.namaPanggilan ?? ''),
-                  _buildProfileItem(
-                      'Tanggal Masuk Kerja', profile.tanggalMasukKerja ?? ''),
-                  _buildProfileItem(
-                      'Status Kerja', profile.statusPekerja ?? ''),
-                  _buildProfileItem('Tanggal Pengangkatan',
-                      profile.tanggalPengangkatan ?? ''),
-                  _buildProfileItem('Tanggal Habis Kontrak Kerja',
-                      profile.tanggalHabisKontrakKerja ?? ''),
-                  _buildProfileItem(
-                      'Jenis Kelamin', profile.jenisKelamin ?? ''),
-                  _buildProfileItem('Tempat Tanggal Lahir',
-                      '${profile.tempatLahir}, ${profile.tanggalLahir}'),
-                  _buildProfileItem('Suku Bangsa', profile.sukuBangsa ?? ''),
-                  _buildProfileItem('Agama', profile.agama ?? ''),
-                  _buildProfileItem(
-                      'Golongan Darah', profile.golonganDarah ?? ''),
-                  _buildProfileItem(
-                      'Status Perkawinan', profile.statusPerkawinan ?? ''),
-                  _buildProfileItem('Tipe', profile.tipe ?? ''),
-                ],
-        ),
-        ExpansionTile(
-          title: const Text(
+          const SizedBox(height: 16),
+          _buildProfileSection(
+            context,
             'Dokumen Karyawan',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            Icons.description,
+            profile == null
+                ? [const Center(child: CircularProgressIndicator())]
+                : [
+                    _buildProfileItem(context, 'No KTP', profile.noKtp ?? ''),
+                    _buildProfileItem(context, 'Berlaku Sampai', profile.berlakuSampai ?? ''),
+                    _buildProfileItem(context, 'No KK', profile.noKk ?? ''),
+                    _buildProfileItem(context, 'No NPWP', profile.npwp ?? ''),
+                    _buildProfileItem(context, 'Tanggal Terdaftar NPWP', profile.tanggalTerdaftarNpwp ?? ''),
+                    _buildProfileItem(context, 'No Jamsostek', profile.noJamsostek ?? ''),
+                    _buildProfileItem(context, 'Tanggal Terdaftar Jamsostek', profile.tanggalTerdaftarJamsostek ?? ''),
+                    _buildProfileItem(context, 'No BPJS Kesehatan', profile.noBpjsKesehatan ?? ''),
+                    _buildProfileItem(context, 'Tanggal Terdaftar BPJS Kesehatan', profile.tanggalTerdaftarBpjsKesehatan ?? ''),
+                  ],
           ),
-          children: profile == null
-              ? [const CircularProgressIndicator()]
-              : [
-                  _buildProfileItem('No KTP', profile.noKtp ?? ''),
-                  _buildProfileItem(
-                      'Berlaku Sampai', profile.berlakuSampai ?? ''),
-                  _buildProfileItem('No KK', profile.noKk ?? ''),
-                  _buildProfileItem('No NPWP', profile.npwp ?? ''),
-                  _buildProfileItem('Tanggal Terdaftar NPWP',
-                      profile.tanggalTerdaftarNpwp ?? ''),
-                  _buildProfileItem('No Jamsostek', profile.noJamsostek ?? ''),
-                  _buildProfileItem('Tanggal Terdaftar Jamsostek',
-                      profile.tanggalTerdaftarJamsostek ?? ''),
-                  _buildProfileItem(
-                      'No BPJS Kesehatan', profile.noBpjsKesehatan ?? ''),
-                  _buildProfileItem('Tanggal Terdaftar BPJS Kesehatan',
-                      profile.tanggalTerdaftarBpjsKesehatan ?? ''),
-                ],
-        ),
-        ExpansionTile(
-          title: const Text(
+          const SizedBox(height: 16),
+          _buildProfileSection(
+            context,
             'Attachment',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            Icons.attach_file,
+            profile == null
+                ? [const Center(child: CircularProgressIndicator())]
+                : [
+                    _buildAttachmentItem(context, 'Kontrak Kerja', profile.kontrakKerja ?? ''),
+                    _buildAttachmentItem(context, 'KK', profile.kk ?? ''),
+                    _buildAttachmentItem(context, 'NPWP', profile.npwp ?? ''),
+                    _buildAttachmentItem(context, 'Ijazah', profile.ijazah ?? ''),
+                    _buildAttachmentItem(context, 'Foto Karyawan', profile.fotoKaryawan ?? ''),
+                  ],
           ),
-          children: profile == null
-              ? [const CircularProgressIndicator()]
-              : [
-                  _buildProfileItem(
-                    'Kontrak Kerja',
-                    profile.kontrakKerja ?? '',
-                    isImage: true,
+          const SizedBox(height: 80), // Extra space for FAB
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileSection(
+    BuildContext context,
+    String title,
+    IconData icon,
+    List<Widget> children,
+  ) {
+    final theme = Theme.of(context);
+    
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      color: Colors.white,
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: theme.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: theme.primaryColor
+            ),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+          initiallyExpanded: true,
+          childrenPadding: EdgeInsets.zero,
+          children: [
+            const Divider(),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileItem(BuildContext context, String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAttachmentItem(BuildContext context, String title, String value) {
+    final theme = Theme.of(context);
+    
+    return InkWell(
+      onTap: () {
+        if (value.isNotEmpty) {
+          Get.dialog(
+            Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Get.back(),
+                        ),
+                      ],
+                    ),
                   ),
-                  _buildProfileItem(
-                    'KK',
-                    profile.kk ?? '',
-                    isImage: true,
-                  ),
-                  _buildProfileItem(
-                    'NPWP',
-                    profile.npwp ?? '',
-                    isImage: true,
-                  ),
-                  _buildProfileItem(
-                    'Ijazah',
-                    profile.ijazah ?? '',
-                    isImage: true,
-                  ),
-                  _buildProfileItem(
-                    'Foto Karyawan',
-                    profile.fotoKaryawan ?? '',
-                    isImage: true,
+                  const Divider(),
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(16),
+                      bottomRight: Radius.circular(16),
+                    ),
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.6,
+                      ),
+                      child: InteractiveViewer(
+                        minScale: 0.1,
+                        maxScale: 4.0,
+                        child: CachedNetworkImage(
+                          imageUrl: _getImageUrl(value, title),
+                          placeholder: (context, url) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                          errorWidget: (context, url, error) => const Icon(Icons.error),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
+              ),
+            ),
+          );
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: theme.primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.insert_drive_file,
+                color: theme.primaryColor,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            value.isNotEmpty
+                ? Icon(
+                    Icons.visibility,
+                    color: theme.primaryColor,
+                    size: 20,
+                  )
+                : const Icon(
+                    Icons.visibility_off,
+                    color: Colors.grey,
+                    size: 20,
+                  ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -272,36 +516,5 @@ class ProfileScreen extends StatelessWidget {
     } else {
       return 'https://unifood.id/EDS//upload/dokumenkaryawan/$type/$url';
     }
-  }
-
-  _buildProfileItem(
-    String title,
-    String value, {
-    bool isImage = false,
-  }) {
-    return ListTile(
-      leading: isImage ? const Icon(Icons.image) : null,
-      onTap: () {
-        if (isImage) {
-          Get.dialog(
-            Dialog(
-              child: InteractiveViewer(
-                minScale: 0.1,
-                maxScale: 4.0,
-                child: CachedNetworkImage(
-                  imageUrl: _getImageUrl(value, title),
-                  placeholder: (context, url) => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                ),
-              ),
-            ),
-          );
-        }
-      },
-      title: Text(title),
-      subtitle: isImage ? null : Text(value),
-    );
   }
 }

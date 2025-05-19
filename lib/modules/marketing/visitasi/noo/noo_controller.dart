@@ -722,7 +722,7 @@ Future<void> loadCustomerGroups() async {
 
   Future<void> checkTables() async {
     final tables = await db.rawQuery(
-        "SELECT id FROM nooaddress");
+        "SELECT bill_to FROM masternooupdate");
     Log.d("Tables in Database: $tables");
   }
 

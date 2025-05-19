@@ -8,7 +8,7 @@ import 'package:uapp/modules/production/data/model/warehouse.dart';
 import 'package:uapp/modules/production/data/production_api_service.dart'
     as api;
 import 'package:uapp/modules/production/widget/filter_balance_widget.dart';
-import 'package:uapp/modules/production/widget/image_carousel.dart';
+// import 'package:uapp/modules/production/widget/image_carousel.dart';
 
 class DetailBalancePage extends StatefulWidget {
   const DetailBalancePage({
@@ -205,9 +205,9 @@ class _DetailBalancePageState extends State<DetailBalancePage> {
                     listImage.isNotEmpty
                         ? Container(
                             padding: const EdgeInsets.all(16),
-                            child: ImageCarousel(
-                              imageUrls: listImage,
-                            ),
+                            // child: ImageCarousel(
+                            //   imageUrls: listImage,
+                            // ),
                           )
                         : Container(),
                     Container(

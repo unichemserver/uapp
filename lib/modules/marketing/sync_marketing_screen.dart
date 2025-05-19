@@ -29,6 +29,7 @@ class _SyncMarketingScreenState extends State<SyncMarketingScreen> {
   final apiClient = MarketingApiClient();
   late SyncMarketingActivityApi syncApi;
   bool isNeedSync = false;
+  bool isRefreshing = false;
   int dataItemLength = 0;
   int dataInvoiceLength = 0;
   int dataCustomerLength = 0;
@@ -260,6 +261,218 @@ class _SyncMarketingScreenState extends State<SyncMarketingScreen> {
     }
   }
 
+  Future<void> refreshAllData() async {
+    setState(() {
+      isRefreshing = true;
+    });
+    
+    try {
+      await Future.wait([
+        getData(),
+        getListItemLength(),
+        getListInvoiceLength(),
+        getListCustomerLength(),
+        getListUnitSetLength(),
+        getListCustTopLength(),
+        getListPriceListLength(),
+      ]);
+    } finally {
+      setState(() {
+        isRefreshing = false;
+      });
+    }
+  }
+
+  Future<void> syncSelectedData(String title, Future<void> Function() syncAction) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 16),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 24),
+            Text(
+              'Syncing $title',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Please wait...',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      await syncAction();
+      Navigator.of(context).pop();
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(8),
+          backgroundColor: Colors.green[700],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 12),
+              Text('$title synced successfully'),
+            ],
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      
+      refreshAllData();
+    } catch (e) {
+      Navigator.of(context).pop();
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(8),
+          backgroundColor: Colors.red[700],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 12),
+              Text('Failed to sync $title'),
+            ],
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _syncAllMarketingActivity() async {
+    if (!isNeedSync) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(8),
+          backgroundColor: Colors.blue[700],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          content: const Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.white),
+              SizedBox(width: 12),
+              Text('No data needs to be synchronized'),
+            ],
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 16),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 24),
+            const Text(
+              'Syncing Marketing Activity',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Please wait...',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      await syncApi.syncMarketingActivity();
+      Navigator.of(context).pop();
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(8),
+          backgroundColor: Colors.green[700],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Marketing activity synced successfully'),
+            ],
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      
+      refreshAllData();
+    } catch (e) {
+      Navigator.of(context).pop();
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(8),
+          backgroundColor: Colors.red[700],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          content: const Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Failed to sync marketing activity'),
+            ],
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -282,133 +495,483 @@ class _SyncMarketingScreenState extends State<SyncMarketingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sync Marketing'),
         centerTitle: true,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.sync),
-            onPressed: () {
-              if (isNeedSync) {
-                Utils.showLoadingDialog(context);
-                syncApi.syncMarketingActivity().then((_) {
-                  getData();
-                  Navigator.of(context).pop();
-                });
-              } else {
-                Utils.showSnackbar(
-                  context,
-                  'Tidak ada data yang perlu disinkronisasi',
-                );
-              }
-            },
+            icon: const Icon(Icons.refresh),
+            onPressed: isRefreshing ? null : refreshAllData,
+            tooltip: 'Refresh Data',
           ),
+          // IconButton(
+          //   icon: const Icon(Icons.sync),
+          //   onPressed: _syncAllMarketingActivity,
+          //   tooltip: 'Sync All Activities',
+          // ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          Align(alignment: Alignment.topRight, child: _buildTimerSync()),
-          _buildSectionHeader(context, 'Data Kunjungan',
-              'Data kunjungan akan dihapus otomatis setelah 7 hari'),
-          _buildExpansionTile('On Route', onRoute),
-          _buildExpansionTile('Customer Active', customerActive),
-          _buildExpansionTile('New Opening Outlet', newOpeningOutlet),
-          _buildExpansionTile('Canvasing', canvasing),
-          const Divider(),
-          _buildSectionHeader(context, 'Data Lainnya'),
-          _buildDataSyncTile(
-              'Data Item', dataItemLength, syncListItem, getListItemLength),
-          _buildDataSyncTile('Data Invoice', dataInvoiceLength, syncListInvoice,
-              getListInvoiceLength),
-          _buildDataSyncTile('Data Customer Active', dataCustomerLength,
-              syncListCustomer, getListCustomerLength),
-          _buildDataSyncTile('Data Unit Set', dataUnitSetLength,
-              syncListUnitSet, getListUnitSetLength),
-          _buildDataSyncTile('Data TOP Customer', dataCustTopLength,
-              syncListCustTop, getListCustTopLength),
-          _buildDataSyncTile('Data Price List', dataPriceListLength,
-              syncPriceList, getListPriceListLength),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(BuildContext context, String title,
-      [String? subtitle]) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: Theme.of(context).textTheme.headlineSmall),
-        if (subtitle != null) ...[
-          const SizedBox(height: 8.0),
-          Text(subtitle,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelSmall!
-                  .copyWith(color: Colors.red)),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildExpansionTile(String title, List<dynamic> items) {
-    return ExpansionTile(
-      title: Text(title),
-      children: items
-          .map((e) => ListTile(
-                title: Text(e.custId ?? ''),
-                subtitle: Text('${e.waktuCi ?? ''} - ${e.waktuCo ?? ''}'),
-                trailing: IconButton(
-                  icon: Icon(e.statusSync == 1 ? Icons.check : Icons.sync),
-                  onPressed: (e.statusSync == 1 || e.waktuCo == null)
-                      ? null
-                      : () {
-                          // Tambah logika sync data per item di sini
-                        },
+      body: RefreshIndicator(
+        onRefresh: refreshAllData,
+        child: isRefreshing 
+        ? const Center(child: CircularProgressIndicator())
+        : CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Container(
+                color: colorScheme.primary.withOpacity(0.05),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSyncStatusCard(),
+                    const SizedBox(height: 16),
+                    _buildLastSyncInfo(),
+                  ],
                 ),
-              ))
-          .toList(),
-    );
-  }
-
-  Widget _buildDataSyncTile(String title, int dataCount,
-      Future<void> Function() syncAction, void Function() refreshData) {
-    return ListTile(
-      title: Text(title),
-      subtitle: Text('Total data: $dataCount'),
-      trailing: IconButton(
-        icon: const Icon(Icons.sync),
-        onPressed: () {
-          Utils.showLoadingDialog(context);
-          syncAction().then((_) {
-            refreshData();
-            Navigator.of(context).pop();
-          });
-        },
+              ),
+            ),
+            
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionHeader(
+                      context, 
+                      'Marketing Activities',
+                      'Data will be automatically deleted after 7 days',
+                      Icons.history,
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+            ),
+            
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildActivityCards(),
+              ),
+            ),
+            
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: _buildSectionHeader(
+                  context, 
+                  'Master Data',
+                  'Sync to update local database',
+                  Icons.storage,
+                ),
+              ),
+            ),
+            
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 1.7,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                ),
+                delegate: SliverChildListDelegate([
+                  _buildDataSyncCard('Items', dataItemLength, 
+                    Icons.inventory_2_outlined, syncListItem),
+                  _buildDataSyncCard('Invoices', dataInvoiceLength, 
+                    Icons.receipt_outlined, syncListInvoice),
+                  _buildDataSyncCard('Customers', dataCustomerLength, 
+                    Icons.people_outline, syncListCustomer),
+                  _buildDataSyncCard('Unit Sets', dataUnitSetLength, 
+                    Icons.category_outlined, syncListUnitSet),
+                  _buildDataSyncCard('Customer TOP', dataCustTopLength, 
+                    Icons.assignment_outlined, syncListCustTop),
+                  _buildDataSyncCard('Price Lists', dataPriceListLength, 
+                    Icons.attach_money_outlined, syncPriceList),
+                ]),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTimerSync() {
+  Widget _buildSyncStatusCard() {
+    return Card(
+      margin: EdgeInsets.zero,
+      color: Colors.white,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: isNeedSync 
+                  ? Colors.orange.withOpacity(0.2) 
+                  : Colors.green.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                isNeedSync ? Icons.sync_problem : Icons.check_circle_outline,
+                color: isNeedSync ? Colors.orange : Colors.green,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isNeedSync ? 'Pending Sync' : 'All Data Synced',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isNeedSync 
+                      ? 'There are data that need to be sync' 
+                      : 'All records are up to date',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isNeedSync)
+              ElevatedButton.icon(
+                onPressed: _syncAllMarketingActivity,
+                icon: const Icon(Icons.sync, size: 18),
+                label: const Text('Sync Now'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLastSyncInfo() {
     final int? syncTime = HiveService.getTimerSyncMkt();
     if (syncTime == null) return const SizedBox();
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-
-        Text(
-          'Terakhir sinkronisasi otomatis:',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+        const Icon(
+          Icons.access_time, 
+          size: 14,
+          color: Colors.grey,
         ),
         const SizedBox(width: 4),
         Text(
-          '$minutes menit $seconds detik yang lalu',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+          'Last auto-sync: $minutes min $seconds sec ago',
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+          ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSectionHeader(
+    BuildContext context, 
+    String title, 
+    [String? subtitle, IconData? icon]
+  ) {
+    return Row(
+      children: [
+        if (icon != null) ...[
+          Icon(icon, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 8),
+        ],
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActivityCards() {
+    return Column(
+      children: [
+        _buildActivityCard('On Route', onRoute, Icons.directions_car_outlined),
+        const SizedBox(height: 12),
+        _buildActivityCard('Customer Active', customerActive, Icons.people_outline),
+        const SizedBox(height: 12),
+        _buildActivityCard('New Opening Outlet', newOpeningOutlet, Icons.storefront_outlined),
+        const SizedBox(height: 12),
+        _buildActivityCard('Canvasing', canvasing, Icons.search_outlined),
+      ],
+    );
+  }
+
+  Widget _buildActivityCard(String title, List<MarketingActivity> activities, IconData icon) {
+    final pendingCount = activities.where((e) => 
+      e.statusSync == 0 && e.waktuCo != null).length;
+    
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: Icon(
+            icon,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          title: Row(
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '(${activities.length})',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+          subtitle: pendingCount > 0
+              ? Text(
+                  '$pendingCount records pending sync',
+                  style: TextStyle(
+                    color: Colors.orange[700],
+                    fontSize: 13,
+                  ),
+                )
+              : null,
+          trailing: pendingCount > 0
+              ? Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.sync,
+                        color: Colors.orange[700],
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Pending',
+                        style: TextStyle(
+                          color: Colors.orange[700],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : const Icon(Icons.expand_more),
+          children: activities.isEmpty
+              ? [
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      'No records found',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  )
+                ]
+              : activities.map((activity) {
+                  final bool needsSync = activity.statusSync == 0 && activity.waktuCo != null;
+                  
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: needsSync 
+                          ? Colors.orange.withOpacity(0.05) 
+                          : Colors.grey.withOpacity(0.05),
+                      border: Border.all(
+                        color: needsSync 
+                            ? Colors.orange.withOpacity(0.3) 
+                            : Colors.grey.withOpacity(0.2),
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: ListTile(
+                      dense: true,
+                      leading: CircleAvatar(
+                        backgroundColor: needsSync
+                            ? Colors.orange.withOpacity(0.2)
+                            : Colors.green.withOpacity(0.2),
+                        child: Icon(
+                          needsSync ? Icons.sync : Icons.check_circle,
+                          color: needsSync ? Colors.orange : Colors.green,
+                          size: 20,
+                        ),
+                      ),
+                      title: Text(
+                        activity.custId ?? 'No Customer ID',
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      subtitle: Text(
+                        '${activity.waktuCi ?? 'No check-in'} - ${activity.waktuCo ?? 'No check-out'}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      trailing: needsSync
+                          ? Chip(
+                              label: const Text('Pending'),
+                              labelStyle: TextStyle(
+                                color: Colors.orange[700],
+                                fontSize: 12,
+                              ),
+                              backgroundColor: Colors.orange.withOpacity(0.1),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                            )
+                          : Chip(
+                              label: const Text('Synced'),
+                              labelStyle: TextStyle(
+                                color: Colors.green[700],
+                                fontSize: 12,
+                              ),
+                              backgroundColor: Colors.green.withOpacity(0.1),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                    ),
+                  );
+                }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDataSyncCard(String title, int count, IconData icon, Future<void> Function() syncAction) {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () => syncSelectedData(title, syncAction),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Tambahkan ini untuk menghindari overflow
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '$count data',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  // Container(
+                  //   padding: const EdgeInsets.all(4),
+                  //   decoration: BoxDecoration(
+                  //     color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  //     borderRadius: BorderRadius.circular(4),
+                  //   ),
+                  //   child: Icon(
+                  //     Icons.sync,
+                  //     color: Theme.of(context).colorScheme.primary,
+                  //     size: 18,
+                  //   ),
+                  // ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

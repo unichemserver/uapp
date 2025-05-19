@@ -74,8 +74,6 @@ class _NooAddressPageState extends State<NooAddressPage> {
         return controller.warehouseAddress;
       case AddressType.billingAddress:
         return controller.billingAddress;
-      default:
-        return null;
     }
   }
 
@@ -350,8 +348,6 @@ class _NooAddressPageState extends State<NooAddressPage> {
         return 'Alamat Gudang';
       case AddressType.billingAddress:
         return 'Alamat Penagihan';
-      default:
-        return '';
     }
   }
 }
