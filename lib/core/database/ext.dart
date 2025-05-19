@@ -124,6 +124,9 @@ CREATE TABLE IF NOT EXISTS masternooupdate (
     produk_lain TEXT,
     lima_cust_utama TEXT,
     est_omset_month TEXT,
+    bill_to TEXT,
+    ship_to TEXT,
+    tax_to TEXT,
     status_sync INTEGER DEFAULT 0
 );
 ''';

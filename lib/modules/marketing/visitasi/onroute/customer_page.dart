@@ -100,8 +100,8 @@ class _CustomerPageState extends State<CustomerPage> {
       child: ctx.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ctx.callManagementFiltered.isEmpty
-              // ? const Center(child: Text('Data tidak ditemukan'))
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: Text('Data tidak ditemukan'))
+              // ? const Center(child: CircularProgressIndicator())
               : ListView.builder(
                   itemCount: ctx.callManagementFiltered.length,
                   itemBuilder: (_, index) => Slidable(
