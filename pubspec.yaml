@@ -54,6 +54,8 @@ dependencies:
   device_apps: ^2.2.0
   firebase_messaging: ^15.2.1
   flutter_slidable: ^3.1.2
+  fl_chart: ^0.66.2
+
 
 dev_dependencies:
   flutter_test:

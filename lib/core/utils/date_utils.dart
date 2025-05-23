@@ -58,10 +58,15 @@ class DateUtils {
     return DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(date);
   }
 
-  // create function to get format date like yyMMdd
+  // create function to get format date like yMMdd (e.g. 50519 for 2025-05-19)
   static String getFormatDate() {
-    return DateFormat('yyMMdd').format(DateTime.now());
+    final now = DateTime.now();
+    final year = now.year % 10; // ambil satu digit terakhir tahun
+    final month = now.month.toString().padLeft(2, '0');
+    final day = now.day.toString().padLeft(2, '0');
+    return '$year$month$day';
   }
+
   static String getDay() {
     return DateFormat('dd').format(DateTime.now());
   }

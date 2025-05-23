@@ -9,6 +9,7 @@ import 'package:uapp/modules/chat/pages/contact_page.dart';
 import 'package:uapp/modules/home/home_binding.dart';
 import 'package:uapp/modules/home/home_screen.dart';
 import 'package:uapp/modules/home/pages/change_password_page.dart';
+import 'package:uapp/modules/home/widget/notification_screen.dart';
 import 'package:uapp/modules/hr/hr_menu_page.dart';
 import 'package:uapp/modules/marketing/marketing_binding.dart';
 import 'package:uapp/modules/marketing/marketing_screen.dart';
@@ -17,6 +18,7 @@ import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_binding.dart
 import 'package:uapp/modules/marketing/visitasi/canvasing/canvasing_page.dart';
 import 'package:uapp/modules/marketing/visitasi/custactive/custactive_binding.dart';
 import 'package:uapp/modules/marketing/visitasi/custactive/custactive_page.dart';
+import 'package:uapp/modules/marketing/visitasi/dashboard.dart';
 import 'package:uapp/modules/marketing/visitasi/history_visitasi.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_binding.dart';
 import 'package:uapp/modules/marketing/visitasi/noo/noo_page.dart';
@@ -64,6 +66,8 @@ class Routes {
   static const String CALL_MANAGEMENT = '/call-management';
   static const String NOO_EDIT = '/noo-Edit';
   static const String NOO_ADDRESS = '/noo-address';
+  static const String MKT_DASHBOARD = '/dashboard';
+  static const String NOTIF = '/notif';
   
   static List<GetPage> pages = [
     GetPage(
@@ -169,6 +173,14 @@ class Routes {
     GetPage(
       name: NOO_ADDRESS,
       page: () => const NooAddressPage(),
+    ),
+    GetPage(
+      name: MKT_DASHBOARD,
+      page: () => const DashboardPage(),
+    ),
+    GetPage(
+      name: NOTIF,
+      page: () => const NotificationScreen(),
     ),
     GetPage(
       name: CALL_MANAGEMENT,

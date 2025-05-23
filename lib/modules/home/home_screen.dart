@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:uapp/app/routes.dart';
 // import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/core/widget/profile_image.dart';
 import 'package:uapp/modules/home/home_controller.dart';
@@ -14,12 +15,58 @@ class HomeScreen extends StatelessWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   // final bool isHrApproval = Utils.allowedPosisi.contains(Utils.getUserData().posisi);
 
+  // Method untuk menghitung tinggi notifikasi berdasarkan konten
+  double _calculateNotificationHeight(String? title, String? content) {
+    if (title == null || content == null) return 0;
+    
+    // Estimasi tinggi berdasarkan panjang teks
+    final titleLines = (title.length / 35).ceil(); // ~35 karakter per baris untuk title
+    final contentLines = (content.length / 45).ceil(); // ~45 karakter per baris untuk content
+    
+    // Base height + title height + content height + padding
+    double baseHeight = 80; // tinggi minimum
+    double titleHeight = titleLines * 18; // 18px per baris title
+    double contentHeight = contentLines * 16; // 16px per baris content
+    double padding = 20; // padding tambahan
+    
+    double totalHeight = baseHeight + titleHeight + contentHeight + padding;
+    
+    // Maksimal 250, jika lebih akan ada "See More"
+    return totalHeight > 250 ? 250 : totalHeight;
+  }
+
+  // Method untuk menentukan apakah perlu tombol "See More"
+  bool _needsSeeMore(String? title, String? content) {
+    if (title == null || content == null) return false;
+    
+    final titleLines = (title.length / 35).ceil();
+    final contentLines = (content.length / 45).ceil();
+    double totalHeight = 80 + (titleLines * 18) + (contentLines * 16) + 20;
+    
+    return totalHeight > 250;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<HomeController>(
       init: HomeController(),
       initState: (_) {},
       builder: (ctx) {
+        // Kalkulasi tinggi notifikasi
+        final notificationHeight = ctx.latestNotification != null 
+            ? _calculateNotificationHeight(
+                ctx.latestNotification?['title'], 
+                ctx.latestNotification?['content']
+              ) 
+            : 0;
+            
+        final needsSeeMore = ctx.latestNotification != null 
+            ? _needsSeeMore(
+                ctx.latestNotification?['title'], 
+                ctx.latestNotification?['content']
+              ) 
+            : false;
+
         return PopScope(
           canPop: false,
           onPopInvoked: (didPop) {
@@ -75,7 +122,7 @@ class HomeScreen extends StatelessWidget {
                     color: Color(0xFF4A5568),
                   ),
                   onPressed: () {
-                    // Handle notifications
+                   Get.toNamed(Routes.NOTIF); 
                   },
                 ),
               ],
@@ -102,11 +149,116 @@ class HomeScreen extends StatelessWidget {
             body: RefreshIndicator(
               color: Theme.of(context).primaryColor,
               onRefresh: () async {
-                Get.delete<HomeController>();
-                Get.put(HomeController());
+                // Get.delete<HomeController>();
+                // Get.put(HomeController());
+                ctx.getNotification(); // panggil getNotification saat refresh
+                await Future.delayed(const Duration(milliseconds: 300));
               },
               child: Stack(
                 children: [
+                  // Notifikasi section dengan tinggi yang adaptif
+                  if (ctx.latestNotification != null)
+                    Positioned(
+                      top: 110,
+                      left: 20,
+                      right: 20,
+                      child: Container(
+                        height: notificationHeight.toDouble(),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.yellow[200],
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.08),
+                              spreadRadius: 0,
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Notifikasi',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  ctx.latestNotification?['created_at']?.toString().substring(0, 16) ?? '',
+                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    ctx.latestNotification?['title'] ?? '',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600, 
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                    maxLines: needsSeeMore ? 2 : null,
+                                    overflow: needsSeeMore ? TextOverflow.ellipsis : null,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Expanded(
+                                    child: LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              ctx.latestNotification?['content'] ?? '',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.black54,
+                                              ),
+                                              maxLines: needsSeeMore ? 6 : null,
+                                              overflow: needsSeeMore ? TextOverflow.ellipsis : null,
+                                            ),
+                                            if (needsSeeMore) ...[
+                                              const SizedBox(height: 4),
+                                              Align(
+                                                alignment: Alignment.centerRight,
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    Get.toNamed(Routes.NOTIF);
+                                                  },
+                                                  child: Text(
+                                                    'See More',
+                                                    style: TextStyle(
+                                                      color: Colors.blue.shade700,
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.w600,
+                                                      decoration: TextDecoration.underline,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   // Welcome header section
                   Positioned(
                     top: 0,
@@ -139,14 +291,6 @@ class HomeScreen extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          // Text(
-                          //   ctx.nama,
-                          //   style: const TextStyle(
-                          //     color: Color(0xFF2D3748),
-                          //     fontSize: 20,
-                          //     fontWeight: FontWeight.bold,
-                          //   ),
-                          // ),
                           Text(
                             ctx.userData!.namaJabatan,
                             style: TextStyle(
@@ -159,12 +303,14 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   
-                  // Main content
+                  // Main content dengan margin yang dinamis
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    margin: const EdgeInsets.only(
-                      top: 100, // Space for the welcome header
+                    margin: EdgeInsets.only(
+                      top: ctx.latestNotification != null 
+                          ? 110 + notificationHeight + -50 // header + notification + spacing
+                          : 100, // hanya header
                       // bottom: isHrApproval ? Get.height * 0.35 : 0,
                     ),
                     child: Column(
@@ -202,7 +348,7 @@ class HomeScreen extends StatelessWidget {
                                     color: Colors.blueAccent,
                                   ),
                                   onPressed: () {
-                                    // Handle settings action
+                                    Get.toNamed(Routes.MKT_DASHBOARD);
                                   },
                                 ),
                               ],

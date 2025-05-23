@@ -69,6 +69,7 @@ class OwnerInformation extends StatelessWidget {
         AddressInformation(
           title: 'Alamat Rumah Pemilik',
           addressModel: ownerAddress,  
+          isOpen: "false",
         ),
       ],
     );

@@ -164,8 +164,9 @@ class Utils {
   }
 
   static int getRandomDigit() {
-  return DateTime.now().millisecondsSinceEpoch % 10; // Generates a random digit
-}
+    // Generates a random digit between 10 and 99
+    return 10 + (DateTime.now().millisecondsSinceEpoch % 90);
+  }
 
   static void showSuccessSnackBar(BuildContext context, String message) {
     _showSnackBar(context, 'Berhasil', message, Colors.green);

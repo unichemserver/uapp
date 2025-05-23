@@ -47,6 +47,10 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   bool showConfirmPassword = false;
   HrResponse? hrResponse;
   List<HrSuratIjin> hrApprovalList = [];
+  List<Map<String, dynamic>> notifications = [];
+  List<Map<String, dynamic>> allNotifications = [];
+  Map<String, dynamic>? latestNotification;
+  Timer? _notifTimer;
 
   void togglePasswordVisibility() {
     showPassword = !showPassword;
@@ -138,6 +142,12 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     // scheduleUploadDataPeriodicly();
     getHrPendingApproval();
     observeFCM();
+    getNotification(); // <-- tetap panggil saat init
+
+    // Tambahkan periodic timer untuk polling notifikasi
+    _notifTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      getNotification();
+    });
   }
 
   void observeFCM() {
@@ -155,7 +165,56 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   @override
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
+    _notifTimer?.cancel(); // pastikan timer dibersihkan
     super.onClose();
+  }
+
+  void getNotification() async {
+    final userid = Utils.getUserData().id;
+    final baseUrl = box.get(HiveKeys.baseURL);
+    final notifStr = await HomeApi.getNotification(baseUrl, userid);
+    allNotifications = [];
+    latestNotification = null;
+    if (notifStr.isNotEmpty) {
+      try {
+        final notifList = jsonDecode(notifStr);
+        if (notifList is List) {
+          // Filter duplikat berdasarkan created_at
+          final seen = <String>{};
+          final filtered = <Map<String, dynamic>>[];
+          for (var notif in notifList) {
+            final createdAt = notif['created_at'] ?? '';
+            if (!seen.contains(createdAt)) {
+              seen.add(createdAt);
+              filtered.add(Map<String, dynamic>.from(notif));
+            }
+          }
+          // Urutkan dari terbaru ke terlama
+          filtered.sort((a, b) {
+            final aDate = DateTime.tryParse(a['created_at'] ?? '') ?? DateTime(2000);
+            final bDate = DateTime.tryParse(b['created_at'] ?? '') ?? DateTime(2000);
+            return bDate.compareTo(aDate);
+          });
+          allNotifications = filtered;
+
+          // Ambil notifikasi terbaru yang masih berlaku hari ini
+          if (allNotifications.isNotEmpty) {
+            final now = DateTime.now();
+            final notifDate = DateTime.tryParse(allNotifications.first['created_at'] ?? '');
+            if (notifDate != null &&
+                notifDate.year == now.year &&
+                notifDate.month == now.month &&
+                notifDate.day == now.day) {
+              latestNotification = allNotifications.first;
+            }
+          }
+        }
+      } catch (_) {
+        allNotifications = [];
+        latestNotification = null;
+      }
+    }
+    update();
   }
 
   void getHrPendingApproval() {
@@ -282,7 +341,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     final box = Hive.box(HiveKeys.appBox);
     final userData = User.fromJson(jsonDecode(box.get(HiveKeys.userData)));
     final salesrepid = userData.salesrepid;
-    if (userData.namaPanggilan?.toLowerCase() == 'renaldy') {
+    if (userData.namaPanggilan?.toLowerCase() == 'renald') {
       return true;
     }
     if (userData.department == 'MKT') {

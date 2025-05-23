@@ -42,6 +42,7 @@ class OutletInformation extends StatelessWidget {
         AddressInformation(
           title: 'Alamat Usaha',
           addressModel: officeAddress,
+          isOpen: "true",
           addressValidator: (value) {
             if (value == null || value.isEmpty) {
               return 'Nama Jalan tidak boleh kosong';
@@ -100,6 +101,7 @@ class OutletInformation extends StatelessWidget {
         AddressInformation(
           title: 'Alamat Gudang',
           addressModel: warehouseAddress,
+          isOpen: "false",
         ),
         Text(
           'Nama PIC/ Jabatan:',
