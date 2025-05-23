@@ -6,6 +6,7 @@ import 'package:uapp/core/database/marketing_database.dart';
 import 'package:uapp/core/hive/hive_keys.dart';
 import 'package:uapp/core/hive/hive_service.dart';
 import 'package:uapp/core/utils/jenis_call.dart';
+import 'package:uapp/core/utils/log.dart';
 import 'package:uapp/core/utils/utils.dart';
 import 'package:uapp/modules/marketing/api/api_client.dart';
 import 'package:uapp/modules/marketing/api/sync_marketing_activity_api.dart';
@@ -84,21 +85,44 @@ class _SyncMarketingScreenState extends State<SyncMarketingScreen> {
   Future<void> syncListItem() async {
     final box = await Hive.openBox<MasterItem>(HiveKeys.masterItemBox);
     await box.clear();
-    final response = await apiClient.postRequest(
-      method: 'get_list_item',
-      additionalData: {'nik': Utils.getUserData().id},
-    );
-    if (response.success) {
-      var items =
-          (response.data as List).map((e) => MasterItem.fromJson(e)).toList();
-      for (var element in items) {
-        box.add(MasterItem(
-          itemID: element.itemID,
-          description: element.description,
-          salesUnit: element.salesUnit,
-          salesPrice: element.salesPrice,
-          unitSetID: element.unitSetID,
-        ));
+    try {
+      final response = await apiClient.postRequest(
+        method: 'get_list_item',
+        additionalData: {'nik': Utils.getUserData().id},
+      );
+      if (response.success) {
+        var items =
+            (response.data as List).map((e) => MasterItem.fromJson(e)).toList();
+        for (var element in items) {
+          box.add(MasterItem(
+            itemID: element.itemID,
+            description: element.description,
+            salesUnit: element.salesUnit,
+            salesPrice: element.salesPrice,
+            unitSetID: element.unitSetID,
+          ));
+        }
+        Log.d('Items synced successfully');
+      } else {
+        // Tampilkan snackbar jika gagal
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gagal sync Items: ${response.message}'),
+              backgroundColor: Colors.red[700],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Tampilkan snackbar jika terjadi exception
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Terjadi error saat sync Items: $e'),
+            backgroundColor: Colors.red[700],
+          ),
+        );
       }
     }
   }
@@ -180,6 +204,7 @@ class _SyncMarketingScreenState extends State<SyncMarketingScreen> {
       method: 'get_price_list',
       additionalData: {'nik': Utils.getUserData().id},
     );
+    Log.d(response.data.toString());
     if (response.success) {
       var items =
           (response.data as List).map((e) => PriceList.fromJson(e)).toList();

@@ -138,6 +138,7 @@ class CanvasingController extends GetxController with WidgetsBindingObserver {
 
   void getListItem() async {
     items = await HiveService.getListItem();
+    Log.d('items: ${items.toString()}');
     update();
   }
 

@@ -155,6 +155,7 @@ class _OutletStatusState extends State<OutletStatus> {
         AddressInformation(
           title: 'Alamat (Sesuai NPWP):',
           addressModel: widget.npwpAddress,
+          isOpen: "false",
         ),
       ],
     );

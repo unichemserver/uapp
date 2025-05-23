@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:uapp/app/routes.dart';
 import 'package:uapp/core/utils/jenis_call.dart';
 import 'package:uapp/modules/marketing/visitasi/onroute/customer_page.dart';
-import 'package:uapp/modules/marketing/visitasi/callmanagement/callmanagement_controller.dart';
+// import 'package:uapp/modules/marketing/visitasi/callmanagement/callmanagement_controller.dart';
 
 class CallManagementPage extends StatelessWidget {
   const CallManagementPage({super.key});
@@ -24,11 +24,11 @@ class CallManagementPage extends StatelessWidget {
         });
       },
       actions: [
-        IconButton(
-          onPressed: () => Get.find<CallManagementController>().updateCustomerActive(),
-          icon: const Icon(Icons.sync),
-          tooltip: 'Sync Data Customer',
-        ),
+        // IconButton(
+        //   onPressed: () => Get.find<CallManagementController>().updateCustomerActive(),
+        //   icon: const Icon(Icons.sync),
+        //   tooltip: 'Sync Data Customer',
+        // ),
         IconButton(
           onPressed: () => Get.toNamed(Routes.HISTORY_VISITASI, arguments: Call.custactive),  
           icon: const Icon(Icons.history),

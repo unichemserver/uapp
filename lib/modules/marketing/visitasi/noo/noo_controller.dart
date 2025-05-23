@@ -420,29 +420,17 @@ Future<void> loadCustomerGroups() async {
   Future<String> generateNOOID() async {
     var dateToday = DateUtils.getFormatDate();
     var userId = Utils.getUserData().id;
-    String pattern = 'NOO$userId$dateToday';
     String id;
     bool isDuplicate;
 
-    do {
-      int randomDigit = Utils.getRandomDigit(); // Generate a random digit
-      int newIncrement = 1;
-      String query = '''
-      SELECT id FROM masternoo
-        WHERE id LIKE '$pattern%'
-        ORDER BY id DESC
-        LIMIT 1
-      ''';
-      List<Map> result = await db.rawQuery(query);
-      if (result.isNotEmpty) {
-        String lastId = result.first['id'];
-        int lastIncrement = int.parse(lastId.substring(lastId.length - 1));
-        newIncrement = lastIncrement + 1;
-      }
-      if (newIncrement > 9) {
-        newIncrement = 1;
-      }
-      id = '$pattern$randomDigit$newIncrement';
+    do { // Generate a random digit
+      final now = DateTime.now();
+      final mm = now.minute.toString().padLeft(2, '0');
+      final ss = now.second.toString().padLeft(2, '0');
+      final timeRaw = '$mm$ss'; // contoh: 0745
+      final timePart = timeRaw.substring(timeRaw.length - 3);
+
+      id = 'NOO$userId$dateToday$timePart';
 
       // Check for duplicate ID
       String checkQuery = '''
@@ -451,6 +439,7 @@ Future<void> loadCustomerGroups() async {
       ''';
       List<Map> checkResult = await db.rawQuery(checkQuery, args: [id]);
       isDuplicate = checkResult.first['count'] > 0;
+      if (isDuplicate) await Future.delayed(const Duration(seconds: 1));
     } while (isDuplicate);
 
     return id;

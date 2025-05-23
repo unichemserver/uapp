@@ -6,6 +6,7 @@ import 'package:uapp/modules/marketing/api/wilayah_service.dart';
 
 class AddressInformation extends StatefulWidget {
   final String title;
+  final String isOpen;
   final NooAddressModel? addressModel;
   final String? Function(String?)? addressValidator;
   final String? Function(String?)? rtRwValidator;
@@ -18,6 +19,7 @@ class AddressInformation extends StatefulWidget {
   const AddressInformation({
     super.key,
     required this.title,
+    required this.isOpen,
     this.addressModel,
     this.addressValidator,
     this.rtRwValidator,
@@ -323,7 +325,7 @@ void _findBestMatchingRegency(String regencyNameToFind) {
     leading: const Icon(Icons.location_on),
     expandedAlignment: Alignment.topLeft,
     expandedCrossAxisAlignment: CrossAxisAlignment.start,
-    initiallyExpanded: true,
+    initiallyExpanded: widget.isOpen.toLowerCase() == 'true',
     children: [
       const SizedBox(height: 4),
       Text(

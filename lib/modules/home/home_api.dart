@@ -60,6 +60,30 @@ class HomeApi {
     }
   }
 
+  static Future<String> getNotification(
+      String url,
+      String userId,
+      ) async {
+    try {
+      final baseUrl = Uri.parse(url);
+      final bodyRequest = {
+        'action': 'get_notification',
+        'nik': userId,
+      };
+      final response = await http.post(
+        baseUrl,
+        body: bodyRequest,
+      );
+      if (response.statusCode == 200) {
+        return response.body;
+      } else {
+        return '';
+      }
+    } catch (e) {
+      return '';
+    }
+  }
+
   static Future<HrResponse?> getHrApproval(String url, String userId) async {
     try {
       final baseUrl = Uri.parse(url);
